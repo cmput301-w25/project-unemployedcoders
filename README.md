@@ -2,14 +2,14 @@
 
 ## Team Members
 
-| Name        | CCID   | GitHub Username |
-| ----------- | ------ | --------------- |
-| [Full Name] | [CCID] | [@username]     |
-| [Full Name] | [CCID] | [@username]     |
-| [Full Name] | [CCID] | [@username]     |
-| [Full Name] | [CCID] | [@username]     |
-| [Full Name] | [CCID] | [@username]     |
-| [Full Name] | [CCID] | [@username]     |
+| Name         | CCID     | GitHub Username |
+| ------------ | -------- | --------------- |
+| Luke Yaremko | lmyaremk | @lukemyaremko   |
+| [Full Name]  |  [CCID]  | [@username]     |
+| [Full Name]  |  [CCID]  | [@username]     |
+| [Full Name]  |  [CCID]  | [@username]     |
+| [Full Name]  |  [CCID]  | [@username]     |
+| [Full Name]  |  [CCID]  | [@username]     |
 
 ## Project Description
 
@@ -29,7 +29,7 @@
 
 ## Documentation
 
-- [Wiki Link]
-- [Scrum Board]
+- Wiki Link: https://github.com/cmput301-w25/project-unemployedcoders/wiki
+- Scrum Board: https://github.com/orgs/cmput301-w25/projects/26/views/1
 - [UI Mockups]
 - [UML]
