@@ -5,7 +5,7 @@
 | Name         | CCID     | GitHub Username |
 | ------------ | -------- | --------------- |
 | Luke Yaremko | lmyaremk | @lukemyaremko   |
-| [Full Name]  |  [CCID]  | [@username]     |
+| Shubham Jain  |  jain8  | Randazer     |
 | [Full Name]  |  [CCID]  | [@username]     |
 | [Full Name]  |  [CCID]  | [@username]     |
 | [Full Name]  |  [CCID]  | [@username]     |
