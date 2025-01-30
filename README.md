@@ -7,7 +7,7 @@
 | Luke Yaremko | lmyaremk | @lukemyaremko   |
 | Shubham Jain  |  jain8  | Randazer     |
 | Neil Chowdhury  |  anshuk  | @neilchowdhury     |
-| [Full Name]  |  [CCID]  | [@username]     |
+| Amitoj Singh |  amitoj2 | amitojxsingh   |
 | [Full Name]  |  [CCID]  | [@username]     |
 | [Full Name]  |  [CCID]  | [@username]     |
 
