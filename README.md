@@ -9,7 +9,7 @@
 | Neil Chowdhury  |  anshuk  | @neilchowdhury     |
 | Amitoj Singh |  amitoj2 | amitojxsingh   |
 | Saksham Anand  |  saksham5  |   Saksham186   |
-| [Full Name]  |  [CCID]  | [@username]     |
+| Uday Mehtab Singh  |  udaymeht  |  udaymehtabsingh  |
 
 ## Project Description
 
