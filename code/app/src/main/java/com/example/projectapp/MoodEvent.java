@@ -9,6 +9,9 @@ import java.util.Date;
  */
 public class MoodEvent implements Comparable<MoodEvent> {
 
+
+    public static final String[] ALL_MOODS = {"Anger", "Confusion", "Disgust", "Fear", "Happiness", "Sadness", "Shame", "Surprise"};
+
     private Date date;
     private String emotionalState;
     private String trigger;
@@ -99,6 +102,15 @@ public class MoodEvent implements Comparable<MoodEvent> {
      */
     public void setSocialSituation(String socialSituation) {
         this.socialSituation = socialSituation;
+    }
+
+    /**
+     * This returns the date of the event
+     * @return
+     *      Returns the date of the event
+     */
+    public Date getDate() {
+        return date;
     }
 
     /**
