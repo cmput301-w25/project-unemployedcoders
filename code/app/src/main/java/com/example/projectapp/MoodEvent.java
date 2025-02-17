@@ -1,6 +1,7 @@
 package com.example.projectapp;
 
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -11,11 +12,13 @@ public class MoodEvent implements Comparable<MoodEvent> {
 
 
     public static final String[] ALL_MOODS = {"Anger", "Confusion", "Disgust", "Fear", "Happiness", "Sadness", "Shame", "Surprise"};
+    public static final String[] ALL_SITUATIONS = {"Alone" , "With one other person", "With two to several people", "With a crowd"};
 
     private Date date;
     private String emotionalState;
     private String trigger;
     private String socialSituation;
+
 
     /**
      * This is one constructor for the MoodEvent class
@@ -27,13 +30,22 @@ public class MoodEvent implements Comparable<MoodEvent> {
      *      The social situation of the event
      */
     public MoodEvent(String emotionalState, String trigger, String socialSituation){
+        if (!validTrigger(this.trigger)){
+            throw new IllegalArgumentException("Not a valid trigger");
+        }
+
+        if (!Arrays.asList(ALL_MOODS).contains(emotionalState)){
+            throw new IllegalArgumentException("Not a valid emotional state");
+        }
+
+        if (!Arrays.asList(ALL_SITUATIONS).contains(socialSituation)){
+            throw new IllegalArgumentException("Not a valid social situation");
+        }
+
         this.emotionalState = emotionalState;
         this.date = Calendar.getInstance().getTime();
         this.trigger = trigger;
         this.socialSituation = socialSituation;
-        /*
-        NEEDS INPUT VALIDATION FOR trigger and socialSituation
-         */
 
     }
 
@@ -43,6 +55,10 @@ public class MoodEvent implements Comparable<MoodEvent> {
      *      The specific emotional state of the event
      */
     public MoodEvent(String emotionalState){
+        if (!Arrays.asList(ALL_MOODS).contains(emotionalState)){
+            throw new IllegalArgumentException("Not a valid emotional state");
+        }
+
         this.emotionalState = emotionalState;
         this.date = Calendar.getInstance().getTime();
         this.trigger = null;
@@ -111,6 +127,18 @@ public class MoodEvent implements Comparable<MoodEvent> {
      */
     public Date getDate() {
         return date;
+    }
+
+    /**
+     * This checks if a trigger is valid in length
+     * @param trigger
+     *      The trigger to check
+     * @return
+     *      Whether or not the trigger is valid
+     */
+    public static boolean validTrigger(String trigger){
+        int wordCount = trigger.trim().split(" ").length;
+        return wordCount <= 3 && trigger.length() <= 20;
     }
 
     /**
