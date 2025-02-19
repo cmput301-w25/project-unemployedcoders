@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">ProjectApp</string>
+    <string name="anger_emoticon">\u1F621</string>
+    <string name="happiness_emoticon">\u1F601</string>
+    <string name="sadness_emoticon">\u1F622</string>
+    <string name="shame_emoticon">\u1F614</string>
+    <string name="fear_emoticon">\u1F628</string>
+    <string name="surprise_emoticon">\u1F62E</string>
+    <string name="disgust_emoticon">\u1F922</string>
 </resources>

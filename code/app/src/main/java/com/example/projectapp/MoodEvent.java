@@ -142,6 +142,54 @@ public class MoodEvent implements Comparable<MoodEvent> {
     }
 
     /**
+     * Gets the color resource associated with the mood
+     * @return
+     *      The color resource associated with the mood
+     */
+    public int getColorResource(){
+        if (getEmotionalState().equals("Anger")){
+            return R.color.anger;
+        } else if (getEmotionalState().equals("Confusion")){
+            return R.color.confusion;
+        } else if (getEmotionalState().equals("Disgust")){
+            return R.color.disgust;
+        } else if (getEmotionalState().equals("Fear")){
+            return R.color.fear;
+        } else if (getEmotionalState().equals("Happiness")){
+            return R.color.happiness;
+        } else if (getEmotionalState().equals("Sadness")){
+            return R.color.sadness;
+        } else if (getEmotionalState().equals("Shame")){
+            return R.color.shame;
+        } else if (getEmotionalState().equals("Surprise")){
+            return R.color.surprise;
+        } else {
+            return R.color.white;
+        }
+    }
+
+    public String getEmoticon(){
+        if (getEmotionalState().equals("Anger")){
+
+        } else if (getEmotionalState().equals("Confusion")){
+
+        } else if (getEmotionalState().equals("Disgust")){
+
+        } else if (getEmotionalState().equals("Fear")){
+
+        } else if (getEmotionalState().equals("Happiness")){
+
+        } else if (getEmotionalState().equals("Sadness")){
+
+        } else if (getEmotionalState().equals("Shame")){
+
+        } else if (getEmotionalState().equals("Surprise")){
+
+        } else {
+            return " ";
+        }
+    }
+    /**
      * This compares two objects to see if they're the same
      * @param obj
      *      The object to compare to
