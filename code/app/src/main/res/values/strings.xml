@@ -1,3 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ProjectApp</string>
+    <string name="emoticon_desc">Mood icon</string>
+
+    <!-- Emoji resources using Unicode characters -->
+    <string name="angry">&#x1F621;</string>
+    <string name="happy">&#x1F601;</string>
+    <string name="sad">&#x1F622;</string>
+    <string name="shame">&#x1F614;</string>
+    <string name="fear">&#x1F628;</string>
+    <string name="surprise">&#x1F62E;</string>
+    <string name="confused">&#x1F615;</string>
+    <string name="disgust">&#x1F922;</string>
 </resources>
