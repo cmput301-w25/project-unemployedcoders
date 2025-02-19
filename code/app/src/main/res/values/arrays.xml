@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="emotional_states">
+        <item>Sadness</item>
+        <item>Anger</item>
+        <item>Happiness</item>
+        <item>Shame</item>
+        <item>Confusion</item>
+        <item>Disgust</item>
+        <item>Fear</item>
+        <item>Surprise</item>
+
+        <!-- ... add others as needed -->
+    </string-array>
+
+    <string-array name="social_situations">
+        <item>Alone</item>
+        <item>With one other person</item>
+        <item>With two to several people</item>
+        <item>With a crowd</item>
+    </string-array>
+
+</resources>
