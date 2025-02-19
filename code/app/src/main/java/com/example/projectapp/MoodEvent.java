@@ -168,27 +168,33 @@ public class MoodEvent implements Comparable<MoodEvent> {
         }
     }
 
-    public String getEmoticon(){
+    /**
+     * Gets the emoticon resource of the mood
+     * @return
+     *      The emoticon resource of the mood
+     */
+    public int getEmoticonResource(){
         if (getEmotionalState().equals("Anger")){
-
+            return R.string.anger_emoticon;
         } else if (getEmotionalState().equals("Confusion")){
-
+            return R.string.shame_emoticon;
         } else if (getEmotionalState().equals("Disgust")){
-
+            return R.string.disgust_emoticon;
         } else if (getEmotionalState().equals("Fear")){
-
+            return R.string.fear_emoticon;
         } else if (getEmotionalState().equals("Happiness")){
-
+            return R.string.happiness_emoticon;
         } else if (getEmotionalState().equals("Sadness")){
-
+            return R.string.sadness_emoticon;
         } else if (getEmotionalState().equals("Shame")){
-
+            return R.string.shame_emoticon;
         } else if (getEmotionalState().equals("Surprise")){
-
+            return R.string.surprise_emoticon;
         } else {
-            return " ";
+            return 0;
         }
     }
+
     /**
      * This compares two objects to see if they're the same
      * @param obj

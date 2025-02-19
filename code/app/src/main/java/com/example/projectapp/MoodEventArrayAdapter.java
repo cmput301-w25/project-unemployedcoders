@@ -43,11 +43,12 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
         TextView emotionalStateText = view.findViewById(R.id.emotional_state_text);
         TextView triggerText = view.findViewById(R.id.trigger_text);
         TextView socialSituationText = view.findViewById(R.id.social_situation_text);
-        ConstraintLayout background = view.findViewById(R.id.social_situation_text);
+        ConstraintLayout background = view.findViewById(R.id.mood_event_background);
 
         usernameText.setText("username"); // need navigability back to userProfile
         timeText.setText(moodEvent.getDate().toString());
-        emotionalStateText.setText(moodEvent.getEmotionalState() + );
+        String emotionalString = moodEvent.getEmotionalState() + " " + context.getResources().getString(moodEvent.getEmoticonResource());
+        emotionalStateText.setText(emotionalString);
         triggerText.setText(moodEvent.getTrigger());
         socialSituationText.setText(moodEvent.getSocialSituation());
 
