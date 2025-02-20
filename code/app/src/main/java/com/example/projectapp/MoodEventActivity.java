@@ -1,5 +1,6 @@
 package com.example.projectapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -106,6 +107,7 @@ public class MoodEventActivity extends AppCompatActivity {
                 return true;
             } else if (id == R.id.nav_history) {
                 // Open mood history screen
+                startActivity(new Intent(MoodEventActivity.this, MoodEventViewingActivity.class));
                 return true;
             } else if (id == R.id.nav_inbox) {
                 // Open inbox screen

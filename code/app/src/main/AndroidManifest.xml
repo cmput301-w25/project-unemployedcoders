@@ -55,5 +55,8 @@
             android:name=".MainActivity"
             android:exported="false" />
 
+        <!-- MoodViewingActivity -->
+        <activity android:name=".MoodEventViewingActivity"/>
+
     </application>
 </manifest>
