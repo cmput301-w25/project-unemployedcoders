@@ -1,14 +1,14 @@
 package com.example.projectapp;
 
 public enum MoodType {
-    ANGER("Anger", "#F31515", R.string.angry),
-    CONFUSION("Confusion", "#F315C3", R.string.confused),
-    DISGUST("Disgust", "#CD8106", R.string.disgust),
-    FEAR("Fear", "#15F3F3", R.string.fear),
-    HAPPINESS("Happiness", "#FFCD27", R.string.happy),
-    SADNESS("Sadness", "#4B68F4", R.string.sad),
-    SHAME("Shame", "#4BD83E", R.string.shame),
-    SURPRISE("Surprise", "#FB9835", R.string.surprise);
+    ANGER("Anger", "#F31515", R.string.anger_emoticon),
+    CONFUSION("Confusion", "#F315C3", R.string.confusion_emoticon),
+    DISGUST("Disgust", "#CD8106", R.string.disgust_emoticon),
+    FEAR("Fear", "#15F3F3", R.string.fear_emoticon),
+    HAPPINESS("Happiness", "#FFCD27", R.string.happiness_emoticon),
+    SADNESS("Sadness", "#4B68F4", R.string.sadness_emoticon),
+    SHAME("Shame", "#4BD83E", R.string.shame_emoticon),
+    SURPRISE("Surprise", "#FB9835", R.string.surprise_emoticon);
 
     private final String displayName;
     private final String colorCode;
