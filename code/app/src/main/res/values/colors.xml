@@ -10,4 +10,5 @@
     <color name="disgust">#CD8106</color>
     <color name="surprise">#FB9835</color>
     <color name="confusion">#F315C3</color>
+    <color name="focusedColor">#FF4081</color>
 </resources>

@@ -19,6 +19,9 @@ public class MoodEvent implements Comparable<MoodEvent> {
     private String trigger;
     private String socialSituation;
 
+    private String moodColor;
+    private int emoticonResId;
+
 
     /**
      * This is one constructor for the MoodEvent class
@@ -136,6 +139,27 @@ public class MoodEvent implements Comparable<MoodEvent> {
      * @return
      *      Whether or not the trigger is valid
      */
+
+    /**
+     * Returns the mood color.
+     * @return the mood color as a hex string.
+     */
+    public String getMoodColor() {
+        return moodColor;
+    }
+
+    /**
+     * Sets the mood color.
+     * @param moodColor the color to set for this mood event (e.g., "#FF0000").
+     */
+    public void setMoodColor(String moodColor) {
+        this.moodColor = moodColor;
+    }
+
+    public void setEmoticonResId(int emoticonResId) {
+        this.emoticonResId = emoticonResId;
+    }
+
     public static boolean validTrigger(String trigger){
         int wordCount = trigger.trim().split(" ").length;
         return wordCount <= 3 && trigger.length() <= 20;
