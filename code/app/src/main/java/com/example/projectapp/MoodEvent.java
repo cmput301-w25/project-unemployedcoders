@@ -132,13 +132,7 @@ public class MoodEvent implements Comparable<MoodEvent> {
         return date;
     }
 
-    /**
-     * This checks if a trigger is valid in length
-     * @param trigger
-     *      The trigger to check
-     * @return
-     *      Whether or not the trigger is valid
-     */
+
 
     /**
      * Returns the mood color.
@@ -160,6 +154,13 @@ public class MoodEvent implements Comparable<MoodEvent> {
         this.emoticonResId = emoticonResId;
     }
 
+    /**
+     * This checks if a trigger is valid in length
+     * @param trigger
+     *      The trigger to check
+     * @return
+     *      Whether or not the trigger is valid
+     */
     public static boolean validTrigger(String trigger){
         int wordCount = trigger.trim().split(" ").length;
         return wordCount <= 3 && trigger.length() <= 20;
