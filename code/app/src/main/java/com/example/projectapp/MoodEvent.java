@@ -4,6 +4,8 @@ package com.example.projectapp;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.io.Serializable;
+import java.util.regex.Pattern;
 
 /**
  * This is a class that models a MoodEvent
@@ -21,6 +23,8 @@ public class MoodEvent implements Comparable<MoodEvent> {
 
     private String moodColor;
     private int emoticonResId;
+    private double latitude;  // New: Store latitude
+    private double longitude; // New: Store longitude
 
 
     /**
@@ -166,6 +170,13 @@ public class MoodEvent implements Comparable<MoodEvent> {
         return wordCount <= 3 && trigger.length() <= 20;
     }
 
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
     /**
      * Gets the color resource associated with the mood
      * @return
@@ -276,4 +287,5 @@ public class MoodEvent implements Comparable<MoodEvent> {
 
         return -1 * this.date.compareTo(o.date); // reverse chronological
     }
+
 }
