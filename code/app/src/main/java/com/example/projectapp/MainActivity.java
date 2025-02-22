@@ -1,5 +1,6 @@
 package com.example.projectapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -21,4 +22,10 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
     }
+    public void openMapView() {
+        Intent intent = new Intent(MainActivity.this, MapViewActivity.class);
+        startActivity(intent);
+    }
+
+
 }

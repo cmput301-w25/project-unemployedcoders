@@ -3,6 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.projectapp">
     <uses-permission android:name="android.permission.CAMERA" />
+    <meta-data
+        android:name="com.google.android.geo.API_KEY"
+        android:value="YOUR_API_KEY_HERE"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+
 
     <!-- Android 12 and below (Legacy permission) -->
     <uses-permission
@@ -54,6 +61,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
+        <activity android:name=".MapViewActivity"/>
 
     </application>
 </manifest>

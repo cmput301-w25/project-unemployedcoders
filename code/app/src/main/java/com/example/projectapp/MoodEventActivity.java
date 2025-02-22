@@ -1,8 +1,11 @@
 package com.example.projectapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import android.widget.Spinner;
 import android.widget.EditText;
@@ -17,6 +20,9 @@ public class MoodEventActivity extends AppCompatActivity {
     private Button buttonUploadPhoto;
     private Button buttonAddLocation;
     private Button buttonAddEvent;
+    private Button buttonViewMap; // New button for viewing map
+
+    private LatLng eventLocation; // Store selected event location
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +37,45 @@ public class MoodEventActivity extends AppCompatActivity {
         buttonUploadPhoto = findViewById(R.id.button_upload_photo);
         buttonAddLocation = findViewById(R.id.button_add_location);
         buttonAddEvent = findViewById(R.id.button_add_event);
+        buttonViewMap = findViewById(R.id.button_view_map);
+        buttonAddLocation.setOnClickListener(view -> {
+            // Launch a map picker or retrieve current location (dummy location used here)
+            eventLocation = new LatLng(37.7749, -122.4194); // Example: San Francisco
+            Toast.makeText(this, "Location Added!", Toast.LENGTH_SHORT).show();
+        });
+        // Setup button listener for viewing map
+        buttonViewMap.setOnClickListener(view -> {
+            if (eventLocation == null) {
+                Toast.makeText(this, "No location added!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Intent intent = new Intent(MoodEventActivity.this, MapViewActivity.class);
+            intent.putExtra("latitude", eventLocation.latitude);
+            intent.putExtra("longitude", eventLocation.longitude);
+            startActivity(intent);
+        });
+        buttonAddEvent.setOnClickListener(view -> {
+            String emotionalStateString = spinnerEmotionalState.getSelectedItem().toString();
+            String trigger = editTrigger.getText().toString().trim();
+            String socialSituation = spinnerSocialSituation.getSelectedItem().toString();
+
+            // Validate and create a MoodEvent
+            if (!MoodEvent.validTrigger(trigger)) {
+                Toast.makeText(this, "Trigger is invalid. (<=20 chars, <=3 words)", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            try {
+                MoodEvent newEvent = new MoodEvent(emotionalStateString, trigger, socialSituation);
+                Toast.makeText(this, "Mood Event Added!", Toast.LENGTH_SHORT).show();
+                finish();
+            } catch (IllegalArgumentException e) {
+                Toast.makeText(this, "Invalid input: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Bottom Navigation
+
 
 
         // In your onCreate() method:
