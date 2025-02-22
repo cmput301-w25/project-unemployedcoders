@@ -1,7 +1,5 @@
 package com.example.projectapp;
 
-//import static androidx.appcompat.graphics.drawable.DrawableContainerCompat.Api21Impl.getResources;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,11 +7,9 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
-
 import java.util.ArrayList;
 
 public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
@@ -27,35 +23,57 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
         this.context = context;
     }
 
-    @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent){
+    static class ViewHolder {
+        ImageButton profilePic;
+        TextView usernameText;
+        TextView timeText;
+        TextView emotionalStateText;
+        TextView triggerText;
+        TextView socialSituationText;
+        ConstraintLayout background;
+    }
 
-        View view = convertView;
-        if (view == null){
-            view = LayoutInflater.from(context).inflate(R.layout.mood_event_layout, parent, false);
+    @Override
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        ViewHolder holder;
+
+        if (convertView == null) {
+            convertView = LayoutInflater.from(context).inflate(R.layout.mood_event_layout, parent, false);
+            holder = new ViewHolder();
+
+            holder.profilePic = convertView.findViewById(R.id.profile_pic);
+            holder.usernameText = convertView.findViewById(R.id.username_text);
+            holder.timeText = convertView.findViewById(R.id.time_text);
+            holder.emotionalStateText = convertView.findViewById(R.id.emotional_state_text);
+            holder.triggerText = convertView.findViewById(R.id.trigger_text);
+            holder.socialSituationText = convertView.findViewById(R.id.social_situation_text);
+            holder.background = convertView.findViewById(R.id.mood_event_background);
+
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder) convertView.getTag();
         }
 
         MoodEvent moodEvent = events.get(position);
 
-        ImageButton profilePic = view.findViewById(R.id.profile_pic);
-        TextView usernameText = view.findViewById(R.id.username_text);
-        TextView timeText = view.findViewById(R.id.time_text);
-        TextView emotionalStateText = view.findViewById(R.id.emotional_state_text);
-        TextView triggerText = view.findViewById(R.id.trigger_text);
-        TextView socialSituationText = view.findViewById(R.id.social_situation_text);
-        ConstraintLayout background = view.findViewById(R.id.mood_event_background);
+        holder.usernameText.setText("username");
+        holder.timeText.setText(moodEvent.getDate().toString());
 
-        usernameText.setText("username"); // need navigability back to userProfile
-        timeText.setText(moodEvent.getDate().toString());
-        String emotionalString = moodEvent.getEmotionalState() + " " + context.getResources().getString(moodEvent.getEmoticonResource());
-        emotionalStateText.setText(emotionalString);
-        triggerText.setText(moodEvent.getTrigger());
-        socialSituationText.setText(moodEvent.getSocialSituation());
+        String moodText = moodEvent.getEmotionalState();
+        int emoticonResId = moodEvent.getEmoticonResource();
+        if (moodText != null && emoticonResId != 0) {
+            String emoticon = context.getResources().getString(emoticonResId);
+            holder.emotionalStateText.setText(emoticon + " " + moodText);
+        } else {
+            holder.emotionalStateText.setText("Unknown Mood");
+        }
 
-        int color;
-        color = moodEvent.getColorResource();
-        background.setBackgroundColor(context.getResources().getColor(color, context.getTheme()));
+        holder.triggerText.setText(moodEvent.getTrigger() != null ? moodEvent.getTrigger() : "No Trigger");
+        holder.socialSituationText.setText(moodEvent.getSocialSituation() != null ? moodEvent.getSocialSituation() : "No Social Situation");
 
-        return view;
+        int color = moodEvent.getColorResource();
+        holder.background.setBackgroundColor(context.getResources().getColor(color, context.getTheme()));
+
+        return convertView;
     }
 }
