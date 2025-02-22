@@ -1,5 +1,6 @@
 package com.example.projectapp;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,6 +23,9 @@ public class MoodEventActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mood_event);
+
+        Resources res = getResources();
+        String exampleString = res.getString(R.string.example_string);
 
         // Bind UI elements
         spinnerEmotionalState = findViewById(R.id.spinner_emotional_state);

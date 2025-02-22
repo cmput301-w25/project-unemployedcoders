@@ -1,6 +1,6 @@
 package com.example.projectapp;
 
-import static androidx.appcompat.graphics.drawable.DrawableContainerCompat.Api21Impl.getResources;
+
 
 import android.content.Context;
 import android.view.LayoutInflater;
