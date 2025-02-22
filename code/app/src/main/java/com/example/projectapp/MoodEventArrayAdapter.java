@@ -16,11 +16,18 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
 
     private ArrayList<MoodEvent> events;
     private Context context;
+    private OnMoodEventClickListener listener;
 
-    public MoodEventArrayAdapter(Context context, ArrayList<MoodEvent> events){
+    public interface OnMoodEventClickListener {
+        void onEditMoodEvent(MoodEvent event, int position);
+        void onDeleteMoodEvent(MoodEvent event, int position);
+    }
+
+    public MoodEventArrayAdapter(Context context, ArrayList<MoodEvent> events, OnMoodEventClickListener listener) {
         super(context, 0, events);
         this.events = events;
         this.context = context;
+        this.listener = listener;
     }
 
     static class ViewHolder {
@@ -73,6 +80,21 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
 
         int color = moodEvent.getColorResource();
         holder.background.setBackgroundColor(context.getResources().getColor(color, context.getTheme()));
+
+        // Click listener for editing a mood event
+        convertView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onEditMoodEvent(moodEvent, position);
+            }
+        });
+
+        // Long click listener for deleting a mood event
+        convertView.setOnLongClickListener(v -> {
+            if (listener != null) {
+                listener.onDeleteMoodEvent(moodEvent, position);
+            }
+            return true;
+        });
 
         return convertView;
     }
