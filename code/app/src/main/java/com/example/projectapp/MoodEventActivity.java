@@ -75,16 +75,7 @@ public class MoodEventActivity extends AppCompatActivity {
         });
 
         // Bottom Navigation
-        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
-        bottomNav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_home) return true;
-            if (id == R.id.nav_map) return true;
-            if (id == R.id.nav_history) return true;
-            if (id == R.id.nav_inbox) return true;
-            if (id == R.id.nav_profile) return true;
-            return false;
-        });
+
 
 
         // In your onCreate() method:
