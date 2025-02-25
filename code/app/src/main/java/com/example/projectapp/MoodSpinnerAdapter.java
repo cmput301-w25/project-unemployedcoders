@@ -37,7 +37,7 @@ public class MoodSpinnerAdapter extends ArrayAdapter<String> {
         MoodType mood = MoodType.fromString(moodName);
         if (mood != null) {
             // Set the background color for the spinner item using the mood's color
-            rootLayout.setBackgroundColor(Color.parseColor(mood.getColorCode()));
+            rootLayout.setBackgroundColor(getContext().getResources().getColor(mood.getColorCode()));
             // Retrieve the emoji string from resources
             String emoji = getContext().getString(mood.getEmoticonResId());
             // Set the text to include the emoji and the mood name

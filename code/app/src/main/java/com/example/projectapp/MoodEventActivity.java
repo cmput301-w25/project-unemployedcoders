@@ -110,7 +110,7 @@ public class MoodEventActivity extends AppCompatActivity {
                 Toast.makeText(this, "Selected mood is not recognized.", Toast.LENGTH_SHORT).show();
                 return;
             }
-            String moodColor = moodType.getColorCode();
+            int moodColor = moodType.getColorCode();
             int emoticonResId = moodType.getEmoticonResId();
 
             // 2. Validate input (e.g., validate trigger length)
@@ -123,8 +123,6 @@ public class MoodEventActivity extends AppCompatActivity {
             try {
                 // Create a new MoodEvent (ensure your MoodEvent class supports moodColor and emoticonResId)
                 MoodEvent newEvent = new MoodEvent(emotionalStateString, trigger, socialSituation);
-                newEvent.setMoodColor(moodColor);
-                newEvent.setEmoticonResId(emoticonResId);
                 // Optionally, store the brief explanation if your model supports it
                 // newEvent.setBriefExplanation(briefExplanation);
 
