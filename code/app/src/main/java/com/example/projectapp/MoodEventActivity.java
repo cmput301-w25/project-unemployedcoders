@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import android.widget.Spinner;
@@ -87,13 +88,14 @@ public class MoodEventActivity extends AppCompatActivity {
 
 
         // Setup button listener for photo upload (optional)
-        buttonUploadPhoto.setOnClickListener(view -> {
-            // Code to open a file picker or camera
-        });
 
-        // Setup button listener for adding location (optional)
-        buttonAddLocation.setOnClickListener(view -> {
-            // Code to get or pick a location
+        buttonUploadPhoto.setOnClickListener(view -> {
+            ImagePicker.Companion.with(this)
+                    .galleryOnly() // Only allow gallery selection
+                    .crop() // Enable cropping
+                    .compress(1024) // Compress image to reduce size
+                    .maxResultSize(1080, 1080) // Set max image resolution
+                    .start(); // Open the image picker
         });
 
         // Listener for the "Add Event" button
