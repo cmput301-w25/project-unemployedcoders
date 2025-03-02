@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 /**
  * This is a class that models a MoodEvent
  */
-public class MoodEvent implements Comparable<MoodEvent> {
+public class MoodEvent implements Comparable<MoodEvent>, Serializable {
 
 
     public static final String[] ALL_SITUATIONS = {"Alone" , "With one other person", "With two to several people", "With a crowd"};

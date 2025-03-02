@@ -14,12 +14,33 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 
-public class MoodEventViewingActivity extends AppCompatActivity {
+public class MoodEventViewingActivity extends AppCompatActivity implements MoodEventArrayAdapter.OnMoodEventClickListener,
+        MoodEventDetailsAndEditingFragment.EditMoodEventListener,
+        MoodEventDeleteFragment.DeleteMoodEventDialogListener{
     private ArrayList<MoodEvent> moodDataList;
     private ListView moodEventList;
     private MoodEventArrayAdapter moodEventAdapter;
 
-    private void onMoodEdited(MoodEvent moodEvent) {}
+    @Override
+    public void onMoodEventEdited(MoodEvent moodEvent) {
+        moodEventAdapter.notifyDataSetChanged();
+    }
+    @Override
+    public void onEditMoodEvent(MoodEvent moodEvent, int position) {
+        MoodEventDetailsAndEditingFragment.newInstance(moodEvent)
+                .show(getSupportFragmentManager(), "Mood Event Details");
+    }
+
+    @Override
+    public void onMoodEventDeleted(MoodEvent moodEvent) {
+        moodDataList.remove(moodEvent);
+        moodEventAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onDeleteMoodEvent(MoodEvent moodEvent, int position) {
+        MoodEventDeleteFragment.newInstance(moodEvent).show(getSupportFragmentManager(), "DeleteMoodEvent");
+    }
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,13 +48,15 @@ public class MoodEventViewingActivity extends AppCompatActivity {
         setContentView(R.layout.mood_viewing_activity);
 
         String[] emotionalStates = {"Happiness", "Anger", "Shame"};
+        String[] triggers = {"Apple", "Apple", "Apple"};
+        String[] socialSituations = {"Alone", "Alone", "Alone"};
         //dummy data initalization
         moodDataList = new ArrayList<>();
         for (int i = 0; i < emotionalStates.length; i++) {
-            moodDataList.add(new MoodEvent(emotionalStates[i]));
+            moodDataList.add(new MoodEvent(emotionalStates[i], triggers[i], socialSituations[i]));
         }
         moodEventList = findViewById(R.id.user_mood_event_list);
-        moodEventAdapter = new MoodEventArrayAdapter(this, moodDataList);
+        moodEventAdapter = new MoodEventArrayAdapter(this, moodDataList, this);
         moodEventList.setAdapter((moodEventAdapter));
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav_mood_event_list);
