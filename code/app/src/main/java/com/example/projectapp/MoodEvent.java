@@ -4,6 +4,8 @@ package com.example.projectapp;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.io.Serializable;
+import java.util.regex.Pattern;
 
 /**
  * This is a class that models a MoodEvent
@@ -11,7 +13,6 @@ import java.util.Date;
 public class MoodEvent implements Comparable<MoodEvent> {
 
 
-    public static final String[] ALL_MOODS = {"Anger", "Confusion", "Disgust", "Fear", "Happiness", "Sadness", "Shame", "Surprise"};
     public static final String[] ALL_SITUATIONS = {"Alone" , "With one other person", "With two to several people", "With a crowd"};
 
     private Date date;
@@ -19,8 +20,9 @@ public class MoodEvent implements Comparable<MoodEvent> {
     private String trigger;
     private String socialSituation;
 
-    private String moodColor;
-    private int emoticonResId;
+    private MoodType moodType;
+    private double latitude;  // New: Store latitude
+    private double longitude; // New: Store longitude
 
 
     /**
@@ -33,11 +35,11 @@ public class MoodEvent implements Comparable<MoodEvent> {
      *      The social situation of the event
      */
     public MoodEvent(String emotionalState, String trigger, String socialSituation){
-        if (!validTrigger(this.trigger)){
+        if (!validTrigger(trigger)){
             throw new IllegalArgumentException("Not a valid trigger");
         }
 
-        if (!Arrays.asList(ALL_MOODS).contains(emotionalState)){
+        if (MoodType.fromString(emotionalState) == null){
             throw new IllegalArgumentException("Not a valid emotional state");
         }
 
@@ -49,6 +51,7 @@ public class MoodEvent implements Comparable<MoodEvent> {
         this.date = Calendar.getInstance().getTime();
         this.trigger = trigger;
         this.socialSituation = socialSituation;
+        this.moodType = MoodType.fromString(emotionalState);
 
     }
 
@@ -58,7 +61,7 @@ public class MoodEvent implements Comparable<MoodEvent> {
      *      The specific emotional state of the event
      */
     public MoodEvent(String emotionalState){
-        if (!Arrays.asList(ALL_MOODS).contains(emotionalState)){
+        if (MoodType.fromString(emotionalState) == null){
             throw new IllegalArgumentException("Not a valid emotional state");
         }
 
@@ -66,7 +69,7 @@ public class MoodEvent implements Comparable<MoodEvent> {
         this.date = Calendar.getInstance().getTime();
         this.trigger = null;
         this.socialSituation = null;
-
+        this.moodType = MoodType.fromString(emotionalState);
     }
 
     /**
@@ -84,7 +87,12 @@ public class MoodEvent implements Comparable<MoodEvent> {
      *      The emotionalState to set for the event
      */
     public void setEmotionalState(String emotionalState) {
+        if (MoodType.fromString(emotionalState) == null){
+            throw new IllegalArgumentException("Not a valid emotional state");
+        }
+
         this.emotionalState = emotionalState;
+        this.moodType = MoodType.fromString(emotionalState);
     }
 
     /**
@@ -132,28 +140,6 @@ public class MoodEvent implements Comparable<MoodEvent> {
         return date;
     }
 
-
-
-    /**
-     * Returns the mood color.
-     * @return the mood color as a hex string.
-     */
-    public String getMoodColor() {
-        return moodColor;
-    }
-
-    /**
-     * Sets the mood color.
-     * @param moodColor the color to set for this mood event (e.g., "#FF0000").
-     */
-    public void setMoodColor(String moodColor) {
-        this.moodColor = moodColor;
-    }
-
-    public void setEmoticonResId(int emoticonResId) {
-        this.emoticonResId = emoticonResId;
-    }
-
     /**
      * This checks if a trigger is valid in length
      * @param trigger
@@ -166,31 +152,20 @@ public class MoodEvent implements Comparable<MoodEvent> {
         return wordCount <= 3 && trigger.length() <= 20;
     }
 
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
     /**
      * Gets the color resource associated with the mood
      * @return
      *      The color resource associated with the mood
      */
     public int getColorResource(){
-        if (getEmotionalState().equals("Anger")){
-            return R.color.anger;
-        } else if (getEmotionalState().equals("Confusion")){
-            return R.color.confusion;
-        } else if (getEmotionalState().equals("Disgust")){
-            return R.color.disgust;
-        } else if (getEmotionalState().equals("Fear")){
-            return R.color.fear;
-        } else if (getEmotionalState().equals("Happiness")){
-            return R.color.happiness;
-        } else if (getEmotionalState().equals("Sadness")){
-            return R.color.sadness;
-        } else if (getEmotionalState().equals("Shame")){
-            return R.color.shame;
-        } else if (getEmotionalState().equals("Surprise")){
-            return R.color.surprise;
-        } else {
-            return R.color.white;
-        }
+        return this.moodType.getColorCode();
     }
 
     /**
@@ -199,25 +174,7 @@ public class MoodEvent implements Comparable<MoodEvent> {
      *      The emoticon resource of the mood
      */
     public int getEmoticonResource(){
-        if (getEmotionalState().equals("Anger")){
-            return R.string.anger_emoticon;
-        } else if (getEmotionalState().equals("Confusion")){
-            return R.string.shame_emoticon;
-        } else if (getEmotionalState().equals("Disgust")){
-            return R.string.disgust_emoticon;
-        } else if (getEmotionalState().equals("Fear")){
-            return R.string.fear_emoticon;
-        } else if (getEmotionalState().equals("Happiness")){
-            return R.string.happiness_emoticon;
-        } else if (getEmotionalState().equals("Sadness")){
-            return R.string.sadness_emoticon;
-        } else if (getEmotionalState().equals("Shame")){
-            return R.string.shame_emoticon;
-        } else if (getEmotionalState().equals("Surprise")){
-            return R.string.surprise_emoticon;
-        } else {
-            return 0;
-        }
+        return this.moodType.getEmoticonResId();
     }
 
     /**
@@ -276,4 +233,5 @@ public class MoodEvent implements Comparable<MoodEvent> {
 
         return -1 * this.date.compareTo(o.date); // reverse chronological
     }
+
 }

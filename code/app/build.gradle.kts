@@ -32,7 +32,11 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.firebase.storage) // Firebase Storage for image upload
+    implementation(libs.firebase.auth)   // Firebase Authentication (optional, for user authentication)
+    implementation(libs.imagepicker)      // Use only this one
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
