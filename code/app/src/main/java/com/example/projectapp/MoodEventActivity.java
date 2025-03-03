@@ -191,23 +191,46 @@ public class MoodEventActivity extends AppCompatActivity {
         });
 
         // Setup Bottom Navigation Listener
+        // Setup Bottom Navigation Listener
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
+            Intent intent;
+
             if (id == R.id.nav_home) {
-                // Open home screen
+                // Navigate to MainActivity and select Home fragment
+                intent = new Intent(MoodEventActivity.this, MainActivity.class);
+                intent.putExtra("selected_fragment", "home");
+                startActivity(intent);
+                finish(); // Optional: finish MoodEventActivity
                 return true;
             } else if (id == R.id.nav_map) {
-                // Open map screen
+                // Navigate to MainActivity and select Map fragment
+                intent = new Intent(MoodEventActivity.this, MainActivity.class);
+                intent.putExtra("selected_fragment", "map");
+                startActivity(intent);
+                finish();
                 return true;
             } else if (id == R.id.nav_history) {
-                // Open mood history screen
+                // Navigate to MainActivity and select History fragment
+                intent = new Intent(MoodEventActivity.this, MainActivity.class);
+                intent.putExtra("selected_fragment", "history");
+                startActivity(intent);
+                finish();
                 return true;
             } else if (id == R.id.nav_inbox) {
-                // Open inbox screen
+                // Navigate to MainActivity and select Inbox fragment
+                intent = new Intent(MoodEventActivity.this, MainActivity.class);
+                intent.putExtra("selected_fragment", "inbox");
+                startActivity(intent);
+                finish();
                 return true;
             } else if (id == R.id.nav_profile) {
-                // Open Profile screen
+                // Navigate to MainActivity and select Profile fragment
+                intent = new Intent(MoodEventActivity.this, MainActivity.class);
+                intent.putExtra("selected_fragment", "profile");
+                startActivity(intent);
+                finish();
                 return true;
             }
             return false;
