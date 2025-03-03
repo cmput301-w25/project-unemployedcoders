@@ -86,6 +86,7 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
                     String newSituation = editSocialSituationSpinner.getSelectedItem().toString();
                     String newTrigger = editTrigger.getText().toString();
                     if (moodEvent != null) {
+                        //this might need to be changed since we're using MoodHistory now
                         moodEvent.setEmotionalState(newEmotionalState);
                         moodEvent.setSocialSituation(newSituation);
                         moodEvent.setTrigger(newTrigger);

@@ -54,6 +54,7 @@ public class MoodEventActivity extends AppCompatActivity {
             intent.putExtra("longitude", eventLocation.longitude);
             startActivity(intent);
         });
+        /* we have duplicate buttonAddEvent click listeners for some reason
         buttonAddEvent.setOnClickListener(view -> {
             String emotionalStateString = spinnerEmotionalState.getSelectedItem().toString();
             String trigger = editTrigger.getText().toString().trim();
@@ -72,7 +73,7 @@ public class MoodEventActivity extends AppCompatActivity {
             } catch (IllegalArgumentException e) {
                 Toast.makeText(this, "Invalid input: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
-        });
+        });*/
 
         // Bottom Navigation
 
@@ -128,10 +129,11 @@ public class MoodEventActivity extends AppCompatActivity {
 
                 // 4. Save to MoodHistory or via ViewModel/Repository (not shown here)
                 // e.g., moodHistory.addEvent(newEvent);
+                MoodHistory.getInstance().addEvent(newEvent);
 
                 // 5. Notify user and finish activity
                 Toast.makeText(this, "Mood Event Added! Color: " + moodColor, Toast.LENGTH_SHORT).show();
-                finish();  // or navigate to another screen
+                //finish();  // or navigate to another screen
             } catch (IllegalArgumentException e) {
                 Toast.makeText(this, "Invalid input: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }

@@ -17,7 +17,7 @@ import java.util.ArrayList;
 public class MoodEventViewingActivity extends AppCompatActivity implements MoodEventArrayAdapter.OnMoodEventClickListener,
         MoodEventDetailsAndEditingFragment.EditMoodEventListener,
         MoodEventDeleteFragment.DeleteMoodEventDialogListener{
-    private ArrayList<MoodEvent> moodDataList;
+    private MoodHistory moodHistory;
     private ListView moodEventList;
     private MoodEventArrayAdapter moodEventAdapter;
 
@@ -33,13 +33,19 @@ public class MoodEventViewingActivity extends AppCompatActivity implements MoodE
 
     @Override
     public void onMoodEventDeleted(MoodEvent moodEvent) {
-        moodDataList.remove(moodEvent);
+        moodHistory.deleteEvent(moodEvent);
         moodEventAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onDeleteMoodEvent(MoodEvent moodEvent, int position) {
         MoodEventDeleteFragment.newInstance(moodEvent).show(getSupportFragmentManager(), "DeleteMoodEvent");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        moodEventAdapter.notifyDataSetChanged();
     }
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,13 +56,9 @@ public class MoodEventViewingActivity extends AppCompatActivity implements MoodE
         String[] emotionalStates = {"Happiness", "Anger", "Shame"};
         String[] triggers = {"Apple", "Apple", "Apple"};
         String[] socialSituations = {"Alone", "Alone", "Alone"};
-        //dummy data initalization
-        moodDataList = new ArrayList<>();
-        for (int i = 0; i < emotionalStates.length; i++) {
-            moodDataList.add(new MoodEvent(emotionalStates[i], triggers[i], socialSituations[i]));
-        }
+        moodHistory = MoodHistory.getInstance();
         moodEventList = findViewById(R.id.user_mood_event_list);
-        moodEventAdapter = new MoodEventArrayAdapter(this, moodDataList, this);
+        moodEventAdapter = new MoodEventArrayAdapter(this, moodHistory.getEvents(), this);
         moodEventList.setAdapter((moodEventAdapter));
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav_mood_event_list);
