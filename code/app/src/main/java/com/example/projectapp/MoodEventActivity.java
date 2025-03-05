@@ -43,9 +43,9 @@ public class MoodEventActivity extends AppCompatActivity {
     private Button buttonUploadPhoto;
     private Button buttonAddLocation;
     private Button buttonAddEvent;
-    private Button buttonViewMap; // New button for viewing map
-
-    private LatLng eventLocation; // Store selected event location
+    private Button buttonViewMap;
+    private Button buttonBackHome;
+    private LatLng eventLocation;
 
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<Intent> galleryLauncher;
@@ -55,11 +55,9 @@ public class MoodEventActivity extends AppCompatActivity {
     private static final int REQUEST_CAMERA_PERMISSION = 1001;
     private static final int CAMERA_REQUEST_CODE = 1002;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_mood_event);
 
         // Bind UI elements
@@ -71,13 +69,24 @@ public class MoodEventActivity extends AppCompatActivity {
         buttonAddLocation = findViewById(R.id.button_add_location);
         buttonAddEvent = findViewById(R.id.button_add_event);
         buttonViewMap = findViewById(R.id.button_view_map);
-        imageView = findViewById(R.id.imageView); // Replace with your ImageView ID
+        buttonBackHome = findViewById(R.id.button_back_home);
+        imageView = findViewById(R.id.imageView);
+
+        // Setup Back button to go to home page
+        buttonBackHome.setOnClickListener(view -> {
+            Intent intent = new Intent(MoodEventActivity.this, MainActivity.class);
+            intent.putExtra("selected_fragment", "home");
+            startActivity(intent);
+            finish();
+        });
+
+        // Setup Add Location button
         buttonAddLocation.setOnClickListener(view -> {
-            // Launch a map picker or retrieve current location (dummy location used here)
             eventLocation = new LatLng(37.7749, -122.4194); // Example: San Francisco
             Toast.makeText(this, "Location Added!", Toast.LENGTH_SHORT).show();
         });
-        // Setup button listener for viewing map
+
+        // Setup View Map button
         buttonViewMap.setOnClickListener(view -> {
             if (eventLocation == null) {
                 Toast.makeText(this, "No location added!", Toast.LENGTH_SHORT).show();
@@ -88,12 +97,14 @@ public class MoodEventActivity extends AppCompatActivity {
             intent.putExtra("longitude", eventLocation.longitude);
             startActivity(intent);
         });
+
+        // Setup Add Event button (finishes activity, returns to previous screen)
         buttonAddEvent.setOnClickListener(view -> {
             String emotionalStateString = spinnerEmotionalState.getSelectedItem().toString();
+            String briefExplanation = editBriefExplanation.getText().toString().trim();
             String trigger = editTrigger.getText().toString().trim();
             String socialSituation = spinnerSocialSituation.getSelectedItem().toString();
 
-            // Validate and create a MoodEvent
             if (!MoodEvent.validTrigger(trigger)) {
                 Toast.makeText(this, "Trigger is invalid. (<=20 chars, <=3 words)", Toast.LENGTH_SHORT).show();
                 return;
@@ -102,12 +113,11 @@ public class MoodEventActivity extends AppCompatActivity {
             try {
                 MoodEvent newEvent = new MoodEvent(emotionalStateString, trigger, socialSituation);
                 Toast.makeText(this, "Mood Event Added!", Toast.LENGTH_SHORT).show();
-                finish();
+                finish(); // Return to previous screen (e.g., last fragment in MainActivity)
             } catch (IllegalArgumentException e) {
                 Toast.makeText(this, "Invalid input: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-
 
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -120,6 +130,7 @@ public class MoodEventActivity extends AppCompatActivity {
                     }
                 }
         );
+
         galleryLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -133,114 +144,45 @@ public class MoodEventActivity extends AppCompatActivity {
                 }
         );
 
-        // In your onCreate() method:
         String[] emotionalStates = getResources().getStringArray(R.array.emotional_states);
         MoodSpinnerAdapter adapter = new MoodSpinnerAdapter(this, R.layout.spinner_item, emotionalStates);
         spinnerEmotionalState.setAdapter(adapter);
 
-
-        // Setup button listener for photo upload (optional)
         buttonUploadPhoto.setOnClickListener(view -> {
-            showImagePickerDialog(); // Open the image picker dialog
+            showImagePickerDialog();
         });
 
-        // Setup button listener for adding location (optional)
-        buttonAddLocation.setOnClickListener(view -> {
-            // Code to get or pick a location
-        });
-
-        // Listener for the "Add Event" button
-        buttonAddEvent.setOnClickListener(view -> {
-            // 1. Retrieve values from UI
-            String emotionalStateString = spinnerEmotionalState.getSelectedItem().toString();
-            String briefExplanation = editBriefExplanation.getText().toString().trim();
-            String trigger = editTrigger.getText().toString().trim();
-            String socialSituation = spinnerSocialSituation.getSelectedItem().toString();
-
-            // Convert the selected mood string to a MoodType enum
-            MoodType moodType = MoodType.fromString(emotionalStateString);
-            if (moodType == null) {
-                Toast.makeText(this, "Selected mood is not recognized.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            int moodColor = moodType.getColorCode();
-            int emoticonResId = moodType.getEmoticonResId();
-
-            // 2. Validate input (e.g., validate trigger length)
-            if (!MoodEvent.validTrigger(trigger)) {
-                Toast.makeText(this, "Trigger is invalid. (<=20 chars, <=3 words)", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // 3. Create and add MoodEvent
-            try {
-                // Create a new MoodEvent (ensure your MoodEvent class supports moodColor and emoticonResId)
-                MoodEvent newEvent = new MoodEvent(emotionalStateString, trigger, socialSituation);
-                // Optionally, store the brief explanation if your model supports it
-                // newEvent.setBriefExplanation(briefExplanation);
-
-                // 4. Save to MoodHistory or via ViewModel/Repository (not shown here)
-                // e.g., moodHistory.addEvent(newEvent);
-
-                // 5. Notify user and finish activity
-                Toast.makeText(this, "Mood Event Added! Color: " + moodColor, Toast.LENGTH_SHORT).show();
-                finish();  // or navigate to another screen
-            } catch (IllegalArgumentException e) {
-                Toast.makeText(this, "Invalid input: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        // Setup Bottom Navigation Listener
         // Setup Bottom Navigation Listener
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            Intent intent;
+            Intent intent = new Intent(MoodEventActivity.this, MainActivity.class);
 
+            int id = item.getItemId();
             if (id == R.id.nav_home) {
-                // Navigate to MainActivity and select Home fragment
-                intent = new Intent(MoodEventActivity.this, MainActivity.class);
                 intent.putExtra("selected_fragment", "home");
-                startActivity(intent);
-                finish(); // Optional: finish MoodEventActivity
-                return true;
             } else if (id == R.id.nav_map) {
-                // Navigate to MainActivity and select Map fragment
-                intent = new Intent(MoodEventActivity.this, MainActivity.class);
                 intent.putExtra("selected_fragment", "map");
-                startActivity(intent);
-                finish();
-                return true;
             } else if (id == R.id.nav_history) {
-                // Navigate to MainActivity and select History fragment
-                intent = new Intent(MoodEventActivity.this, MainActivity.class);
                 intent.putExtra("selected_fragment", "history");
-                startActivity(intent);
-                finish();
-                return true;
             } else if (id == R.id.nav_inbox) {
-                // Navigate to MainActivity and select Inbox fragment
-                intent = new Intent(MoodEventActivity.this, MainActivity.class);
                 intent.putExtra("selected_fragment", "inbox");
-                startActivity(intent);
-                finish();
-                return true;
             } else if (id == R.id.nav_profile) {
-                // Navigate to MainActivity and select Profile fragment
-                intent = new Intent(MoodEventActivity.this, MainActivity.class);
                 intent.putExtra("selected_fragment", "profile");
-                startActivity(intent);
-                finish();
-                return true;
+            } else {
+                return false; // Unknown item
             }
-            return false;
+
+            finish(); // Close the MoodEventActivity before starting MainActivity
+            startActivity(intent);
+            return true;
         });
+
     }
+
     private void checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
         } else {
-            // Permission already granted, open the camera directly
             openCamera();
         }
     }
@@ -256,12 +198,13 @@ public class MoodEventActivity extends AppCompatActivity {
             }
         }
     }
+
     private void showImagePickerDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Select Image Source")
                 .setItems(new String[]{"Take a Photo", "Choose from Gallery"}, (dialog, which) -> {
                     if (which == 0) {
-                        checkCameraPermission(); // This will call openCamera() if permitted
+                        checkCameraPermission();
                     } else {
                         openGallery();
                     }
@@ -294,9 +237,9 @@ public class MoodEventActivity extends AppCompatActivity {
     private File createImageFile() {
         try {
             String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-            File storageDir = getExternalFilesDir(null); // Use null for default external files directory
+            File storageDir = getExternalFilesDir(null);
             if (storageDir != null && !storageDir.exists()) {
-                storageDir.mkdirs(); // Create directory if it doesn’t exist
+                storageDir.mkdirs();
             }
             File imageFile = File.createTempFile("IMG_" + timeStamp, ".jpg", storageDir);
             return imageFile;
@@ -306,16 +249,17 @@ public class MoodEventActivity extends AppCompatActivity {
             return null;
         }
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             if (requestCode == ImagePicker.REQUEST_CODE) {
                 Uri imageUri = data.getData();
-                imageView.setImageURI(imageUri); // Display the selected image
+                imageView.setImageURI(imageUri);
                 Toast.makeText(this, "Image Selected!", Toast.LENGTH_SHORT).show();
             } else if (requestCode == CAMERA_REQUEST_CODE) {
-                imageView.setImageURI(imageUri); // Display the captured image
+                imageView.setImageURI(imageUri);
                 Toast.makeText(this, "Photo Captured!", Toast.LENGTH_SHORT).show();
             }
         } else if (resultCode == ImagePicker.RESULT_ERROR) {
@@ -324,6 +268,4 @@ public class MoodEventActivity extends AppCompatActivity {
             Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show();
         }
     }
-
 }
-

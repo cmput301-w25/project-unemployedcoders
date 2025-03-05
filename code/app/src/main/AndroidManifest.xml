@@ -35,7 +35,6 @@
         </intent>
     </queries>
 
-
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -45,9 +44,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ProjectApp"
-
         tools:targetApi="31">
-
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -61,7 +58,7 @@
 
         <!-- MainActivity is the launcher activity -->
         <activity
-            android:name=".MoodEventActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -71,9 +68,12 @@
 
         <!-- MoodEventActivity is not the launcher -->
         <activity
-            android:name=".MainActivity"
+            android:name=".MoodEventActivity"
             android:exported="false" />
-        <activity android:name=".MapViewActivity"/>
+
+        <activity
+            android:name=".MapViewActivity"
+            android:exported="false" />
 
     </application>
 </manifest>
