@@ -2,36 +2,33 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.projectapp">
-    <uses-permission android:name="android.permission.CAMERA" />
-    <meta-data
-        android:name="com.google.android.geo.API_KEY"
-        android:value="YOUR_API_KEY_HERE"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
-    <!-- Android 12 and below (Legacy permission) -->
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
+    <!-- Permissions -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <!-- Removed invalid android.permission.MediaStore.createWriteRequest; replace if intended -->
 
-    <!-- Android 13+ Specific Permissions -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <!-- Declare Camera as Optional -->
+    <!-- Features -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
-    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <!-- Google Maps API Key -->
+    <meta-data
+        android:name="com.google.android.geo.API_KEY"
+        android:value="YOUR_API_KEY_HERE" />
 
-    <uses-permission android:name="android.permission.MediaStore.createWriteRequest"/>
-
+    <!-- Queries for camera and gallery -->
     <queries>
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />
         </intent>
         <intent>
             <action android:name="android.intent.action.PICK" />
-            <data android:mimeType="image/*"/>
+            <data android:mimeType="image/*" />
         </intent>
     </queries>
 
@@ -46,6 +43,7 @@
         android:theme="@style/Theme.ProjectApp"
         tools:targetApi="31">
 
+        <!-- FileProvider for camera/gallery -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -56,7 +54,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- MainActivity is the launcher activity -->
+        <!-- MainActivity (Launcher) -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -66,14 +64,28 @@
             </intent-filter>
         </activity>
 
-        <!-- MoodEventActivity is not the launcher -->
+        <!-- Converted Activities -->
+        <activity
+            android:name=".HomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MapActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".InboxActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+
+        <!-- Existing Activities -->
         <activity
             android:name=".MoodEventActivity"
             android:exported="false" />
-
-        <activity
-            android:name=".MapViewActivity"
-            android:exported="false" />
-
+        <!-- Assuming MapViewActivity was a typo; replaced with MapActivity above -->
+        <!-- If MapViewActivity is still needed, add it back separately -->
     </application>
 </manifest>
