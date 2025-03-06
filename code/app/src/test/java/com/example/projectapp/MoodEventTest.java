@@ -2,6 +2,8 @@ package com.example.projectapp;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class MoodEventTest {
 
@@ -19,6 +21,21 @@ public class MoodEventTest {
 
         MoodEvent mood = mockEvent();
         assertEquals(0, mood.compareTo(mood));
+    }
+
+    @Test
+    public void testValidTrigger(){
+        assertTrue(MoodEvent.validTrigger(""));
+        assertTrue(MoodEvent.validTrigger(null));
+        assertTrue(MoodEvent.validTrigger("trigger"));
+        assertTrue(MoodEvent.validTrigger("one two three"));
+        assertTrue(MoodEvent.validTrigger("12345678901234567890"));
+
+
+        assertFalse(MoodEvent.validTrigger("123456789012345678901"));
+        assertFalse(MoodEvent.validTrigger("one two three four"));
+        assertFalse(MoodEvent.validTrigger("1 2 3 4"));
+        assertFalse(MoodEvent.validTrigger("a                    b"));
     }
 
 

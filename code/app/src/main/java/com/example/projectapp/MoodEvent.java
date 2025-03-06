@@ -43,13 +43,14 @@ public class MoodEvent implements Comparable<MoodEvent> {
             throw new IllegalArgumentException("Not a valid emotional state");
         }
 
-        if (!Arrays.asList(ALL_SITUATIONS).contains(socialSituation)){
+        if (!Arrays.asList(ALL_SITUATIONS).contains(socialSituation) && socialSituation != null){
             throw new IllegalArgumentException("Not a valid social situation");
         }
 
         this.emotionalState = emotionalState;
         this.date = Calendar.getInstance().getTime();
         this.trigger = trigger;
+
         this.socialSituation = socialSituation;
         this.moodType = MoodType.fromString(emotionalState);
 
@@ -148,6 +149,10 @@ public class MoodEvent implements Comparable<MoodEvent> {
      *      Whether or not the trigger is valid
      */
     public static boolean validTrigger(String trigger){
+        if (trigger == null){
+            return true;
+        }
+
         int wordCount = trigger.trim().split(" ").length;
         return wordCount <= 3 && trigger.length() <= 20;
     }
@@ -198,7 +203,7 @@ public class MoodEvent implements Comparable<MoodEvent> {
         }
 
         if (this.trigger == null){
-            if (this.trigger != other.trigger){
+            if (this.trigger != other.trigger){ // if both are null
                 return false;
             }
         } else {

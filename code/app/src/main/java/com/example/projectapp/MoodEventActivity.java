@@ -111,6 +111,15 @@ public class MoodEventActivity extends AppCompatActivity {
             }
 
             try {
+
+                if (socialSituation.equals("Choose not to answer")){
+                    socialSituation = null;
+                }
+
+                if (trigger.equals("")){
+                    trigger = null;
+                }
+
                 MoodEvent newEvent = new MoodEvent(emotionalStateString, trigger, socialSituation);
                 Toast.makeText(this, "Mood Event Added!", Toast.LENGTH_SHORT).show();
                 finish(); // Return to previous screen (e.g., last fragment in MainActivity)
