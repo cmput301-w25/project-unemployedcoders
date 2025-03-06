@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -32,8 +33,8 @@ android {
 }
 
 dependencies {
+
     implementation(libs.firebase.storage) // Firebase Storage for image upload
-    implementation(libs.firebase.auth)   // Firebase Authentication (optional, for user authentication)
     implementation(libs.imagepicker)      // Use only this one
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
@@ -45,4 +46,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
+    // Firebase BoM to manage Firebase library versions
+    implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
+    // Add Firebase Authentication without a version (managed by the BoM)
+    implementation("com.google.firebase:firebase-auth")
+
 }

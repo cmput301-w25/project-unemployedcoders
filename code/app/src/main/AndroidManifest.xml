@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.projectapp">
 
-    <!-- Permissions -->
+    <!-- Permissions (merged from both branches) -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -11,17 +11,17 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
-    <!-- Removed invalid android.permission.MediaStore.createWriteRequest; replace if intended -->
+    <!-- Removed invalid android.permission.MediaStore.createWriteRequest; replace if needed -->
 
-    <!-- Features -->
+    <!-- Features and Additional Configuration -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
-    <!-- Google Maps API Key -->
+    <!-- Google Maps API Key (from development) -->
     <meta-data
         android:name="com.google.android.geo.API_KEY"
         android:value="YOUR_API_KEY_HERE" />
 
-    <!-- Queries for camera and gallery -->
+    <!-- Queries for camera and gallery (from development) -->
     <queries>
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />
@@ -43,7 +43,7 @@
         android:theme="@style/Theme.ProjectApp"
         tools:targetApi="31">
 
-        <!-- FileProvider for camera/gallery -->
+        <!-- FileProvider for camera/gallery (from development) -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -54,9 +54,9 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- MainActivity (Launcher) -->
+        <!-- Launcher Activity: LoginActivity (from Login/Signin branch) -->
         <activity
-            android:name=".MainActivity"
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -64,28 +64,14 @@
             </intent-filter>
         </activity>
 
-        <!-- Converted Activities -->
-        <activity
-            android:name=".HomeActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MapActivity"
-            android:exported="false" />
-        <activity
-            android:name=".HistoryActivity"
-            android:exported="false" />
-        <activity
-            android:name=".InboxActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ProfileActivity"
-            android:exported="false" />
-
-        <!-- Existing Activities -->
-        <activity
-            android:name=".MoodEventActivity"
-            android:exported="false" />
-        <!-- Assuming MapViewActivity was a typo; replaced with MapActivity above -->
-        <!-- If MapViewActivity is still needed, add it back separately -->
+        <!-- Other Activities (merged from both branches) -->
+        <activity android:name=".MainActivity" android:exported="false" />
+        <activity android:name=".HomeActivity" android:exported="false" />
+        <activity android:name=".MapActivity" android:exported="false" />
+        <activity android:name=".HistoryActivity" android:exported="false" />
+        <activity android:name=".InboxActivity" android:exported="false" />
+        <activity android:name=".ProfileActivity" android:exported="false" />
+        <activity android:name=".SignupActivity" android:exported="false" />
+        <activity android:name=".MoodEventActivity" android:exported="false" />
     </application>
 </manifest>

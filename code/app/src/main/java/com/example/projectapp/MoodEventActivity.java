@@ -1,5 +1,8 @@
 package com.example.projectapp;
 
+import android.content.res.Resources;
+
+
 import static android.app.Activity.RESULT_OK;
 import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
 import static androidx.core.content.ContextCompat.startActivity;
@@ -8,6 +11,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.widget.ImageView;
@@ -59,6 +63,9 @@ public class MoodEventActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mood_event);
+
+        Resources res = getResources();
+        String exampleString = res.getString(R.string.example_string);
 
         // Bind UI elements
         spinnerEmotionalState = findViewById(R.id.spinner_emotional_state);
