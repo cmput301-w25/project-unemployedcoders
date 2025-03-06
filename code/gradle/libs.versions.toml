@@ -1,6 +1,7 @@
 [versions]
 agp = "8.8.0"
 junit = "4.13.2"
+imagepicker = "2.0"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
@@ -8,8 +9,13 @@ material = "1.12.0"
 activity = "1.10.0"
 constraintlayout = "2.2.0"
 gridlayout = "1.0.0"
+gms-maps = "18.2.0"
+gms-location = "21.0.1"
 
 [libraries]
+firebase-auth = { module = "com.google.firebase:firebase-auth", version = "23.2.0" }
+firebase-storage = { module = "com.google.firebase:firebase-storage", version = "21.0.1" }
+imagepicker = { module = "com.github.dhaval2404:imagepicker", version.ref = "imagepicker" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -18,7 +24,8 @@ material = { group = "com.google.android.material", name = "material", version.r
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 gridlayout = { group = "androidx.gridlayout", name = "gridlayout", version.ref = "gridlayout" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "gms-maps" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "gms-location" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-

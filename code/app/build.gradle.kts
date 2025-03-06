@@ -33,6 +33,11 @@ android {
 }
 
 dependencies {
+
+    implementation(libs.firebase.storage) // Firebase Storage for image upload
+    implementation(libs.imagepicker)      // Use only this one
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -46,4 +51,5 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
     // Add Firebase Authentication without a version (managed by the BoM)
     implementation("com.google.firebase:firebase-auth")
+
 }

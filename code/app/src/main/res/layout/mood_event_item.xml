@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp"
+    android:background="#2E2E2E">
+
+
+    <LinearLayout
+        android:id="@+id/layout_username_follow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/tv_username"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Username: ShaggyJane"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btn_follow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Follow"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#E91E63"
+            android:textSize="12sp"
+            android:padding="4dp" />
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/tv_mood"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mood: Happy 😊"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/layout_username_follow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+
+
+    <TextView
+        android:id="@+id/tv_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Time: 5 minutes ago"
+        android:textColor="#B0B0B0"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tv_mood"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+
+
+    <TextView
+        android:id="@+id/tv_reason"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reason: Got a new job!"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tv_time"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+
+
+    <TextView
+        android:id="@+id/tv_social_situation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Social Situation: With a crowd"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tv_reason"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+
+
+    <TextView
+        android:id="@+id/tv_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Location: Downtown Coffee Shop"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tv_social_situation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+
+
+    <ImageView
+        android:id="@+id/iv_event_image"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintTop_toBottomOf="@id/tv_location"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:contentDescription="Event Image" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
