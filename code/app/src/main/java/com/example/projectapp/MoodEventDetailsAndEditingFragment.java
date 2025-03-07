@@ -69,7 +69,7 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
         MoodEvent moodEvent = (MoodEvent) requireArguments().getSerializable("moodEvent");
         if (moodEvent != null) {
             editEmotionalStateSpinner.setSelection(stateAdapter.getPosition(moodEvent.getEmotionalState()));
-            if (!moodEvent.getSocialSituation().isEmpty()) {
+            if (moodEvent.getSocialSituation() != null && !moodEvent.getSocialSituation().isEmpty()) {
                 editSocialSituationSpinner.setSelection(situationAdapter.getPosition(moodEvent.getSocialSituation()));
             }
             editTrigger.setText(moodEvent.getTrigger());
