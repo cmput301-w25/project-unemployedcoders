@@ -2,37 +2,35 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.projectapp">
+
+    <!-- Permissions (merged from both branches) -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <meta-data
-        android:name="com.google.android.geo.API_KEY"
-        android:value="YOUR_API_KEY_HERE"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-
-    <!-- Android 12 and below (Legacy permission) -->
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
-
-    <!-- Android 13+ Specific Permissions -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <!-- Declare Camera as Optional -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <!-- Removed invalid android.permission.MediaStore.createWriteRequest; replace if needed -->
+
+    <!-- Features and Additional Configuration -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
-    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <!-- Google Maps API Key (from development) -->
+    <meta-data
+        android:name="com.google.android.geo.API_KEY"
+        android:value="YOUR_API_KEY_HERE" />
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-
+    <!-- Queries for camera and gallery (from development) -->
     <queries>
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />
         </intent>
         <intent>
             <action android:name="android.intent.action.PICK" />
-            <data android:mimeType="image/*"/>
+            <data android:mimeType="image/*" />
         </intent>
     </queries>
-
 
     <application
         android:allowBackup="true"
@@ -43,15 +41,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ProjectApp"
-
         tools:targetApi="31">
 
+        <!-- FileProvider for camera/gallery (from development) -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
-
-
-        <!-- MainActivity is the launcher activity -->
+        <!-- Launcher Activity: LoginActivity (from Login/Signin branch) -->
         <activity
-            android:name=".MoodEventActivity"
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -59,13 +64,17 @@
             </intent-filter>
         </activity>
 
-        <!-- MoodEventActivity is not the launcher -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="false" />
-        <activity android:name=".MapViewActivity"/>
 
-        <!-- MoodViewingActivity -->
+        <!-- Other Activities (merged from both branches) -->
+        <activity android:name=".MainActivity" android:exported="false" />
+        <activity android:name=".HomeActivity" android:exported="false" />
+        <activity android:name=".MapActivity" android:exported="false" />
+        <activity android:name=".HistoryActivity" android:exported="false" />
+        <activity android:name=".InboxActivity" android:exported="false" />
+        <activity android:name=".ProfileActivity" android:exported="false" />
+        <activity android:name=".SignupActivity" android:exported="false" />
+        <activity android:name=".MoodEventActivity" android:exported="false" />
+        <activity android:name=".MapViewActivity"/>
         <activity android:name=".MoodEventViewingActivity"/>
 
     </application>
