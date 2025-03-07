@@ -90,4 +90,37 @@ public class FirebaseSync {
         }
 
     }
+
+    public void fetchMoodHistory(final MoodHistoryCallback callback) {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            callback.onFailure(new Exception("No user is currently signed in"));
+            return;
+        }
+
+        String uid = currentUser.getUid();
+        DocumentReference ref = db.collection("users").document(uid);
+        ref.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot doc = task.getResult();
+                if (doc.exists()) {
+                    // Convert document to a UserProfile object
+                    UserProfile profile = doc.toObject(UserProfile.class);
+                    if (profile != null) {
+                        // Pass the MoodHistory from the user profile to the callback
+                        callback.onMoodHistoryLoaded(profile.getHistory());
+                    } else {
+                        callback.onFailure(new Exception("Error converting document to UserProfile"));
+                    }
+                } else {
+                    callback.onFailure(new Exception("User profile not found"));
+                }
+            } else {
+                callback.onFailure(task.getException());
+            }
+        });
+    }
+
 }
+
+
