@@ -27,7 +27,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 
-public class MoodEventViewingActivity extends AppCompatActivity implements MoodEventArrayAdapter.OnMoodEventClickListener,
+/*public class MoodEventViewingActivity extends AppCompatActivity implements MoodEventArrayAdapter.OnMoodEventClickListener,
         MoodEventDetailsAndEditingFragment.EditMoodEventListener,
         MoodEventDeleteFragment.DeleteMoodEventDialogListener{
     private MoodHistory moodHistory;
@@ -101,4 +101,4 @@ public class MoodEventViewingActivity extends AppCompatActivity implements MoodE
 
 
     }
-}
+}*/
