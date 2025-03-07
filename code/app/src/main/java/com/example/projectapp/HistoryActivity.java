@@ -33,8 +33,24 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
 
     @Override
     public void onMoodEventDeleted(MoodEvent moodEvent) {
-        moodHistory.deleteEvent(moodEvent);
-        moodEventAdapter.notifyDataSetChanged();
+
+        FirebaseSync fb = FirebaseSync.getInstance();
+        fb.getInstance().fetchUserProfileObject(new UserProfileCallback() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                moodHistory.deleteEvent(moodEvent);
+                userProfile.setHistory(moodHistory);
+                moodEventAdapter.notifyDataSetChanged();
+                fb.storeUserData(userProfile);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
     }
 
     @Override

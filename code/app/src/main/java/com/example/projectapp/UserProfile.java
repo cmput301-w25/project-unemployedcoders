@@ -35,6 +35,10 @@ public class UserProfile implements Serializable {
         // Firestore will use this constructor, or the thing will break
     }
 
+    public void setHistory(MoodHistory history) {
+        this.history = history;
+    }
+
     /**
      * Getter for the user's mood history
      * @return
