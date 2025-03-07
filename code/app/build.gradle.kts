@@ -51,6 +51,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
     // Add Firebase Authentication without a version (managed by the BoM)
     implementation("com.google.firebase:firebase-auth")
+    // Add Firestore dependency
+    implementation("com.google.firebase:firebase-firestore:25.1.1")
 
     implementation(libs.espresso.intents)
     testImplementation("junit:junit:4.13.2")

@@ -72,6 +72,10 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
 
     }
 
+    public MoodEvent(){
+        // For firebase deserialization
+    }
+
     /**
      * This is one constructor for the MoodEvent class
      * @param emotionalState
@@ -127,6 +131,10 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      *      The trigger to set for the event
      */
     public void setTrigger(String trigger) {
+        if (!validTrigger(trigger)){
+            throw new IllegalArgumentException("Not a valid trigger");
+        }
+
         this.trigger = trigger;
     }
 

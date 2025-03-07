@@ -14,6 +14,9 @@ package com.example.projectapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.projectapp.HistoryActivity;
@@ -21,12 +24,24 @@ import com.example.projectapp.HomeActivity;
 import com.example.projectapp.InboxActivity;
 import com.example.projectapp.MapActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_profile); // Must match the layout file
+
+        Button logOutButton = findViewById(R.id.logout_button);
+
+        logOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                startActivity(intent);
+            }
+        });
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         if (bottomNav != null) {
