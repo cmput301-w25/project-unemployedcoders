@@ -1,3 +1,14 @@
+// -----------------------------------------------------------------------------
+// File: MoodEventArrayAdapter.java
+// -----------------------------------------------------------------------------
+// This file defines the MoodEventArrayAdapter class, a custom ArrayAdapter for
+// displaying MoodEvent objects in a ListView within the ProjectApp. It binds
+// mood event data to list item views for presentation.
+//
+// Design Pattern: Adapter
+// Outstanding Issues:
+//  N/A
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.content.Context;

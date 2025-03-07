@@ -1,3 +1,14 @@
+// -----------------------------------------------------------------------------
+// File: MoodHistory.java
+// -----------------------------------------------------------------------------
+// This file defines the MoodHistory class, which likely serves as a model or
+// utility class to manage a collection of MoodEvent objects in the ProjectApp.
+// It may handle storage, retrieval, or filtering of mood events.
+//
+// Design Pattern: MVC (Model)
+// Outstanding Issues:
+
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import java.util.ArrayList;

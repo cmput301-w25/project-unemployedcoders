@@ -1,3 +1,16 @@
+// -----------------------------------------------------------------------------
+// File: MoodEventDetailsAndEditingFragment.java
+// -----------------------------------------------------------------------------
+// This file defines the MoodEventDetailsAndEditingFragment class, a DialogFragment
+// used in the ProjectApp to display and edit details of a MoodEvent. It provides
+// a dialog with spinners for emotional state and social situation, an EditText for
+// the trigger, and options to save or cancel changes. The fragment follows the
+// Listener pattern to notify the host activity of edits.
+//
+// Design Pattern: Listener (for callback communication)
+// Outstanding Issues:
+// N/A
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.app.AlertDialog;

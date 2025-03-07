@@ -1,3 +1,14 @@
+// -----------------------------------------------------------------------------
+// File: MoodType.java
+// -----------------------------------------------------------------------------
+// This file defines the MoodType class, which likely represents a model for
+// different mood states or categories within the ProjectApp. It may be used
+// to store or manage mood-related data.
+//
+// Design Pattern: MVC (Model)
+// Outstanding Issues:
+
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 public enum MoodType {

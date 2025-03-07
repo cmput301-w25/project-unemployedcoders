@@ -1,3 +1,15 @@
+// -----------------------------------------------------------------------------
+// File: MoodEventRecyclerAdapter.java
+// -----------------------------------------------------------------------------
+// This file defines the MoodEventRecyclerAdapter class, a custom RecyclerView
+// Adapter for displaying MoodEvent objects in a list within the ProjectApp.
+// It supports two tabs ("For You" and "Following") for switching between event
+// lists and provides click listeners for editing and deleting mood events.
+//
+// Design Pattern: Adapter
+// Outstanding Issues:
+// N/A
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.content.Context;

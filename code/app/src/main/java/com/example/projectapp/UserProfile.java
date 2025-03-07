@@ -1,3 +1,15 @@
+// -----------------------------------------------------------------------------
+// File: UserProfile.java
+// -----------------------------------------------------------------------------
+// This file defines the UserProfile class, a model class in the ProjectApp that
+// represents a user's profile. It stores the user's username, name, password, and
+// mood history. The class is part of the Model-View-Controller (MVC) pattern,
+// acting as the model for user-related data.
+//
+// Design Pattern: MVC (Model)
+// Outstanding Issues:
+// N/A
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 public class UserProfile {

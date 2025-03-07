@@ -1,10 +1,28 @@
+// -----------------------------------------------------------------------------
+// File: MainActivity.java
+// -----------------------------------------------------------------------------
+// This file defines the MainActivity class, serving as the primary activity
+// for the ProjectApp application after successful login. It likely acts as
+// the main view or dashboard for the app.
+//
+// Design Pattern: MVC (View)
+// Outstanding Issues:
+//  N/A
+
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+   import com.example.projectapp.HistoryActivity;
+   import com.example.projectapp.HomeActivity;
+   import com.example.projectapp.InboxActivity;
+   import com.example.projectapp.MapActivity;
+   import com.example.projectapp.ProfileActivity;
+   import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 

@@ -1,3 +1,16 @@
+// -----------------------------------------------------------------------------
+// File: MoodEventViewingActivity.java
+// -----------------------------------------------------------------------------
+// This file defines the MoodEventViewingActivity class, which serves as a screen
+// in the ProjectApp to view and manage a list of MoodEvent objects using a ListView.
+// It implements interfaces for editing and deleting mood events via dialog fragments
+// and includes a BottomNavigationView for navigation. The activity follows the
+// Model-View-Controller (MVC) pattern, acting as the controller.
+//
+// Design Pattern: MVC (Controller)
+// Outstanding Issues:
+// N/A
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.content.Intent;

@@ -1,8 +1,25 @@
+// -----------------------------------------------------------------------------
+// File: ProfileActivity.java
+// -----------------------------------------------------------------------------
+// This file defines the ProfileActivity class, which serves as the user profile
+// screen in the ProjectApp. It sets up a BottomNavigationView for navigating
+// between app sections and highlights the "Profile" tab. The activity follows
+// the Model-View-Controller (MVC) pattern, acting as the controller.
+//
+// Design Pattern: MVC (Controller)
+// Outstanding Issues:
+// N/A
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.projectapp.HistoryActivity;
+import com.example.projectapp.HomeActivity;
+import com.example.projectapp.InboxActivity;
+import com.example.projectapp.MapActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ProfileActivity extends AppCompatActivity {

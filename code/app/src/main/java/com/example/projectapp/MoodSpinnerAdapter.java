@@ -1,3 +1,14 @@
+// -----------------------------------------------------------------------------
+// File: MoodSpinnerAdapter.java
+// -----------------------------------------------------------------------------
+// This file defines the MoodSpinnerAdapter class, a custom ArrayAdapter for
+// displaying mood types in a Spinner within the ProjectApp. It binds mood type
+// data to spinner item views for user selection.
+//
+// Design Pattern: Adapter
+// Outstanding Issues:
+
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.content.Context;

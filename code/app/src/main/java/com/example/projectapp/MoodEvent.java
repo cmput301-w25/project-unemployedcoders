@@ -1,5 +1,21 @@
+// -----------------------------------------------------------------------------
+// File: MoodEvent.java
+// -----------------------------------------------------------------------------
+// This file defines the MoodEvent class, a model class representing a single
+// mood-related event in the ProjectApp. It captures details such as emotional
+// state, trigger, social situation, date, and geolocation (latitude/longitude).
+// The class implements Comparable for sorting events in reverse chronological
+// order and Serializable for potential data persistence.
+//
+// Design Pattern: MVC (Model)
+// Outstanding Issues:
+//  N/A
+
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
+
+import com.example.projectapp.MoodType;
 
 import java.util.Arrays;
 import java.util.Calendar;

@@ -1,3 +1,16 @@
+// -----------------------------------------------------------------------------
+// File: MoodEventDeleteFragment.java
+// -----------------------------------------------------------------------------
+// This file defines the MoodEventDeleteFragment class, a DialogFragment used
+// in the ProjectApp to confirm the deletion of a MoodEvent. It displays a dialog
+// with a confirmation message and notifies a listener when the user confirms
+// deletion. The fragment follows the Listener pattern to communicate with its
+// host activity or fragment.
+//
+// Design Pattern: Listener (for callback communication)
+// Outstanding Issues:
+// N/A
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.app.AlertDialog;

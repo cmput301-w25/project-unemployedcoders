@@ -1,3 +1,16 @@
+// -----------------------------------------------------------------------------
+// File: SignupActivity.java
+// -----------------------------------------------------------------------------
+// This file defines the SignupActivity class, which serves as the user registration
+// screen in the ProjectApp. It allows users to sign up with an email and password
+// using Firebase Authentication, upload a profile photo, and navigate to the
+// MoodEventActivity upon successful registration. The activity follows the
+// Model-View-Controller (MVC) pattern, acting as the controller.
+//
+// Design Pattern: MVC (Controller)
+// Outstanding Issues:
+// N/A
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.content.DialogInterface;
