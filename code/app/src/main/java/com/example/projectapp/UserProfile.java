@@ -1,12 +1,13 @@
 package com.example.projectapp;
 
-public class UserProfile {
+import java.io.Serializable;
+
+public class UserProfile implements Serializable {
 
     private MoodHistory history;
     private String username;
     private String name; // the user's actual name
-
-    private String password; // do we need to encrypt this??
+    private String uid;
 
     /**
      * Constructor for the UserProfile class
@@ -14,10 +15,12 @@ public class UserProfile {
      *      The user's chosen username
      * @param name
      *      The user's actual name
-     * @param password
-     *      The user's chosen password
+     * @param uid
+     *      The user's firebase uid
      */
-    public UserProfile(String username, String name, String password){
+    public UserProfile(String uid, String username, String name){
+        this.uid = uid;
+
         if (usernameAvailable(username)){
             this.username = username;
         } else {
@@ -25,7 +28,6 @@ public class UserProfile {
         }
 
         this.name = name;
-        this.password = password;
         this.history = new MoodHistory();
     }
 
@@ -61,8 +63,8 @@ public class UserProfile {
      * @return
      *      The user's password
      */
-    public String getPassword() {
-        return password;
+    public String getUID() {
+        return uid;
     }
 
 

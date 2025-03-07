@@ -1,16 +1,13 @@
 package com.example.projectapp;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
 /**
  * A class to hold a user's mood history
  */
-/*Making it a singleton class so we can use it throughout the app
-* ex: we add an event then it's stored in this class and if we go to the
-* viewing activity it will display there*/
-public class MoodHistory {
-    //to make it a singleton class we declare an instance in the class
+public class MoodHistory implements Serializable {
     private static MoodHistory instance;
     private ArrayList<MoodEvent> events;
 
