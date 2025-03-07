@@ -16,5 +16,6 @@
     <string name="confusion_emoticon">&#x1F615;</string>
     <string name="disgust_emoticon">&#x1F922;</string>
     <string name="image_description">Selected image</string>
+    <string name="edit_fragment_emo_state_spinner_prompt">Emotional State</string>
 </resources>
 

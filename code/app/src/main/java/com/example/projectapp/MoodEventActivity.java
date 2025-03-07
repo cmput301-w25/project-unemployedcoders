@@ -104,7 +104,7 @@ public class MoodEventActivity extends AppCompatActivity {
             intent.putExtra("longitude", eventLocation.longitude);
             startActivity(intent);
         });
-
+      
         // Setup Add Event button (finishes activity, returns to previous screen)
         buttonAddEvent.setOnClickListener(view -> {
             String emotionalStateString = spinnerEmotionalState.getSelectedItem().toString();
