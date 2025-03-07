@@ -11,4 +11,7 @@
     <color name="surprise">#FB9835</color>
     <color name="confusion">#F315C3</color>
     <color name="focusedColor">#FF4081</color>
+
+    <color name="purple_500">#FF6200EE</color>
+    <color name="overlay_color">#6d494e</color>
 </resources>
