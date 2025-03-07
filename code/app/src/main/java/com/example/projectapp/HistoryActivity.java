@@ -2,7 +2,11 @@ package com.example.projectapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.ListView;
 import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,22 +15,66 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 
-public class HistoryActivity extends AppCompatActivity {
+public class HistoryActivity extends AppCompatActivity implements MoodEventArrayAdapter.OnMoodEventClickListener,
+MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragment.DeleteMoodEventDialogListener{
+    private MoodHistory moodHistory;
+    private ListView moodEventList;
+    private MoodEventArrayAdapter moodEventAdapter;
 
-    private RecyclerView recyclerView;
-    private MoodHistoryAdapter adapter;
+    @Override
+    public void onMoodEventEdited(MoodEvent moodEvent) {
+        moodEventAdapter.notifyDataSetChanged();
+    }
+    @Override
+    public void onEditMoodEvent(MoodEvent moodEvent, int position) {
+        MoodEventDetailsAndEditingFragment.newInstance(moodEvent)
+                .show(getSupportFragmentManager(), "Mood Event Details");
+    }
+
+    @Override
+    public void onMoodEventDeleted(MoodEvent moodEvent) {
+        moodHistory.deleteEvent(moodEvent);
+        moodEventAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onDeleteMoodEvent(MoodEvent moodEvent, int position) {
+        MoodEventDeleteFragment.newInstance(moodEvent).show(getSupportFragmentManager(), "DeleteMoodEvent");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //moodEventAdapter.notifyDataSetChanged();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_history);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.mood_viewing_activity);
 
-        recyclerView = findViewById(R.id.history_list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new MoodHistoryAdapter(this, new ArrayList<>());
-        recyclerView.setAdapter(adapter);
+
+        moodEventList = findViewById(R.id.user_mood_event_list);
+
+        // Fetch mood history from Firebase
+        FirebaseSync.getInstance().fetchUserProfileObject(new UserProfileCallback() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                moodHistory = userProfile.getHistory();
+                moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), moodHistory.getEvents(), HistoryActivity.this);
+                moodEventList.setAdapter(moodEventAdapter);
+                moodEventAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
 
         // Initialize bottom navigation
-        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav_mood_event_list);
         bottomNav.setSelectedItemId(R.id.nav_history);
         bottomNav.setOnItemSelectedListener(item -> {
             Intent intent = null;
@@ -50,20 +98,6 @@ public class HistoryActivity extends AppCompatActivity {
             return true;
         });
 
-        // Fetch mood history from Firebase
-        FirebaseSync.getInstance().fetchMoodHistory(new MoodHistoryCallback() {
-            @Override
-            public void onMoodHistoryLoaded(MoodHistory history) {
-                adapter.setData(history.getEvents());
-                // Update UI with fetched data
-                // myAdapter.setData(history.getEvents());
-                // myAdapter.notifyDataSetChanged();
-            }
 
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 }
