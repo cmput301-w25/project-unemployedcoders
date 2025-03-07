@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
@@ -64,7 +66,11 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
         MoodEvent moodEvent = events.get(position);
 
         holder.usernameText.setText("username");
-        holder.timeText.setText(moodEvent.getDate().toString());
+
+        String[] tokens = moodEvent.getDate().toString().split(" ");
+        String dateStr = tokens[1] + " " + tokens[2] + ", " + tokens[5];
+
+        holder.timeText.setText(dateStr);
 
         String moodText = moodEvent.getEmotionalState();
         int emoticonResId = moodEvent.getEmoticonResource();
