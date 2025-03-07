@@ -17,12 +17,7 @@ import java.util.Collections;
 /**
  * A class to hold a user's mood history
  */
-/*Making it a singleton class so we can use it throughout the app
-* ex: we add an event then it's stored in this class and if we go to the
-* viewing activity it will display there*/
 public class MoodHistory {
-    //to make it a singleton class we declare an instance in the class
-    private static MoodHistory instance;
     private ArrayList<MoodEvent> events;
 
     /**
@@ -55,15 +50,6 @@ public class MoodHistory {
             throw new IllegalArgumentException("History does not contain that MoodEvent");
         }
 
-    }
-
-    //we use this getInstance to return the singleton class instance to
-    //be used throughout the app
-    public static MoodHistory getInstance() {
-        if (instance == null) {
-            instance = new MoodHistory();
-        }
-        return instance;
     }
 
     //getter that returns the list of events in the class
