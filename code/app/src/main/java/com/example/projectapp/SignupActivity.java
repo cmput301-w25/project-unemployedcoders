@@ -103,7 +103,9 @@ public class SignupActivity extends AppCompatActivity {
 
                                                 // This is what is gonna put the user's data in the firestore, but we might need to update it if we put username field in signup
                                                 UserProfile newProfile = new UserProfile(user.getUid(), "Username", "Name");
-                                                storeUserData(newProfile);
+                                                FirebaseSync fb = FirebaseSync.getInstance();
+
+                                                fb.storeUserData(newProfile);
 
                                                 Toast.makeText(SignupActivity.this, "Sign Up Successful!", Toast.LENGTH_SHORT).show();
                                                 startActivity(new Intent(SignupActivity.this, MoodEventActivity.class));
@@ -141,16 +143,5 @@ public class SignupActivity extends AppCompatActivity {
                 Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
             }
         }
-    }
-
-    private void storeUserData(UserProfile profile){
-        db.collection("users")
-                .document(profile.getUID())
-                .set(profile).addOnSuccessListener(aVoid -> {
-                    Log.d("Firestore", "User profile successfully saved!");
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Error saving user profile", e);  // Log error
-                });
     }
 }

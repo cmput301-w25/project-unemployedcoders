@@ -56,6 +56,10 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
 
     }
 
+    public MoodEvent(){
+        // For firebase deserialization
+    }
+
     /**
      * This is one constructor for the MoodEvent class
      * @param emotionalState

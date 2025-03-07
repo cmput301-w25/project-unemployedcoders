@@ -14,6 +14,7 @@ import android.net.Uri;
 
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 import android.Manifest;
@@ -27,7 +28,15 @@ import androidx.core.content.FileProvider;
 
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import android.widget.Spinner;
 import android.widget.EditText;
 import android.widget.Button;
@@ -59,10 +68,18 @@ public class MoodEventActivity extends AppCompatActivity {
     private static final int REQUEST_CAMERA_PERMISSION = 1001;
     private static final int CAMERA_REQUEST_CODE = 1002;
 
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_mood_event);
+
+        // Setting up the info for the firebase stuff
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         Resources res = getResources();
         String exampleString = res.getString(R.string.example_string);
@@ -127,9 +144,28 @@ public class MoodEventActivity extends AppCompatActivity {
                     trigger = null;
                 }
 
+
                 MoodEvent newEvent = new MoodEvent(emotionalStateString, trigger, socialSituation);
+                FirebaseSync fb = FirebaseSync.getInstance();
+                // this handles putting the new mood event in the database
+                fb.fetchUserProfileObject(new UserProfileCallback() {
+                    @Override
+                    public void onUserProfileLoaded(UserProfile userProfile) {
+                        fb.addEventToProfile(userProfile, newEvent);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+
+                    }
+                });
+
+
                 Toast.makeText(this, "Mood Event Added!", Toast.LENGTH_SHORT).show();
-                finish(); // Return to previous screen (e.g., last fragment in MainActivity)
+
+                Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                startActivity(intent);
+
             } catch (IllegalArgumentException e) {
                 Toast.makeText(this, "Invalid input: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -284,4 +320,5 @@ public class MoodEventActivity extends AppCompatActivity {
             Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show();
         }
     }
+
 }
