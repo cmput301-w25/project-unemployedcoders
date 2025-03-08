@@ -114,14 +114,26 @@ public class SignupActivity extends AppCompatActivity {
                                         .addOnCompleteListener(updateTask -> {
                                             if (updateTask.isSuccessful()) {
 
+                                                EditText editUsername = findViewById(R.id.edit_username_signup);
+                                                EditText editName = findViewById(R.id.edit_name);
+
+                                                String username = editUsername.getText().toString().trim();
+                                                String name = editName.getText().toString().trim();
+
+                                                if (username.isEmpty() || name.isEmpty()) {
+                                                    Toast.makeText(SignupActivity.this, "Username and Name cannot be empty", Toast.LENGTH_SHORT).show();
+                                                    return;
+                                                }
+                                                // TODO: input validation for unique usernames
+
                                                 // This is what is gonna put the user's data in the firestore, but we might need to update it if we put username field in signup
-                                                UserProfile newProfile = new UserProfile(user.getUid(), "Username", "Name");
+                                                UserProfile newProfile = new UserProfile(user.getUid(), username, name);
                                                 FirebaseSync fb = FirebaseSync.getInstance();
 
                                                 fb.storeUserData(newProfile);
 
                                                 Toast.makeText(SignupActivity.this, "Sign Up Successful!", Toast.LENGTH_SHORT).show();
-                                                startActivity(new Intent(SignupActivity.this, MoodEventActivity.class));
+                                                startActivity(new Intent(SignupActivity.this, HomeActivity.class));
                                                 finish();
                                             } else {
                                                 Toast.makeText(SignupActivity.this, "Profile update failed: " +

@@ -25,7 +25,7 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
     public void onMoodEventEdited(MoodEvent moodEvent) {
 
         FirebaseSync fb = FirebaseSync.getInstance();
-        fb.getInstance().fetchUserProfileObject(new UserProfileCallback() {
+        fb.fetchUserProfileObject(new UserProfileCallback() {
             @Override
             public void onUserProfileLoaded(UserProfile userProfile) {
                 userProfile.setHistory(moodHistory);
@@ -50,7 +50,7 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
     public void onMoodEventDeleted(MoodEvent moodEvent) {
 
         FirebaseSync fb = FirebaseSync.getInstance();
-        fb.getInstance().fetchUserProfileObject(new UserProfileCallback() {
+        fb.fetchUserProfileObject(new UserProfileCallback() {
             @Override
             public void onUserProfileLoaded(UserProfile userProfile) {
                 moodHistory.deleteEvent(moodEvent);

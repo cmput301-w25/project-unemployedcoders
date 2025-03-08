@@ -16,6 +16,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -27,10 +29,19 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class ProfileActivity extends AppCompatActivity {
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        showUsername();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_profile); // Must match the layout file
+
+        showUsername();
 
         Button logOutButton = findViewById(R.id.logout_button);
 
@@ -70,5 +81,29 @@ public class ProfileActivity extends AppCompatActivity {
         } else {
             android.util.Log.e("ProfileActivity", "BottomNavigationView not found");
         }
+    }
+
+    private void showUsername(){
+        TextView username_text = findViewById(R.id.profile_username);
+
+        FirebaseSync fb = FirebaseSync.getInstance();
+        fb.fetchUserProfileObject(new UserProfileCallback() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                String username_str;
+                if (userProfile.getUsername() == null){
+                    username_str = "Username";
+                } else {
+                    username_str = userProfile.getUsername();
+                }
+
+                username_text.setText(username_str);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(ProfileActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
