@@ -15,13 +15,10 @@
 package com.example.projectapp;
 
 
-import com.example.projectapp.MoodType;
-
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.io.Serializable;
-import java.util.regex.Pattern;
 
 /**
  * This is a class that models a MoodEvent
@@ -33,6 +30,8 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
 
     private Date date;
     private String emotionalState;
+
+    private String reason;
     private String trigger;
     private String socialSituation;
 
@@ -45,14 +44,16 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      * This is one constructor for the MoodEvent class
      * @param emotionalState
      *      The specific emotional state of the event
+     * @param reason
+     *      The reason for the event
      * @param trigger
      *      The trigger of the event
      * @param socialSituation
      *      The social situation of the event
      */
-    public MoodEvent(String emotionalState, String trigger, String socialSituation){
-        if (!validTrigger(trigger)){
-            throw new IllegalArgumentException("Not a valid trigger");
+    public MoodEvent(String emotionalState, String reason, String socialSituation, String trigger){
+        if (!validReason(reason)){
+            throw new IllegalArgumentException("Not a valid reason");
         }
 
         if (MoodType.fromString(emotionalState) == null){
@@ -80,14 +81,21 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      * This is one constructor for the MoodEvent class
      * @param emotionalState
      *      The specific emotional state of the event
+     * @param reason
+     *      The reason for the event
      */
-    public MoodEvent(String emotionalState){
+    public MoodEvent(String emotionalState, String reason){
         if (MoodType.fromString(emotionalState) == null){
             throw new IllegalArgumentException("Not a valid emotional state");
         }
 
+        if (!validReason(reason)){
+            throw new IllegalArgumentException("Not a valid reason");
+        }
+
         this.emotionalState = emotionalState;
         this.date = Calendar.getInstance().getTime();
+        this.reason = reason;
         this.trigger = null;
         this.socialSituation = null;
         this.moodType = MoodType.fromString(emotionalState);
@@ -119,11 +127,22 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     /**
      * This returns the trigger of the event
      * @return
-     *      Returns the emotional state of the event
+     *      Returns the trigger of the event
      */
     public String getTrigger() {
         return trigger;
     }
+
+    /**
+     * This returns the reason of the event
+     * @return
+     *      Returns the reason of the event
+     */
+    public String getReason() {
+        return reason;
+    }
+
+
 
     /**
      * This sets the trigger of the event
@@ -131,7 +150,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      *      The trigger to set for the event
      */
     public void setTrigger(String trigger) {
-        if (!validTrigger(trigger)){
+        if (!validReason(trigger)){
             throw new IllegalArgumentException("Not a valid trigger");
         }
 
@@ -167,18 +186,18 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
 
     /**
      * This checks if a trigger is valid in length
-     * @param trigger
+     * @param reason
      *      The trigger to check
      * @return
      *      Whether or not the trigger is valid
      */
-    public static boolean validTrigger(String trigger){
-        if (trigger == null){
-            return true;
+    public static boolean validReason(String reason){
+        if (reason == null){
+            return false;
         }
 
-        int wordCount = trigger.trim().split(" ").length;
-        return wordCount <= 3 && trigger.length() <= 20;
+        int wordCount = reason.trim().split(" ").length;
+        return wordCount <= 3 && reason.length() <= 20;
     }
 
     public double getLatitude() {
@@ -188,6 +207,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     public double getLongitude() {
         return longitude;
     }
+
     /**
      * Gets the color resource associated with the mood
      * @return
@@ -219,6 +239,10 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         MoodEvent other = (MoodEvent)obj;
 
         if (!this.date.equals(other.date)){
+            return false;
+        }
+
+        if(!this.reason.equals(other.reason)){
             return false;
         }
 

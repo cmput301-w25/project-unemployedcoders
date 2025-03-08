@@ -13,22 +13,16 @@
 // -----------------------------------------------------------------------------
 package com.example.projectapp;
 
-import static android.text.TextUtils.isDigitsOnly;
-import static android.text.TextUtils.isEmpty;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.graphics.Movie;
 import android.os.Bundle;
-import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -138,7 +132,7 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
     private boolean validInput() {
         String trigger = editTrigger.getText().toString();
 
-        if (!MoodEvent.validTrigger(trigger)) {
+        if (!MoodEvent.validReason(trigger)) {
             editTrigger.setError("Invalid Trigger");
             return false;
         }

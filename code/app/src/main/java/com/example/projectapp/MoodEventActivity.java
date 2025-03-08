@@ -15,9 +15,7 @@ package com.example.projectapp;
 import android.content.res.Resources;
 
 
-import static android.app.Activity.RESULT_OK;
 import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
-import static androidx.core.content.ContextCompat.startActivity;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -26,7 +24,6 @@ import android.net.Uri;
 
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 import android.Manifest;
@@ -40,13 +37,8 @@ import androidx.core.content.FileProvider;
 
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import android.widget.Spinner;
@@ -62,8 +54,9 @@ import java.util.Locale;
 public class MoodEventActivity extends AppCompatActivity {
 
     private Spinner spinnerEmotionalState;
-    private EditText editBriefExplanation;
-    private EditText editTrigger;
+    private EditText editReason;
+
+    private Spinner spinnerTrigger;
     private Spinner spinnerSocialSituation;
     private Button buttonUploadPhoto;
     private Button buttonAddLocation;
@@ -98,8 +91,8 @@ public class MoodEventActivity extends AppCompatActivity {
 
         // Bind UI elements
         spinnerEmotionalState = findViewById(R.id.spinner_emotional_state);
-        editBriefExplanation = findViewById(R.id.edit_brief_explanation);
-        editTrigger = findViewById(R.id.edit_trigger);
+        editReason = findViewById(R.id.edit_reason);
+        spinnerTrigger = findViewById(R.id.spinner_trigger);
         spinnerSocialSituation = findViewById(R.id.spinner_social_situation);
         buttonUploadPhoto = findViewById(R.id.button_upload_photo);
         buttonAddLocation = findViewById(R.id.button_add_location);
@@ -137,12 +130,12 @@ public class MoodEventActivity extends AppCompatActivity {
         // Setup Add Event button (finishes activity, returns to previous screen)
         buttonAddEvent.setOnClickListener(view -> {
             String emotionalStateString = spinnerEmotionalState.getSelectedItem().toString();
-            String briefExplanation = editBriefExplanation.getText().toString().trim();
-            String trigger = editTrigger.getText().toString().trim();
-            String socialSituation = spinnerSocialSituation.getSelectedItem().toString();
+            String reason = editReason.getText().toString().trim();
+            String trigger = spinnerTrigger.getSelectedItem().toString().trim();
+            String socialSituation = spinnerSocialSituation.getSelectedItem().toString().trim();
 
-            if (!MoodEvent.validTrigger(trigger)) {
-                Toast.makeText(this, "Trigger is invalid. (<=20 chars, <=3 words)", Toast.LENGTH_SHORT).show();
+            if (!MoodEvent.validReason(reason)) {
+                Toast.makeText(this, "Reason is invalid. (<=20 chars, <=3 words)", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -152,12 +145,12 @@ public class MoodEventActivity extends AppCompatActivity {
                     socialSituation = null;
                 }
 
-                if (trigger.equals("")){
+                if (trigger.equals("Choose not to answer")){
                     trigger = null;
                 }
 
 
-                MoodEvent newEvent = new MoodEvent(emotionalStateString, trigger, socialSituation);
+                MoodEvent newEvent = new MoodEvent(emotionalStateString, reason, trigger, socialSituation);
                 FirebaseSync fb = FirebaseSync.getInstance();
                 // this handles putting the new mood event in the database
                 fb.fetchUserProfileObject(new UserProfileCallback() {

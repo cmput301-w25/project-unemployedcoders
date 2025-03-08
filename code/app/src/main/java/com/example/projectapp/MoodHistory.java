@@ -52,7 +52,11 @@ public class MoodHistory {
 
     }
 
-    //getter that returns the list of events in the class
+    /**
+     * Getter that returns a list of the events in this history
+     * @return
+     *      An arraylist of mood events
+     */
     public ArrayList<MoodEvent> getEvents() {
         return this.events;
     }

@@ -31,6 +31,9 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
     private Context context;
     private OnMoodEventClickListener listener;
 
+    /**
+     * Interface for classes that use this array adapter
+     */
     public interface OnMoodEventClickListener {
         void onEditMoodEvent(MoodEvent event, int position);
         void onDeleteMoodEvent(MoodEvent event, int position);
@@ -61,6 +64,7 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
             convertView = LayoutInflater.from(context).inflate(R.layout.mood_event_layout, parent, false);
             holder = new ViewHolder();
 
+            // getting all the views
             holder.profilePic = convertView.findViewById(R.id.profile_pic);
             holder.usernameText = convertView.findViewById(R.id.username_text);
             holder.timeText = convertView.findViewById(R.id.time_text);

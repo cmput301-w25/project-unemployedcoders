@@ -25,17 +25,17 @@ public class MoodEventTest {
 
     @Test
     public void testValidTrigger(){
-        assertTrue(MoodEvent.validTrigger(""));
-        assertTrue(MoodEvent.validTrigger(null));
-        assertTrue(MoodEvent.validTrigger("trigger"));
-        assertTrue(MoodEvent.validTrigger("one two three"));
-        assertTrue(MoodEvent.validTrigger("12345678901234567890"));
+        assertTrue(MoodEvent.validReason(""));
 
+        assertTrue(MoodEvent.validReason("trigger"));
+        assertTrue(MoodEvent.validReason("one two three"));
+        assertTrue(MoodEvent.validReason("12345678901234567890"));
 
-        assertFalse(MoodEvent.validTrigger("123456789012345678901"));
-        assertFalse(MoodEvent.validTrigger("one two three four"));
-        assertFalse(MoodEvent.validTrigger("1 2 3 4"));
-        assertFalse(MoodEvent.validTrigger("a                    b"));
+        assertFalse(MoodEvent.validReason("123456789012345678901"));
+        assertFalse(MoodEvent.validReason("one two three four"));
+        assertFalse(MoodEvent.validReason("1 2 3 4"));
+        assertFalse(MoodEvent.validReason("a                    b"));
+        assertFalse(MoodEvent.validReason(null));
     }
 
 
