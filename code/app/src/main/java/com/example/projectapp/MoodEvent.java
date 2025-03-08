@@ -51,7 +51,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      * @param socialSituation
      *      The social situation of the event
      */
-    public MoodEvent(String emotionalState, String reason, String socialSituation, String trigger){
+    public MoodEvent(String emotionalState, String reason, String trigger, String socialSituation){
         if (!validReason(reason)){
             throw new IllegalArgumentException("Not a valid reason");
         }
@@ -67,7 +67,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         this.emotionalState = emotionalState;
         this.date = Calendar.getInstance().getTime();
         this.trigger = trigger;
-
+        this.reason = reason;
         this.socialSituation = socialSituation;
         this.moodType = MoodType.fromString(emotionalState);
 

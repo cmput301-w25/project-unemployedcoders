@@ -53,6 +53,7 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
         TextView emotionalStateText;
         TextView triggerText;
         TextView socialSituationText;
+        TextView reasonText;
         ConstraintLayout background;
     }
 
@@ -72,6 +73,7 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
             holder.triggerText = convertView.findViewById(R.id.trigger_text);
             holder.socialSituationText = convertView.findViewById(R.id.social_situation_text);
             holder.background = convertView.findViewById(R.id.mood_event_background);
+            holder.reasonText = convertView.findViewById(R.id.reason_text);
 
             convertView.setTag(holder);
         } else {
@@ -96,6 +98,7 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
             holder.emotionalStateText.setText("Unknown Mood");
         }
 
+        holder.reasonText.setText(moodEvent.getReason() != null ? moodEvent.getReason() : "No Reason");
         holder.triggerText.setText(moodEvent.getTrigger() != null ? moodEvent.getTrigger() : "No Trigger");
         holder.socialSituationText.setText(moodEvent.getSocialSituation() != null ? moodEvent.getSocialSituation() : "No Social Situation");
 
