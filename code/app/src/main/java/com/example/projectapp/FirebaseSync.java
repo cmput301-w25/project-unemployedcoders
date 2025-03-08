@@ -13,7 +13,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
- * Singleton class that manages db operations
+ * Singleton class that manages db operations through firestore
  */
 public class FirebaseSync {
 
@@ -21,18 +21,30 @@ public class FirebaseSync {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
+    /**
+     * gets an instance of FireBaseSync, since its a singleton class
+     * @return
+     *      an instance of FireBaseSync
+     */
     public static FirebaseSync getInstance() {
         if (firebaseSync == null)
             firebaseSync = new FirebaseSync();
         return firebaseSync;
     }
 
+    /**
+     * Private constructor for FirebaseSync
+     */
     private FirebaseSync(){
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
     }
 
-    // sets the current user's data to the one passed in
+    /**
+     * stores a UserProfile object into the current FireBase user's db
+     * @param profile
+     *      the UserProfile object to store
+     */
     public void storeUserData(UserProfile profile){
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null){
@@ -49,15 +61,33 @@ public class FirebaseSync {
 
     }
 
+    /**
+     * adds a MoodEvent to a user's profile and stores it in the db
+     * @param profile
+     *      The profile to store the MoodEvent in
+     * @param moodEvent
+     *      The mood event to store
+     */
     public void addEventToProfile(UserProfile profile, MoodEvent moodEvent){
         profile.getHistory().addEvent(moodEvent);
         storeUserData(profile);
     }
 
+    /**
+     * Gets the current firebase user's UserProfile object. This has to be handled in a callback because FireStore operations are not instantaneous.
+     * @param callback
+     *      The callback object, to be instantiated by a class that is going to use it
+     */
     public void fetchUserProfileObject(UserProfileCallback callback){
         FirebaseUser current = mAuth.getCurrentUser();
 
         if (current != null){
+
+            /*
+            The following code was inspired by Google Firebase Firestore documentation "Get data with Cloud Firestore"
+            Written by Google.
+            Taken on 2025-03-06 by Luke Yaremko
+             */
 
             DocumentReference ref = db.collection("users").document(current.getUid());
 
@@ -90,37 +120,6 @@ public class FirebaseSync {
         }
 
     }
-
-    public void fetchMoodHistory(final MoodHistoryCallback callback) {
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser == null) {
-            callback.onFailure(new Exception("No user is currently signed in"));
-            return;
-        }
-
-        String uid = currentUser.getUid();
-        DocumentReference ref = db.collection("users").document(uid);
-        ref.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DocumentSnapshot doc = task.getResult();
-                if (doc.exists()) {
-                    // Convert document to a UserProfile object
-                    UserProfile profile = doc.toObject(UserProfile.class);
-                    if (profile != null) {
-                        // Pass the MoodHistory from the user profile to the callback
-                        callback.onMoodHistoryLoaded(profile.getHistory());
-                    } else {
-                        callback.onFailure(new Exception("Error converting document to UserProfile"));
-                    }
-                } else {
-                    callback.onFailure(new Exception("User profile not found"));
-                }
-            } else {
-                callback.onFailure(task.getException());
-            }
-        });
-    }
-
 }
 
 
