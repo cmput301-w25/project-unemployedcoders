@@ -150,10 +150,6 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      *      The trigger to set for the event
      */
     public void setTrigger(String trigger) {
-        if (!validReason(trigger)){
-            throw new IllegalArgumentException("Not a valid trigger");
-        }
-
         this.trigger = trigger;
     }
 
