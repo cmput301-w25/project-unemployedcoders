@@ -33,7 +33,8 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
 
     private Spinner editEmotionalStateSpinner;
     private Spinner editSocialSituationSpinner;
-    private EditText editTrigger;
+    private EditText editReason;
+    private Spinner editTrigger;
 
     public interface EditMoodEventListener {
         void onMoodEventEdited(MoodEvent moodEvent);
@@ -65,7 +66,9 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.fragment_mood_event_details_and_edit, null);
         editEmotionalStateSpinner = (Spinner) view.findViewById(R.id.details_fragment_edit_spinner_emotional_state);
         editSocialSituationSpinner = (Spinner) view.findViewById(R.id.details_fragment_edit_spinner_situation);
-        editTrigger = view.findViewById(R.id.details_fragment_edit_trigger);
+        editTrigger = (Spinner) view.findViewById(R.id.details_fragment_edit_spinner_trigger);
+        editReason = view.findViewById(R.id.details_fragment_edit_reason);
+
         ArrayAdapter<CharSequence> stateAdapter = ArrayAdapter.createFromResource(
                 requireContext(),
                 R.array.emotional_states,
@@ -73,6 +76,7 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
         );
         stateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         editEmotionalStateSpinner.setAdapter(stateAdapter);
+
         ArrayAdapter<CharSequence> situationAdapter = ArrayAdapter.createFromResource(
                 requireContext(),
                 R.array.social_situations,
@@ -81,6 +85,13 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
         situationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         editSocialSituationSpinner.setAdapter(situationAdapter);
 
+        ArrayAdapter<CharSequence> triggerAdapter = ArrayAdapter.createFromResource(
+                requireContext(),
+                R.array.mood_triggers,
+                android.R.layout.simple_spinner_item
+        );
+        situationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        editTrigger.setAdapter(triggerAdapter);
 
         //get elements of mood event we're viewing/editing and set the fields to
         //current values
@@ -90,7 +101,12 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
             if (moodEvent.getSocialSituation() != null && !moodEvent.getSocialSituation().isEmpty()) {
                 editSocialSituationSpinner.setSelection(situationAdapter.getPosition(moodEvent.getSocialSituation()));
             }
-            editTrigger.setText(moodEvent.getTrigger());
+
+            if (moodEvent.getTrigger() != null && !moodEvent.getTrigger().isEmpty()) {
+                editTrigger.setSelection(triggerAdapter.getPosition(moodEvent.getTrigger()));
+            }
+
+            editReason.setText(moodEvent.getReason());
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -112,12 +128,15 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
 
                 String newEmotionalState = editEmotionalStateSpinner.getSelectedItem().toString();
                 String newSituation = editSocialSituationSpinner.getSelectedItem().toString();
-                String newTrigger = editTrigger.getText().toString();
+                String newTrigger = editTrigger.getSelectedItem().toString();
+                String newReason = editReason.getText().toString().trim();
+
                 if (moodEvent != null) {
                     //this might need to be changed since we're using MoodHistory now
                     moodEvent.setEmotionalState(newEmotionalState);
                     moodEvent.setSocialSituation(newSituation);
                     moodEvent.setTrigger(newTrigger);
+                    moodEvent.setReason(newReason);
                     if (listener != null) {
                         listener.onMoodEventEdited(moodEvent); // Notify the activity to update the UI
                     }
@@ -130,10 +149,10 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
     }
 
     private boolean validInput() {
-        String trigger = editTrigger.getText().toString();
+        String reason = editReason.getText().toString();
 
-        if (!MoodEvent.validReason(trigger)) {
-            editTrigger.setError("Invalid Trigger");
+        if (!MoodEvent.validReason(reason)) {
+            editReason.setError("Invalid Reason");
             return false;
         }
         return true;

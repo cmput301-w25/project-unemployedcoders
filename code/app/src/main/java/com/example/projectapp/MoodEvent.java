@@ -134,6 +134,21 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     }
 
     /**
+     * This sets the trigger of the event
+     * @param trigger
+     *      The trigger to set for the event
+     */
+    public void setTrigger(String trigger) {
+        if (trigger == null){
+            this.trigger = trigger;
+        } else if (trigger.equals("Choose not to answer")){
+            this.trigger = null;
+        } else {
+            this.trigger = trigger;
+        }
+    }
+
+    /**
      * This returns the reason of the event
      * @return
      *      Returns the reason of the event
@@ -142,15 +157,13 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         return reason;
     }
 
-
-
     /**
-     * This sets the trigger of the event
-     * @param trigger
+     * This sets the reason of the event
+     * @param reason
      *      The trigger to set for the event
      */
-    public void setTrigger(String trigger) {
-        this.trigger = trigger;
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
     /**
@@ -168,7 +181,13 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      *      The social situation to set for the event
      */
     public void setSocialSituation(String socialSituation) {
-        this.socialSituation = socialSituation;
+        if (socialSituation == null){
+            this.socialSituation = socialSituation;
+        } else if (socialSituation.equals("Choose not to answer")){
+            this.socialSituation = null;
+        } else {
+            this.socialSituation = socialSituation;
+        }
     }
 
     /**
@@ -188,7 +207,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      *      Whether or not the trigger is valid
      */
     public static boolean validReason(String reason){
-        if (reason == null){
+        if (reason == null || reason.trim().isEmpty()){
             return false;
         }
 
