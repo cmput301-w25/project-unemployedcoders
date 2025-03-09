@@ -14,6 +14,9 @@ package com.example.projectapp;
 
 import java.io.Serializable;
 
+/**
+ * A class to model a user's profile
+ */
 public class UserProfile implements Serializable {
 
     private MoodHistory history;

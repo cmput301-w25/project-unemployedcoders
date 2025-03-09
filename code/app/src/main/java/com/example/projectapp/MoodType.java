@@ -11,6 +11,9 @@
 // -----------------------------------------------------------------------------
 package com.example.projectapp;
 
+/**
+ * An enumeration to keep the information for emotional states together
+ */
 public enum MoodType {
     ANGER("Anger", R.color.anger, R.string.anger_emoticon),
     CONFUSION("Confusion", R.color.confusion, R.string.confusion_emoticon),
@@ -25,25 +28,55 @@ public enum MoodType {
     private final int colorCode;
     private final int emoticonResId; // Now refers to a string resource
 
+    /**
+     * Constructor for MoodType enum
+     * @param displayName
+     *      display name of emotional state
+     * @param colorCode
+     *      color code of emotional state
+     * @param emoticonResId
+     *      emoticon resource id of emotional state
+     */
     MoodType(String displayName, int colorCode, int emoticonResId) {
         this.displayName = displayName;
         this.colorCode = colorCode;
         this.emoticonResId = emoticonResId;
     }
 
+    /**
+     * Gets the emotional state's display name
+     * @return
+     *      the emotional state's display name
+     */
     public String getDisplayName() {
         return displayName;
     }
 
+    /**
+     * Gets the emotional state's color code
+     * @return
+     *      the emotional state's color code
+     */
     public int getColorCode() {
         return colorCode;
     }
 
+    /**
+     * Gets the emotional state's emoticon resource id
+     * @return
+     *      the emotional state's emoticon resource id
+     */
     public int getEmoticonResId() {
         return emoticonResId;
     }
 
-    // Utility method to convert a string (from the spinner) to a MoodType
+    /**
+     * Utility method to convert a string (from the spinner) to a MoodType
+     * @param moodName
+     *      the emotional state of the mood
+     * @return
+     *      the mood type corresponding to the mood name
+     */
     public static MoodType fromString(String moodName) {
         for (MoodType mood : MoodType.values()) {
             if (mood.getDisplayName().equalsIgnoreCase(moodName)) {
