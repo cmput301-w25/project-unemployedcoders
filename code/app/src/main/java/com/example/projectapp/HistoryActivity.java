@@ -29,7 +29,7 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
             @Override
             public void onUserProfileLoaded(UserProfile userProfile) {
                 userProfile.setHistory(moodHistory);
-                moodEventAdapter.notifyDataSetChanged();
+                //moodEventAdapter.notifyDataSetChanged();
                 fb.storeUserData(userProfile);
             }
 
@@ -55,7 +55,7 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
             public void onUserProfileLoaded(UserProfile userProfile) {
                 moodHistory.deleteEvent(moodEvent);
                 userProfile.setHistory(moodHistory);
-                moodEventAdapter.notifyDataSetChanged();
+                //moodEventAdapter.notifyDataSetChanged();
                 fb.storeUserData(userProfile);
             }
 
@@ -76,8 +76,11 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
     @Override
     protected void onResume() {
         super.onResume();
-        //moodEventAdapter.notifyDataSetChanged();
+        if (moodEventAdapter != null){
+            moodEventAdapter.notifyDataSetChanged();
+        }
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,8 +91,9 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
 
         moodEventList = findViewById(R.id.user_mood_event_list);
 
+        FirebaseSync fb = FirebaseSync.getInstance();
         // Fetch mood history from Firebase
-        FirebaseSync.getInstance().fetchUserProfileObject(new UserProfileCallback() {
+        fb.fetchUserProfileObject(new UserProfileCallback() {
             @Override
             public void onUserProfileLoaded(UserProfile userProfile) {
                 moodHistory = userProfile.getHistory();
@@ -101,6 +105,31 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
             @Override
             public void onFailure(Exception e) {
                 Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        fb.listenForUpdates(new FirebaseSync.DataStatus() {
+            @Override
+            public void onDataUpdated() {
+                fb.fetchUserProfileObject(new UserProfileCallback() {
+                    @Override
+                    public void onUserProfileLoaded(UserProfile userProfile) {
+                        moodHistory = userProfile.getHistory();
+                        moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), moodHistory.getEvents(), HistoryActivity.this);
+                        moodEventList.setAdapter(moodEventAdapter);
+                        moodEventAdapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                Log.e("Movie Update Error", error);
             }
         });
 

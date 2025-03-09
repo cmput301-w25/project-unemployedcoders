@@ -60,7 +60,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
             throw new IllegalArgumentException("Not a valid emotional state");
         }
 
-        if (!Arrays.asList(ALL_SITUATIONS).contains(socialSituation) && socialSituation != null){
+        if (socialSituation != null && !Arrays.asList(ALL_SITUATIONS).contains(socialSituation)){
             throw new IllegalArgumentException("Not a valid social situation");
         }
 

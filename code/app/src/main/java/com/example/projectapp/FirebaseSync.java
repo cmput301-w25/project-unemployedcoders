@@ -1,5 +1,6 @@
 package com.example.projectapp;
 
+import android.graphics.Movie;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -8,9 +9,11 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 /**
  * Singleton class that manages db operations through firestore
@@ -20,6 +23,12 @@ public class FirebaseSync {
     private static FirebaseSync firebaseSync;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+
+    public interface DataStatus {
+        void onDataUpdated();
+        void onError(String error);
+    }
+
 
     /**
      * gets an instance of FireBaseSync, since its a singleton class
@@ -38,6 +47,21 @@ public class FirebaseSync {
     private FirebaseSync(){
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+    }
+
+    public void listenForUpdates(final DataStatus dataStatus) {
+        CollectionReference profiles = db.collection("users");
+
+        profiles.addSnapshotListener((snapshot, error) -> {
+            if (error != null) {
+                dataStatus.onError(error.getMessage());
+                return;
+            }
+
+            if (snapshot != null) {
+                dataStatus.onDataUpdated();
+            }
+        });
     }
 
     /**
