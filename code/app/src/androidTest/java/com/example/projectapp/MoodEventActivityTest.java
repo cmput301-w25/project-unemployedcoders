@@ -44,7 +44,7 @@ public class MoodEventActivityTest {
 
     //@Test
     public void testAddValidMoodEvent() {
-        onView(withId(R.id.edit_trigger)).perform(ViewActions.typeText("one two three"));
+        onView(withId(R.id.spinner_trigger)).perform(ViewActions.typeText("one two three"));
         onView(withId(R.id.button_add_event)).perform(click());
 
         intended(hasComponent(HomeActivity.class.getName()));
