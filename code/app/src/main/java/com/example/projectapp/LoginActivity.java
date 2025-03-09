@@ -15,6 +15,7 @@ package com.example.projectapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -45,6 +46,8 @@ public class LoginActivity extends AppCompatActivity {
             String password = editPassword.getText().toString().trim();
 
             if (email.isEmpty() || password.isEmpty()) {
+                editUsername.setError("Email/Password cannot be empty");
+                editPassword.setError("Email/Password cannot be empty");
                 Toast.makeText(this, "Email/Password cannot be empty", Toast.LENGTH_SHORT).show();
                 return;
             }
