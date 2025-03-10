@@ -2,4 +2,16 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="anger">#F31515</color>
+    <color name="sadness">#4B68F4</color>
+    <color name="fear">#15F3F3</color>
+    <color name="happiness">#FFCD27</color>
+    <color name="shame">#4BD83E</color>
+    <color name="disgust">#CD8106</color>
+    <color name="surprise">#FB9835</color>
+    <color name="confusion">#F315C3</color>
+    <color name="focusedColor">#FF4081</color>
+
+    <color name="purple_500">#FF6200EE</color>
+    <color name="overlay_color">#6d494e</color>
 </resources>

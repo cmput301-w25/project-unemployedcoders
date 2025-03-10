@@ -1,3 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ProjectApp</string>
+    <string name="emoticon_desc">Mood icon</string>
+    <string name="user_icon_desc">User icon</string>
+    <string name="upload_icon_desc">Upload icon</string>
+    <string name="example_string">This is an example string</string>
+
+    <!-- Emoji resources using Unicode characters -->
+    <string name="anger_emoticon">&#x1F621;</string>
+    <string name="happiness_emoticon">&#x1F601;</string>
+    <string name="sadness_emoticon">&#x1F622;</string>
+    <string name="shame_emoticon">&#x1F614;</string>
+    <string name="fear_emoticon">&#x1F628;</string>
+    <string name="surprise_emoticon">&#x1F62E;</string>
+    <string name="confusion_emoticon">&#x1F615;</string>
+    <string name="disgust_emoticon">&#x1F922;</string>
+    <string name="image_description">Selected image</string>
+    <string name="edit_fragment_emo_state_spinner_prompt">Emotional State</string>
 </resources>
+

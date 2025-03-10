@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="emotional_states">
+        <item>Sadness</item>
+        <item>Anger</item>
+        <item>Happiness</item>
+        <item>Shame</item>
+        <item>Confusion</item>
+        <item>Disgust</item>
+        <item>Fear</item>
+        <item>Surprise</item>
+
+        <!-- ... add others as needed -->
+    </string-array>
+
+    <string-array name="social_situations">
+        <item>Choose not to answer</item>
+        <item>Alone</item>
+        <item>With one other person</item>
+        <item>With two to several people</item>
+        <item>With a crowd</item>
+    </string-array>
+
+    <string-array name="mood_triggers">
+        <item>Choose not to answer</item>
+        <item>Work/School Stress</item>
+        <item>Relationship Issues</item>
+        <item>Health Concerns</item>
+        <item>Financial Worries</item>
+        <item>Social Interactions</item>
+        <item>Unexpected Events</item>
+        <item>Achievements/Milestones</item>
+        <item>Loneliness/Isolation</item>
+        <item>Hobbies/Interests</item>
+        <item>Environment (Weather, Noise, etc.)</item>
+    </string-array>
+
+</resources>
