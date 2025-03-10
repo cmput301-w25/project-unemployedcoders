@@ -8,6 +8,19 @@
     android:layout_height="match_parent"
     tools:context=".SignupActivity">
 
+
+    <ImageView
+        android:id="@+id/login_background_image"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0.7"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bckgrnd"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <!-- Title for Sign Up -->
 
     <!-- Profile Image Container with overlay upload icon -->

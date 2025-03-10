@@ -1,21 +1,7 @@
-// -----------------------------------------------------------------------------
-// File: LoginActivity.java
-// -----------------------------------------------------------------------------
-// This file defines the LoginActivity class, which serves as the entry point for
-// user authentication in the ProjectApp application. It handles user login via
-// email and password using Firebase Authentication and provides navigation to
-// the SignupActivity for new users. The activity follows the Model-View-Controller
-// (MVC) pattern, acting as the controller to manage user input and authentication.
-//
-// Design Pattern: MVC (Controller)
-// Outstanding Issues:
-// N/A
-// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -26,7 +12,7 @@ import com.google.firebase.auth.FirebaseUser;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText editUsername, editPassword;
-    private Button buttonLogin, buttonSignin;
+    private Button buttonLogin, buttonSignin, buttonReset;
     private FirebaseAuth mAuth;
 
     @Override
@@ -40,6 +26,7 @@ public class LoginActivity extends AppCompatActivity {
         editPassword = findViewById(R.id.edit_password);
         buttonLogin = findViewById(R.id.button_login);
         buttonSignin = findViewById(R.id.button_signin);
+        buttonReset = findViewById(R.id.button_reset);  // Ensure this ID matches your layout
 
         buttonLogin.setOnClickListener(view -> {
             String email = editUsername.getText().toString().trim();
@@ -66,10 +53,15 @@ public class LoginActivity extends AppCompatActivity {
                     });
         });
 
-        // When user taps SignIn, launch the SignupActivity
         buttonSignin.setOnClickListener(view -> {
             Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
             startActivity(intent);
+        });
+
+        // When the reset password button is clicked, show the ResetPasswordDialogFragment
+        buttonReset.setOnClickListener(view -> {
+            ResetPasswordDialogFragment dialog = new ResetPasswordDialogFragment();
+            dialog.show(getSupportFragmentManager(), "ResetPasswordDialog");
         });
     }
 
