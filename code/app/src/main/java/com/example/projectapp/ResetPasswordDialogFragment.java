@@ -1,3 +1,18 @@
+// -----------------------------------------------------------------------------
+// File: ResetPasswordDialogFragment.java
+// -----------------------------------------------------------------------------
+// This file defines the ResetPasswordDialogFragment class, which provides a
+// custom dialog for resetting the user's password. When the dialog is shown,
+// the user can enter their email address and tap the "Reset" button to request
+// a password reset email via Firebase Authentication. The dialog also provides
+// a "Cancel" button to dismiss the dialog.
+//
+// Design Pattern: MVC (Controller/View) - The dialog acts as a view that
+// handles user input and communicates with Firebase via a controller-like logic.
+// Outstanding Issues:
+//  N/A
+// -----------------------------------------------------------------------------
+
 package com.example.projectapp;
 
 import android.app.Dialog;

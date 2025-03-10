@@ -1,3 +1,17 @@
+// -----------------------------------------------------------------------------
+// File: HistoryActivity.java
+// -----------------------------------------------------------------------------
+// This file defines the HistoryActivity class, which serves as the user mood
+// history screen in the ProjectApp application. It fetches the user's mood
+// history from Firebase, displays the events using a custom adapter in a ListView,
+// and listens for real-time updates. Additionally, it implements editing and
+// deletion functionality for individual mood events via dialog fragments.
+//
+// Design Pattern: MVC (Controller)
+// Outstanding Issues:
+// N/A
+// -----------------------------------------------------------------------------
+
 package com.example.projectapp;
 
 import android.content.Intent;
