@@ -8,7 +8,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
+/**
+ * LoginActivity handles user authentication using Firebase Authentication.
+ * This class provides a login interface where users can enter their email and password
+ * to sign in. It also includes a sign-up button to redirect to the SignupActivity.
+ */
 public class LoginActivity extends AppCompatActivity {
 
     private EditText editUsername, editPassword;

@@ -50,7 +50,12 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
+/**
+ * MoodEventActivity manages the mood event tracking interface and handles bottom navigation.
+ * This class allows users to interact with mood-related events and navigate to different
+ * fragments (Home, Map, History, Inbox, Profile) via a BottomNavigationView, redirecting
+ * to MainActivity with the selected fragment identifier.
+ */
 public class MoodEventActivity extends AppCompatActivity {
 
     private Spinner spinnerEmotionalState;
