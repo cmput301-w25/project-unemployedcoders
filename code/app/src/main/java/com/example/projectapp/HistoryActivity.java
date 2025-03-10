@@ -104,7 +104,7 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show(); // 1 time
             }
         });
 

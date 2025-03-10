@@ -1,6 +1,5 @@
 package com.example.projectapp;
 
-import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
@@ -9,14 +8,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.hasErrorText;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 
 import android.content.Context;
-import android.graphics.Movie;
 import android.util.Log;
 
 import androidx.test.espresso.action.ViewActions;
@@ -103,7 +98,8 @@ public class HistoryActivityTest {
         CollectionReference usersRef = db.collection("users");
         String uid = mAuth.getCurrentUser().getUid();
         UserProfile profile = new UserProfile(uid, "TestUser", "Test Guy");
-        profile.getHistory().addEvent(new MoodEvent("Happiness", "Happy guy", null, null));
+        MoodEvent testEvent = new MoodEvent("Happiness", "Happy guy", null, null);
+        profile.getHistory().addEvent(testEvent);
         usersRef.document(uid).set(profile);
 
     }
@@ -123,7 +119,6 @@ public class HistoryActivityTest {
 
         onView(withId(R.id.details_fragment_edit_reason)).perform(ViewActions.clearText());
         onView(withId(R.id.details_fragment_edit_reason)).perform(ViewActions.typeText("Even Happier"));
-
 
         onView(withId(android.R.id.button1)).perform(click());
 
