@@ -50,12 +50,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-/**
- * MoodEventActivity manages the mood event tracking interface and handles bottom navigation.
- * This class allows users to interact with mood-related events and navigate to different
- * fragments (Home, Map, History, Inbox, Profile) via a BottomNavigationView, redirecting
- * to MainActivity with the selected fragment identifier.
- */
+
 public class MoodEventActivity extends AppCompatActivity {
 
     private Spinner spinnerEmotionalState;
@@ -131,7 +126,7 @@ public class MoodEventActivity extends AppCompatActivity {
             intent.putExtra("longitude", eventLocation.longitude);
             startActivity(intent);
         });
-      
+
         // Setup Add Event button (finishes activity, returns to previous screen)
         buttonAddEvent.setOnClickListener(view -> {
             String emotionalStateString = spinnerEmotionalState.getSelectedItem().toString();
@@ -216,26 +211,33 @@ public class MoodEventActivity extends AppCompatActivity {
 
         // Setup Bottom Navigation Listener
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        // Do not call setSelectedItemId() so nothing is pre-selected
         bottomNav.setOnItemSelectedListener(item -> {
-            Intent intent = new Intent(MoodEventActivity.this, MainActivity.class);
-
-            int id = item.getItemId();
-            if (id == R.id.nav_home) {
+            Intent intent = null;
+            if (item.getItemId() == R.id.nav_home) {
+                intent = new Intent(this, HomeActivity.class);
                 intent.putExtra("selected_fragment", "home");
-            } else if (id == R.id.nav_map) {
+            } else if (item.getItemId() == R.id.nav_map) {
+                intent = new Intent(this, MapActivity.class);
                 intent.putExtra("selected_fragment", "map");
-            } else if (id == R.id.nav_history) {
+            } else if (item.getItemId() == R.id.nav_history) {
+                intent = new Intent(this, HistoryActivity.class);
                 intent.putExtra("selected_fragment", "history");
-            } else if (id == R.id.nav_inbox) {
+            } else if (item.getItemId() == R.id.nav_inbox) {
+                intent = new Intent(this, InboxActivity.class);
                 intent.putExtra("selected_fragment", "inbox");
-            } else if (id == R.id.nav_profile) {
+            } else if (item.getItemId() == R.id.nav_profile) {
+                intent = new Intent(this, ProfileActivity.class);
                 intent.putExtra("selected_fragment", "profile");
             } else {
                 return false; // Unknown item
             }
 
-            finish(); // Close the MoodEventActivity before starting MainActivity
-            startActivity(intent);
+            if (intent != null) {
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                finish();
+            }
             return true;
         });
 

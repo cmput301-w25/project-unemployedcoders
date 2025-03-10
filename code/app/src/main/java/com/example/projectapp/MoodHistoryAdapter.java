@@ -1,3 +1,17 @@
+// -----------------------------------------------------------------------------
+// File: MoodHistoryAdapter.java
+// -----------------------------------------------------------------------------
+// This class is an adapter that binds a list of MoodEvent objects to a RecyclerView.
+// It inflates the layout defined in mood_event_layout.xml for each mood event item
+// and binds the corresponding data to the views. This adapter is used to display
+// the user's mood history.
+//
+// Design Pattern: MVC (View) - as it handles displaying the data in a RecyclerView.
+// Outstanding Issues:
+// N/A
+// -----------------------------------------------------------------------------
+
+
 package com.example.projectapp;
 
 import android.content.Context;
