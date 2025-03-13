@@ -16,12 +16,13 @@
     <!-- Features and Additional Configuration -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
-    <!-- Google Maps API Key (from development) -->
+    <!-- Google Maps API Key -->
+    <!-- Ensure you replace "YOUR_API_KEY_HERE" with your actual API key -->
     <meta-data
         android:name="com.google.android.geo.API_KEY"
-        android:value="YOUR_API_KEY_HERE" />
+        android:value="AIzaSyChzYUR_ApTmzJbyd1JoUN9SuMMLQopfUk" />
 
-    <!-- Queries for camera and gallery (from development) -->
+    <!-- Queries for camera and gallery -->
     <queries>
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />
@@ -44,7 +45,7 @@
         tools:targetApi="31"
         android:networkSecurityConfig="@xml/network_security_config">
 
-        <!-- FileProvider for camera/gallery (from development) -->
+        <!-- FileProvider for camera/gallery -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -55,7 +56,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- Launcher Activity: LoginActivity (from Login/Signin branch) -->
+        <!-- Launcher Activity: LoginActivity -->
         <activity
             android:name=".LoginActivity"
             android:exported="true">
@@ -65,8 +66,7 @@
             </intent-filter>
         </activity>
 
-
-        <!-- Other Activities (merged from both branches) -->
+        <!-- Other Activities -->
         <activity android:name=".MainActivity" android:exported="false" />
         <activity android:name=".HomeActivity" android:exported="false" />
         <activity android:name=".MapActivity" android:exported="false" />
@@ -76,6 +76,5 @@
         <activity android:name=".SignupActivity" android:exported="false" />
         <activity android:name=".MoodEventActivity" android:exported="false" />
         <activity android:name=".MapViewActivity"/>
-
     </application>
 </manifest>

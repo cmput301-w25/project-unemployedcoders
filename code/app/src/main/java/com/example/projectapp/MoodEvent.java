@@ -10,27 +10,24 @@
 // Design Pattern: MVC (Model)
 // Outstanding Issues:
 //  N/A
-
 // -----------------------------------------------------------------------------
+
 package com.example.projectapp;
 
-
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.io.Serializable;
 
 /**
  * This is a class that models a MoodEvent
  */
 public class MoodEvent implements Comparable<MoodEvent>, Serializable {
 
-
     public static final String[] ALL_SITUATIONS = {"Alone" , "With one other person", "With two to several people", "With a crowd"};
 
     private Date date;
     private String emotionalState;
-
     private String reason;
     private String trigger;
     private String socialSituation;
@@ -38,7 +35,6 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     private MoodType moodType;
     private double latitude;  // New: Store latitude
     private double longitude; // New: Store longitude
-
 
     /**
      * This is one constructor for the MoodEvent class
@@ -70,7 +66,6 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         this.reason = reason;
         this.socialSituation = socialSituation;
         this.moodType = MoodType.fromString(emotionalState);
-
     }
 
     public MoodEvent(){
@@ -119,7 +114,6 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         if (MoodType.fromString(emotionalState) == null){
             throw new IllegalArgumentException("Not a valid emotional state");
         }
-
         this.emotionalState = emotionalState;
         this.moodType = MoodType.fromString(emotionalState);
     }
@@ -140,7 +134,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      */
     public void setTrigger(String trigger) {
         if (trigger == null){
-            this.trigger = trigger;
+            this.trigger = null;
         } else if (trigger.equals("Choose not to answer")){
             this.trigger = null;
         } else {
@@ -160,7 +154,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     /**
      * This sets the reason of the event
      * @param reason
-     *      The trigger to set for the event
+     *      The reason to set for the event
      */
     public void setReason(String reason) {
         this.reason = reason;
@@ -169,7 +163,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     /**
      * This returns the social situation of the event
      * @return
-     *      Returns the emotional state of the event
+     *      Returns the social situation of the event
      */
     public String getSocialSituation() {
         return socialSituation;
@@ -182,7 +176,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      */
     public void setSocialSituation(String socialSituation) {
         if (socialSituation == null){
-            this.socialSituation = socialSituation;
+            this.socialSituation = null;
         } else if (socialSituation.equals("Choose not to answer")){
             this.socialSituation = null;
         } else {
@@ -200,27 +194,54 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     }
 
     /**
-     * This checks if a trigger is valid in length
+     * This checks if a reason is valid in length
      * @param reason
-     *      The trigger to check
+     *      The reason to check
      * @return
-     *      Whether or not the trigger is valid
+     *      Whether or not the reason is valid
      */
     public static boolean validReason(String reason){
         if (reason == null || reason.trim().isEmpty()){
             return false;
         }
-
         int wordCount = reason.trim().split(" ").length;
         return wordCount <= 3 && reason.length() <= 20;
     }
 
+    /**
+     * Returns the latitude for this mood event.
+     * @return
+     *      The latitude value (double)
+     */
     public double getLatitude() {
         return latitude;
     }
 
+    /**
+     * Sets the latitude for this mood event.
+     * @param latitude
+     *      The latitude value (double)
+     */
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    /**
+     * Returns the longitude for this mood event.
+     * @return
+     *      The longitude value (double)
+     */
     public double getLongitude() {
         return longitude;
+    }
+
+    /**
+     * Sets the longitude for this mood event.
+     * @param longitude
+     *      The longitude value (double)
+     */
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     /**
@@ -251,41 +272,35 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
 
-        MoodEvent other = (MoodEvent)obj;
+        MoodEvent other = (MoodEvent) obj;
 
-        if (!this.date.equals(other.date)){
+        if (!this.date.equals(other.date)) {
             return false;
         }
 
-        if(!this.reason.equals(other.reason)){
+        if (!this.reason.equals(other.reason)) {
             return false;
         }
 
-        if (!this.emotionalState.equals(other.emotionalState)){
+        if (!this.emotionalState.equals(other.emotionalState)) {
             return false;
         }
 
-        if (this.trigger == null){
-            if (this.trigger != other.trigger){ // if both are null
+        if (this.trigger == null) {
+            if (other.trigger != null) {
                 return false;
             }
         } else {
-            if (!this.trigger.equals(other.trigger)){
+            if (!this.trigger.equals(other.trigger)) {
                 return false;
             }
         }
 
-        if (this.socialSituation == null){
-            if (this.socialSituation != other.socialSituation){
-                return false;
-            }
+        if (this.socialSituation == null) {
+            return other.socialSituation == null;
         } else {
-            if (!this.socialSituation.equals(other.socialSituation)){
-                return false;
-            }
+            return this.socialSituation.equals(other.socialSituation);
         }
-
-        return true;
     }
 
     /**
@@ -295,11 +310,9 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      */
     @Override
     public int compareTo(MoodEvent o) {
-        if (o == null){
+        if (o == null) {
             throw new NullPointerException("MoodEvent you're comparing to is null");
         }
-
         return -1 * this.date.compareTo(o.date); // reverse chronological
     }
-
 }

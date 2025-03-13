@@ -5,6 +5,8 @@
     <string name="user_icon_desc">User icon</string>
     <string name="upload_icon_desc">Upload icon</string>
     <string name="example_string">This is an example string</string>
+    <string name="close">Close</string>
+
 
     <!-- Emoji resources using Unicode characters -->
     <string name="anger_emoticon">&#x1F621;</string>

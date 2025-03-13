@@ -8,25 +8,24 @@
 // Design Pattern: MVC (View)
 // Outstanding Issues:
 //  N/A
-
 // -----------------------------------------------------------------------------
+
 package com.example.projectapp;
 
-import android.content.res.Resources;
-
-
-import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
-
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
-
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
-import android.Manifest;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -41,10 +40,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import android.widget.Spinner;
-import android.widget.EditText;
-import android.widget.Button;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -55,7 +50,6 @@ public class MoodEventActivity extends AppCompatActivity {
 
     private Spinner spinnerEmotionalState;
     private EditText editReason;
-
     private Spinner spinnerTrigger;
     private Spinner spinnerSocialSituation;
     private Button buttonUploadPhoto;
@@ -76,18 +70,17 @@ public class MoodEventActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
+    // Location permission request code
+    private static final int REQUEST_LOCATION_PERMISSION = 2001;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_mood_event);
 
-        // Setting up the info for the firebase stuff
+        // Initialize Firebase Auth and Firestore
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-
-        Resources res = getResources();
-        String exampleString = res.getString(R.string.example_string);
 
         // Bind UI elements
         spinnerEmotionalState = findViewById(R.id.spinner_emotional_state);
@@ -101,7 +94,7 @@ public class MoodEventActivity extends AppCompatActivity {
         buttonBackHome = findViewById(R.id.button_back_home);
         imageView = findViewById(R.id.imageView);
 
-        // Setup Back button to go to home page
+        // Back Home button: Navigates to MainActivity (home fragment)
         buttonBackHome.setOnClickListener(view -> {
             Intent intent = new Intent(MoodEventActivity.this, MainActivity.class);
             intent.putExtra("selected_fragment", "home");
@@ -109,25 +102,43 @@ public class MoodEventActivity extends AppCompatActivity {
             finish();
         });
 
-        // Setup Add Location button
+        // Add Location button: Uses the GeoLocation class to get a fresh location update
         buttonAddLocation.setOnClickListener(view -> {
-            eventLocation = new LatLng(37.7749, -122.4194); // Example: San Francisco
-            Toast.makeText(this, "Location Added!", Toast.LENGTH_SHORT).show();
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        REQUEST_LOCATION_PERMISSION);
+            } else {
+                GeoLocation geoLocation = new GeoLocation(this);
+                geoLocation.fetchFreshLocation(new GeoLocation.OnLocationReceivedListener() {
+                    @Override
+                    public void onLocationReceived(Location location) {
+                        eventLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                        Toast.makeText(MoodEventActivity.this,
+                                "Location Added: " + eventLocation.latitude + ", " + eventLocation.longitude,
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onLocationFailure(String error) {
+                        Toast.makeText(MoodEventActivity.this, error, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         });
 
-        // Setup View Map button
+        // View Map button: Opens a MapDialogFragment showing the event's location
         buttonViewMap.setOnClickListener(view -> {
             if (eventLocation == null) {
                 Toast.makeText(this, "No location added!", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Intent intent = new Intent(MoodEventActivity.this, MapViewActivity.class);
-            intent.putExtra("latitude", eventLocation.latitude);
-            intent.putExtra("longitude", eventLocation.longitude);
-            startActivity(intent);
+            MapDialogFragment dialogFragment = MapDialogFragment.newInstance(eventLocation.latitude, eventLocation.longitude);
+            dialogFragment.show(getSupportFragmentManager(), "MapDialog");
         });
 
-        // Setup Add Event button (finishes activity, returns to previous screen)
+        // Add Event button: Creates a MoodEvent, sets lat/long if available, and stores it in Firebase
         buttonAddEvent.setOnClickListener(view -> {
             String emotionalStateString = spinnerEmotionalState.getSelectedItem().toString();
             String reason = editReason.getText().toString().trim();
@@ -140,19 +151,20 @@ public class MoodEventActivity extends AppCompatActivity {
             }
 
             try {
-
-                if (socialSituation.equals("Choose not to answer")){
+                if (socialSituation.equals("Choose not to answer")) {
                     socialSituation = null;
                 }
-
-                if (trigger.equals("Choose not to answer")){
+                if (trigger.equals("Choose not to answer")) {
                     trigger = null;
                 }
 
-
                 MoodEvent newEvent = new MoodEvent(emotionalStateString, reason, trigger, socialSituation);
+                if (eventLocation != null) {
+                    newEvent.setLatitude(eventLocation.latitude);
+                    newEvent.setLongitude(eventLocation.longitude);
+                }
+
                 FirebaseSync fb = FirebaseSync.getInstance();
-                // this handles putting the new mood event in the database
                 fb.fetchUserProfileObject(new UserProfileCallback() {
                     @Override
                     public void onUserProfileLoaded(UserProfile userProfile) {
@@ -161,21 +173,19 @@ public class MoodEventActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Exception e) {
-
+                        Toast.makeText(MoodEventActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
 
-
                 Toast.makeText(this, "Mood Event Added!", Toast.LENGTH_SHORT).show();
-
-                Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
-                startActivity(intent);
+                startActivity(new Intent(getApplicationContext(), HomeActivity.class));
 
             } catch (IllegalArgumentException e) {
                 Toast.makeText(this, "Invalid input: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
+        // Camera launcher
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -188,6 +198,7 @@ public class MoodEventActivity extends AppCompatActivity {
                 }
         );
 
+        // Gallery launcher
         galleryLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -201,17 +212,18 @@ public class MoodEventActivity extends AppCompatActivity {
                 }
         );
 
+        // Spinner for emotional states
         String[] emotionalStates = getResources().getStringArray(R.array.emotional_states);
         MoodSpinnerAdapter adapter = new MoodSpinnerAdapter(this, R.layout.spinner_item, emotionalStates);
         spinnerEmotionalState.setAdapter(adapter);
 
+        // Upload Photo button
         buttonUploadPhoto.setOnClickListener(view -> {
             showImagePickerDialog();
         });
 
-        // Setup Bottom Navigation Listener
+        // Bottom navigation with no default selection
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
-        // Do not call setSelectedItemId() so nothing is pre-selected
         bottomNav.setOnItemSelectedListener(item -> {
             Intent intent = null;
             if (item.getItemId() == R.id.nav_home) {
@@ -230,9 +242,8 @@ public class MoodEventActivity extends AppCompatActivity {
                 intent = new Intent(this, ProfileActivity.class);
                 intent.putExtra("selected_fragment", "profile");
             } else {
-                return false; // Unknown item
+                return false;
             }
-
             if (intent != null) {
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
@@ -240,27 +251,6 @@ public class MoodEventActivity extends AppCompatActivity {
             }
             return true;
         });
-
-    }
-
-    private void checkCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
-        } else {
-            openCamera();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openCamera();
-            } else {
-                Toast.makeText(this, "Camera permission is required to take pictures", Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     private void showImagePickerDialog() {
@@ -277,12 +267,23 @@ public class MoodEventActivity extends AppCompatActivity {
         builder.create().show();
     }
 
+    private void checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+        } else {
+            openCamera();
+        }
+    }
+
     private void openCamera() {
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (cameraIntent.resolveActivity(getPackageManager()) != null) {
             File photoFile = createImageFile();
             if (photoFile != null) {
-                imageUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", photoFile);
+                imageUri = FileProvider.getUriForFile(this,
+                        getPackageName() + ".fileprovider", photoFile);
                 cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
                 cameraLauncher.launch(cameraIntent);
             } else {
@@ -305,32 +306,11 @@ public class MoodEventActivity extends AppCompatActivity {
             if (storageDir != null && !storageDir.exists()) {
                 storageDir.mkdirs();
             }
-            File imageFile = File.createTempFile("IMG_" + timeStamp, ".jpg", storageDir);
-            return imageFile;
+            return File.createTempFile("IMG_" + timeStamp, ".jpg", storageDir);
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(this, "Error creating image file", Toast.LENGTH_SHORT).show();
             return null;
         }
     }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            if (requestCode == ImagePicker.REQUEST_CODE) {
-                Uri imageUri = data.getData();
-                imageView.setImageURI(imageUri);
-                Toast.makeText(this, "Image Selected!", Toast.LENGTH_SHORT).show();
-            } else if (requestCode == CAMERA_REQUEST_CODE) {
-                imageView.setImageURI(imageUri);
-                Toast.makeText(this, "Photo Captured!", Toast.LENGTH_SHORT).show();
-            }
-        } else if (resultCode == ImagePicker.RESULT_ERROR) {
-            Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show();
-        }
-    }
-
 }
