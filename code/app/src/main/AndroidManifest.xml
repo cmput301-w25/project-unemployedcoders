@@ -20,7 +20,7 @@
     <!-- Ensure you replace "YOUR_API_KEY_HERE" with your actual API key -->
     <meta-data
         android:name="com.google.android.geo.API_KEY"
-        android:value="AIzaSyChzYUR_ApTmzJbyd1JoUN9SuMMLQopfUk" />
+        android:value="tt" />
 
     <!-- Queries for camera and gallery -->
     <queries>
