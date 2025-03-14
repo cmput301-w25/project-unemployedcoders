@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/stats_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/stats_gradient_bg"
+    android:padding="16dp">
+
+    <!-- Title TextView at top-center -->
+
+    <!-- Optional overlay for the chart container -->
+    <TextView
+        android:id="@+id/text_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="sans-serif-condensed"
+        android:gravity="center"
+        android:text="Mood Tracker: Statistics."
+        android:textColor="@android:color/white"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.493"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="HardcodedText" />
+
+    <View
+        android:id="@+id/chart_background"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/white"
+        android:alpha="0.2"
+        app:layout_constraintTop_toBottomOf="@id/text_title"
+        app:layout_constraintBottom_toTopOf="@+id/button_container"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Pie/Donut Chart -->
+
+    <!-- Container for Daily, Monthly, Custom Range buttons -->
+    <com.github.mikephil.charting.charts.PieChart
+        android:id="@+id/pieChart"
+        android:layout_width="327dp"
+        android:layout_height="600dp"
+        android:layout_margin="24dp"
+        app:layout_constraintBottom_toTopOf="@+id/button_container"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_title"
+        app:layout_constraintVertical_bias="1.0"/>
+
+    <LinearLayout
+        android:id="@+id/button_container"
+        android:layout_width="382dp"
+        android:layout_height="65dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/button_spin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/button_daily"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/button_bg"
+            android:backgroundTint="@null"
+            android:fontFamily="sans-serif-condensed"
+            android:text="Daily Stats"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/button_monthly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/button_bg"
+            android:backgroundTint="@null"
+            android:fontFamily="sans-serif-condensed"
+            android:text="Monthly Stats"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/button_custom_range"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_bg"
+            android:backgroundTint="@null"
+            android:fontFamily="sans-serif-condensed"
+            android:text="Custom Range"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+    <!-- Spin the chart button -->
+    <Button
+        android:id="@+id/button_spin"
+        android:layout_width="148dp"
+        android:layout_height="55dp"
+        android:layout_marginEnd="120dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/button_bg"
+        android:backgroundTint="@null"
+        android:fontFamily="sans-serif-condensed"
+        android:text="Spin!"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toTopOf="@+id/button_back"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Back Button -->
+    <Button
+        android:id="@+id/button_back"
+        android:layout_width="137dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/button_bg"
+        android:backgroundTint="@null"
+        android:fontFamily="sans-serif-condensed"
+        android:text="Back"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Bottom Navigation -->
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,5 +13,7 @@
     <color name="focusedColor">#FF4081</color>
 
     <color name="purple_500">#FF6200EE</color>
+    <color name="purple_200">#FF6200EE</color>
+    <color name="purple_700">#FF6200EE</color>
     <color name="overlay_color">#6d494e</color>
 </resources>

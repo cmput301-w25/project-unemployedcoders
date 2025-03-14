@@ -87,15 +87,31 @@
                     android:textStyle="bold"/>
             </LinearLayout>
 
-            <Button
-                android:id="@+id/edit_profile_button"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Edit Profile"
-                android:backgroundTint="@color/anger"
-                android:textColor="@android:color/white"
+                android:orientation="horizontal"
+                android:gravity="center"
                 android:layout_gravity="center"
-                android:layout_marginBottom="12dp"/>
+                android:layout_marginBottom="12dp">
+
+                <Button
+                    android:id="@+id/edit_profile_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/anger"
+                    android:text="Edit Profile"
+                    android:textColor="@android:color/white"
+                    android:layout_marginEnd="16dp" />
+
+                <Button
+                    android:id="@+id/button_show_stats"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Show Stats"
+                    android:backgroundTint="@color/anger"
+                    android:textColor="@android:color/white" />
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"

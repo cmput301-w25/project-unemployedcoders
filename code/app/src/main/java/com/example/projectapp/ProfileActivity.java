@@ -5,11 +5,9 @@
 // screen in the ProjectApp. It sets up a BottomNavigationView for navigating
 // between app sections and highlights the "Profile" tab. The activity follows
 // the Model-View-Controller (MVC) pattern, acting as the controller.
-//
-// Design Pattern: MVC (Controller)
-// Outstanding Issues:
-// N/A
+// Additionally, it now includes a "Show Stats" button that launches the StatsActivity.
 // -----------------------------------------------------------------------------
+
 package com.example.projectapp;
 
 import android.content.Intent;
@@ -43,14 +41,24 @@ public class ProfileActivity extends AppCompatActivity {
 
         showUsername();
 
+        // Logout Button
         Button logOutButton = findViewById(R.id.logout_button);
-
         logOutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FirebaseAuth.getInstance().signOut();
                 Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                 startActivity(intent);
+            }
+        });
+
+        // Show Stats Button: Launches StatsActivity
+        Button showStatsButton = findViewById(R.id.button_show_stats);
+        showStatsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent statsIntent = new Intent(ProfileActivity.this, StatsActivity.class);
+                startActivity(statsIntent);
             }
         });
 
@@ -70,7 +78,6 @@ public class ProfileActivity extends AppCompatActivity {
                 } else if (item.getItemId() == R.id.nav_inbox) {
                     intent = new Intent(this, InboxActivity.class);
                 }
-
                 if (intent != null) {
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
@@ -83,21 +90,14 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
-    private void showUsername(){
-        TextView username_text = findViewById(R.id.profile_username);
-
+    private void showUsername() {
+        TextView usernameText = findViewById(R.id.profile_username);
         FirebaseSync fb = FirebaseSync.getInstance();
         fb.fetchUserProfileObject(new UserProfileCallback() {
             @Override
             public void onUserProfileLoaded(UserProfile userProfile) {
-                String username_str;
-                if (userProfile.getUsername() == null){
-                    username_str = "Username";
-                } else {
-                    username_str = userProfile.getUsername();
-                }
-
-                username_text.setText(username_str);
+                String usernameStr = (userProfile.getUsername() == null) ? "Username" : userProfile.getUsername();
+                usernameText.setText(usernameStr);
             }
 
             @Override

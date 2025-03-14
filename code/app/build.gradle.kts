@@ -47,6 +47,9 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+
     // Firebase BoM to manage Firebase library versions
     implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
     // Add Firebase Authentication without a version (managed by the BoM)

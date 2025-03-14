@@ -78,6 +78,7 @@
         <activity android:name=".ProfileActivity" android:exported="false" />
         <activity android:name=".SignupActivity" android:exported="false" />
         <activity android:name=".MoodEventActivity" android:exported="false" />
+        <activity android:name=".StatsActivity" android:exported="false" />
         <activity android:name=".MapViewActivity"/>
     </application>
 </manifest>
