@@ -39,6 +39,8 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     private double latitude;  // New: Store latitude
     private double longitude; // New: Store longitude
 
+    private boolean isPublic;
+
 
     /**
      * This is one constructor for the MoodEvent class
@@ -300,6 +302,9 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         }
 
         return -1 * this.date.compareTo(o.date); // reverse chronological
+    }
+    public boolean isPublic() {
+        return isPublic;
     }
 
 }

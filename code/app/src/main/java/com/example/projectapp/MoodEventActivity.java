@@ -21,10 +21,10 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 import android.Manifest;
 import androidx.activity.result.ActivityResultLauncher;
@@ -64,7 +64,8 @@ public class MoodEventActivity extends AppCompatActivity {
     private Button buttonViewMap;
     private Button buttonBackHome;
     private LatLng eventLocation;
-
+    private Switch switchVisibility;
+    private Button buttonVisibility;
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<Intent> galleryLauncher;
 
@@ -75,6 +76,8 @@ public class MoodEventActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+
+    private boolean isPublic = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,11 +99,17 @@ public class MoodEventActivity extends AppCompatActivity {
         spinnerSocialSituation = findViewById(R.id.spinner_social_situation);
         buttonUploadPhoto = findViewById(R.id.button_upload_photo);
         buttonAddLocation = findViewById(R.id.button_add_location);
+        buttonVisibility = findViewById(R.id.button_visibility);
         buttonAddEvent = findViewById(R.id.button_add_event);
         buttonViewMap = findViewById(R.id.button_view_map);
         buttonBackHome = findViewById(R.id.button_back_home);
         imageView = findViewById(R.id.imageView);
-
+        buttonVisibility.setText("Make Public");
+        buttonVisibility.setOnClickListener(view -> {
+            isPublic = !isPublic; // Toggle the state
+            buttonVisibility.setText(isPublic ? "Make Private" : "Make Public");
+            Toast.makeText(this, "Event is now " + (isPublic ? "Public" : "Private"), Toast.LENGTH_SHORT).show();
+        });
         // Setup Back button to go to home page
         buttonBackHome.setOnClickListener(view -> {
             Intent intent = new Intent(MoodEventActivity.this, MainActivity.class);
@@ -133,7 +142,7 @@ public class MoodEventActivity extends AppCompatActivity {
             String reason = editReason.getText().toString().trim();
             String trigger = spinnerTrigger.getSelectedItem().toString().trim();
             String socialSituation = spinnerSocialSituation.getSelectedItem().toString().trim();
-
+            boolean isPublic = switchVisibility.isChecked();
             if (!MoodEvent.validReason(reason)) {
                 Toast.makeText(this, "Reason is invalid. (<=20 chars, <=3 words)", Toast.LENGTH_SHORT).show();
                 return;
