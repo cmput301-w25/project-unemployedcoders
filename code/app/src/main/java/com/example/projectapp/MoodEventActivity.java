@@ -73,18 +73,11 @@ public class MoodEventActivity extends AppCompatActivity {
     private static final int REQUEST_CAMERA_PERMISSION = 1001;
     private static final int CAMERA_REQUEST_CODE = 1002;
 
-    private FirebaseAuth mAuth;
-    private FirebaseFirestore db;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_mood_event);
-
-        // Setting up the info for the firebase stuff
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
 
         Resources res = getResources();
         String exampleString = res.getString(R.string.example_string);
@@ -131,7 +124,6 @@ public class MoodEventActivity extends AppCompatActivity {
         buttonAddEvent.setOnClickListener(view -> {
             String emotionalStateString = spinnerEmotionalState.getSelectedItem().toString();
             String reason = editReason.getText().toString().trim();
-            String trigger = spinnerTrigger.getSelectedItem().toString().trim();
             String socialSituation = spinnerSocialSituation.getSelectedItem().toString().trim();
 
             if (!MoodEvent.validReason(reason)) {
@@ -141,16 +133,11 @@ public class MoodEventActivity extends AppCompatActivity {
 
             try {
 
-                if (socialSituation.equals("Choose not to answer")){
+                if (socialSituation.equals("Choose not to answer")) {
                     socialSituation = null;
                 }
 
-                if (trigger.equals("Choose not to answer")){
-                    trigger = null;
-                }
-
-
-                MoodEvent newEvent = new MoodEvent(emotionalStateString, reason, trigger, socialSituation);
+                MoodEvent newEvent = new MoodEvent(emotionalStateString, reason, socialSituation);
                 FirebaseSync fb = FirebaseSync.getInstance();
                 // this handles putting the new mood event in the database
                 fb.fetchUserProfileObject(new UserProfileCallback() {
