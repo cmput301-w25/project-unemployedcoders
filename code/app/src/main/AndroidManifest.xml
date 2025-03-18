@@ -16,11 +16,6 @@
     <!-- Features and Additional Configuration -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
-    <!-- Google Maps API Key (from development) -->
-    <meta-data
-        android:name="com.google.android.geo.API_KEY"
-        android:value="YOUR_API_KEY_HERE" />
-
     <!-- Queries for camera and gallery (from development) -->
     <queries>
         <intent>
@@ -76,6 +71,15 @@
         <activity android:name=".SignupActivity" android:exported="false" />
         <activity android:name=".MoodEventActivity" android:exported="false" />
         <activity android:name=".MapViewActivity"/>
+
+        <!-- Google Maps API Key (from development) -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyA_TYLQO_R5e6AgLbGpRTzoXLId3ODt7PM" />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
     </application>
 </manifest>
