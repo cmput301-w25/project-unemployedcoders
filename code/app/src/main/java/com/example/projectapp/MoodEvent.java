@@ -32,7 +32,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     private String emotionalState;
 
     private String reason;
-    private String trigger;
+
     private String socialSituation;
 
     private MoodType moodType;
