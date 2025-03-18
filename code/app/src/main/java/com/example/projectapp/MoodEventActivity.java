@@ -21,6 +21,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.widget.ImageView;
@@ -74,9 +75,6 @@ public class MoodEventActivity extends AppCompatActivity {
     private static final int REQUEST_CAMERA_PERMISSION = 1001;
     private static final int CAMERA_REQUEST_CODE = 1002;
 
-    private FirebaseAuth mAuth;
-    private FirebaseFirestore db;
-
     private boolean isPublic = false;
 
     @Override
@@ -84,10 +82,6 @@ public class MoodEventActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_mood_event);
-
-        // Setting up the info for the firebase stuff
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
 
         Resources res = getResources();
         String exampleString = res.getString(R.string.example_string);
@@ -140,7 +134,6 @@ public class MoodEventActivity extends AppCompatActivity {
         buttonAddEvent.setOnClickListener(view -> {
             String emotionalStateString = spinnerEmotionalState.getSelectedItem().toString();
             String reason = editReason.getText().toString().trim();
-            String trigger = spinnerTrigger.getSelectedItem().toString().trim();
             String socialSituation = spinnerSocialSituation.getSelectedItem().toString().trim();
             boolean isPublic = switchVisibility.isChecked();
             if (!MoodEvent.validReason(reason)) {
@@ -150,16 +143,11 @@ public class MoodEventActivity extends AppCompatActivity {
 
             try {
 
-                if (socialSituation.equals("Choose not to answer")){
+                if (socialSituation.equals("Choose not to answer")) {
                     socialSituation = null;
                 }
 
-                if (trigger.equals("Choose not to answer")){
-                    trigger = null;
-                }
-
-
-                MoodEvent newEvent = new MoodEvent(emotionalStateString, reason, trigger, socialSituation);
+                MoodEvent newEvent = new MoodEvent(emotionalStateString, reason, socialSituation);
                 FirebaseSync fb = FirebaseSync.getInstance();
                 // this handles putting the new mood event in the database
                 fb.fetchUserProfileObject(new UserProfileCallback() {
