@@ -30,6 +30,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    // for google maps
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
@@ -61,4 +66,8 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     //espresso intents
     androidTestImplementation("androidx.test.espresso:espresso-intents:3.6.1")
+
+    // for google map
+    implementation("com.google.android.gms:play-services-maps:latest_version")
+
 }
