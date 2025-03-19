@@ -72,6 +72,7 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             holder.emotionalStateText.setText("Unknown Mood");
         }
 
+        holder.triggerText.setText(moodEvent.getTrigger() != null ? moodEvent.getTrigger() : "No Trigger");
         holder.socialSituationText.setText(moodEvent.getSocialSituation() != null ? moodEvent.getSocialSituation() : "No Social Situation");
 
         int color = moodEvent.getColorResource();
@@ -108,6 +109,7 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             usernameText = itemView.findViewById(R.id.username_text);
             timeText = itemView.findViewById(R.id.time_text);
             emotionalStateText = itemView.findViewById(R.id.emotional_state_text);
+            triggerText = itemView.findViewById(R.id.trigger_text);
             socialSituationText = itemView.findViewById(R.id.social_situation_text);
             background = itemView.findViewById(R.id.mood_event_background);
         }
