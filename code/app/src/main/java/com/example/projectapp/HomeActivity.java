@@ -56,15 +56,11 @@ public class HomeActivity extends AppCompatActivity {
         tabFollowing = findViewById(R.id.tab_following);
         addEventButton = findViewById(R.id.add_event_button);
 
-        adapter = new MoodEventRecyclerAdapter(this, forYouEvents, new OnMoodEventClickListener() {
-            @Override
-            public void onEditMoodEvent(MoodEvent event, int position) {
-                // Handle edit
-            }
+        adapter = new MoodEventRecyclerAdapter(this, forYouEvents, new MoodEventRecyclerAdapter.OnFollowClickListener() {
 
             @Override
-            public void onDeleteMoodEvent(MoodEvent event, int position) {
-                // Handle delete
+            public void onFollowClick(MoodEvent event) {
+
             }
         });
 
