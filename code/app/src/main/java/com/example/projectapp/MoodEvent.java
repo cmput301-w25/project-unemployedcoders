@@ -188,12 +188,42 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         return reason.length() <= 200;
     }
 
+
+
+    /**
+     * Returns the latitude for this mood event.
+     * @return
+     *      The latitude value (double)
+     */
     public double getLatitude() {
         return latitude;
     }
 
+    /**
+     * Sets the latitude for this mood event.
+     * @param latitude
+     *      The latitude value (double)
+     */
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    /**
+     * Returns the longitude for this mood event.
+     * @return
+     *      The longitude value (double)
+     */
     public double getLongitude() {
         return longitude;
+    }
+
+    /**
+     * Sets the longitude for this mood event.
+     * @param longitude
+     *      The longitude value (double)
+     */
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     /**

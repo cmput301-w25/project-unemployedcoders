@@ -54,6 +54,15 @@ public class ProfileActivity extends AppCompatActivity {
             }
         });
 
+        Button showStatsButton = findViewById(R.id.button_show_stats);
+        showStatsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent statsIntent = new Intent(ProfileActivity.this, StatsActivity.class);
+                startActivity(statsIntent);
+            }
+        });
+
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         if (bottomNav != null) {
             bottomNav.setSelectedItemId(R.id.nav_profile); // Highlight "Profile"

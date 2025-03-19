@@ -20,6 +20,7 @@ import static androidx.activity.result.ActivityResultCallerKt.registerForActivit
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 
 import android.os.Bundle;
@@ -73,6 +74,7 @@ public class MoodEventActivity extends AppCompatActivity {
     private Uri imageUri;
     private ImageView imageView;
     private static final int REQUEST_CAMERA_PERMISSION = 1001;
+    private static final int REQUEST_LOCATION_PERMISSION = 2001;
     private static final int CAMERA_REQUEST_CODE = 1002;
 
     private boolean isPublic = false;
@@ -114,22 +116,40 @@ public class MoodEventActivity extends AppCompatActivity {
 
         // Setup Add Location button
         buttonAddLocation.setOnClickListener(view -> {
-            eventLocation = new LatLng(37.7749, -122.4194); // Example: San Francisco
-            Toast.makeText(this, "Location Added!", Toast.LENGTH_SHORT).show();
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        REQUEST_LOCATION_PERMISSION);
+            } else {
+                GeoLocation geoLocation = new GeoLocation(this);
+                geoLocation.fetchFreshLocation(new GeoLocation.OnLocationReceivedListener() {
+                    @Override
+                    public void onLocationReceived(Location location) {
+                        eventLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                        Toast.makeText(MoodEventActivity.this,
+                                "Location Added: " + eventLocation.latitude + ", " + eventLocation.longitude,
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onLocationFailure(String error) {
+                        Toast.makeText(MoodEventActivity.this, error, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         });
 
-        // Setup View Map button
+        // View Map button: Opens a MapDialogFragment showing the event's location
         buttonViewMap.setOnClickListener(view -> {
             if (eventLocation == null) {
                 Toast.makeText(this, "No location added!", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Intent intent = new Intent(MoodEventActivity.this, MapViewActivity.class);
-            intent.putExtra("latitude", eventLocation.latitude);
-            intent.putExtra("longitude", eventLocation.longitude);
-            startActivity(intent);
+            MapDialogFragment dialogFragment = MapDialogFragment.newInstance(eventLocation.latitude, eventLocation.longitude);
+            dialogFragment.show(getSupportFragmentManager(), "MapDialog");
         });
-      
+
         // Setup Add Event button (finishes activity, returns to previous screen)
         buttonAddEvent.setOnClickListener(view -> {
             String emotionalStateString = spinnerEmotionalState.getSelectedItem().toString();

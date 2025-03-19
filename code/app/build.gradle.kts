@@ -53,6 +53,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     // Add Firestore dependency
     implementation("com.google.firebase:firebase-firestore:25.1.1")
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
     implementation(libs.espresso.intents)
     testImplementation("junit:junit:4.13.2")
