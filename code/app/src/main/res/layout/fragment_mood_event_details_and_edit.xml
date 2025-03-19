@@ -19,15 +19,6 @@
         android:hint="Enter a Reason" />
 
     <Spinner
-        android:id="@+id/details_fragment_edit_spinner_trigger"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bold_border"
-        android:entries="@array/mood_triggers"
-        android:prompt="@string/edit_fragment_emo_state_spinner_prompt"
-        android:textColor="@color/black" />
-
-    <Spinner
         android:id="@+id/details_fragment_edit_spinner_situation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

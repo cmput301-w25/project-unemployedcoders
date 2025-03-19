@@ -55,7 +55,6 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         // Replace the hardcoded "username" with actual data if available.
         holder.usernameText.setText("username");
         holder.emotionalStateText.setText(event.getEmotionalState());
-        holder.triggerText.setText(event.getTrigger() != null ? event.getTrigger() : "No Trigger");
         holder.timeText.setText(event.getDate().toString()); // Consider formatting the date
         holder.socialSituationText.setText(event.getSocialSituation() != null ? event.getSocialSituation() : "No Info");
     }
@@ -78,7 +77,6 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             profilePic = itemView.findViewById(R.id.profile_pic);
             usernameText = itemView.findViewById(R.id.username_text);
             emotionalStateText = itemView.findViewById(R.id.emotional_state_text);
-            triggerText = itemView.findViewById(R.id.trigger_text);
             timeText = itemView.findViewById(R.id.time_text);
             socialSituationText = itemView.findViewById(R.id.social_situation_text);
         }
