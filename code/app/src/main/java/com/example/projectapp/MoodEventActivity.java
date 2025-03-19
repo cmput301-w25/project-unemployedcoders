@@ -167,7 +167,7 @@ public class MoodEventActivity extends AppCompatActivity {
                     socialSituation = null;
                 }
 
-                MoodEvent newEvent = new MoodEvent(emotionalStateString, reason, socialSituation);
+                MoodEvent newEvent = new MoodEvent(emotionalStateString, reason, socialSituation,isPublic);
                 FirebaseSync fb = FirebaseSync.getInstance();
                 // this handles putting the new mood event in the database
                 fb.fetchUserProfileObject(new UserProfileCallback() {

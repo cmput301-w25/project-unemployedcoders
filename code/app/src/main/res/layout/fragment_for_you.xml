@@ -1,0 +1,15 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/for_you_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Maybe a TextView or toolbar here if you like -->
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_public_moods"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>

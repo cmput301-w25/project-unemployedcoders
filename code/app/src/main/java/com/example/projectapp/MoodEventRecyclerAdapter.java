@@ -1,115 +1,130 @@
-// -----------------------------------------------------------------------------
-// File: MoodEventRecyclerAdapter.java
-// -----------------------------------------------------------------------------
-// This file defines the MoodEventRecyclerAdapter class, a custom RecyclerView
-// Adapter for displaying MoodEvent objects in a list within the ProjectApp.
-// It supports two tabs ("For You" and "Following") for switching between event
-// lists and provides click listeners for editing and deleting mood events.
-//
-// Design Pattern: Adapter
-// Outstanding Issues:
-// N/A
-// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
-import java.util.ArrayList;
+
+import java.util.Date;
 import java.util.List;
+import com.bumptech.glide.Glide;
+
 
 public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecyclerAdapter.ViewHolder> {
 
-    private List<MoodEvent> events;
+    private List<MoodEvent> moodEvents;
     private Context context;
-    private OnMoodEventClickListener listener;
-    private int selectedTab = 0; // 0 for For You, 1 for Following
+    private OnFollowClickListener followListener;
 
-    public interface OnMoodEventClickListener {
-        void onEditMoodEvent(MoodEvent event, int position);
-        void onDeleteMoodEvent(MoodEvent event, int position);
+    public interface OnFollowClickListener {
+        void onFollowClick(MoodEvent event);
     }
 
-    public MoodEventRecyclerAdapter(Context context, List<MoodEvent> forYouEvents, List<MoodEvent> followingEvents, OnMoodEventClickListener listener) {
+    public MoodEventRecyclerAdapter(Context context, List<MoodEvent> moodEvents, OnFollowClickListener listener) {
         this.context = context;
-        this.listener = listener;
-        this.events = forYouEvents; // Default to For You
+        this.moodEvents = moodEvents;
+        this.followListener = listener;
+    }
+
+    // Update data in the adapter
+    public void setData(List<MoodEvent> newData) {
+        this.moodEvents = newData;
+        notifyDataSetChanged();
     }
 
     public void switchTab(int tabIndex, List<MoodEvent> newEvents) {
-        selectedTab = tabIndex;
-        this.events = newEvents;
+        // Update internal state (you can use tabIndex if needed)
+        this.moodEvents = newEvents;
         notifyDataSetChanged();
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.mood_event_layout, parent, false);
-        return new ViewHolder(view);
+    public MoodEventRecyclerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View itemView = LayoutInflater.from(context)
+                .inflate(R.layout.public_mood_item, parent, false);
+        return new ViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        MoodEvent moodEvent = events.get(position);
-
-        holder.usernameText.setText("username"); // Placeholder; replace with actual username logic
-        holder.timeText.setText(moodEvent.getDate().toString());
-
-        String moodText = moodEvent.getEmotionalState();
-        int emoticonResId = moodEvent.getEmoticonResource();
-        if (moodText != null && emoticonResId != 0) {
-            String emoticon = context.getResources().getString(emoticonResId);
-            holder.emotionalStateText.setText(emoticon + " " + moodText);
-        } else {
-            holder.emotionalStateText.setText("Unknown Mood");
-        }
-
-        holder.socialSituationText.setText(moodEvent.getSocialSituation() != null ? moodEvent.getSocialSituation() : "No Social Situation");
-
-        int color = moodEvent.getColorResource();
-        holder.background.setBackgroundColor(context.getResources().getColor(color, context.getTheme()));
-
-        // Click listeners
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onEditMoodEvent(moodEvent, position);
-            }
-        });
-
-        holder.itemView.setOnLongClickListener(v -> {
-            if (listener != null) {
-                listener.onDeleteMoodEvent(moodEvent, position);
-            }
-            return true;
-        });
+    public void onBindViewHolder(@NonNull MoodEventRecyclerAdapter.ViewHolder holder, int position) {
+        MoodEvent event = moodEvents.get(position);
+        holder.bind(event);
     }
 
     @Override
     public int getItemCount() {
-        return events != null ? events.size() : 0;
+        return (moodEvents != null) ? moodEvents.size() : 0;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageButton profilePic;
-        TextView usernameText, timeText, emotionalStateText, triggerText, socialSituationText;
-        ConstraintLayout background;
+    class ViewHolder extends RecyclerView.ViewHolder {
+        TextView usernameText, moodText, reasonText, socialText, timeText;
+        ImageView photoImage;
+        Button followButton;
 
-        public ViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
-            profilePic = itemView.findViewById(R.id.profile_pic);
-            usernameText = itemView.findViewById(R.id.username_text);
-            timeText = itemView.findViewById(R.id.time_text);
-            emotionalStateText = itemView.findViewById(R.id.emotional_state_text);
-            socialSituationText = itemView.findViewById(R.id.social_situation_text);
-            background = itemView.findViewById(R.id.mood_event_background);
+            usernameText = itemView.findViewById(R.id.text_username);
+            moodText = itemView.findViewById(R.id.text_mood);
+            reasonText = itemView.findViewById(R.id.text_reason);
+            socialText = itemView.findViewById(R.id.text_social_situation);
+            timeText = itemView.findViewById(R.id.text_time);
+            photoImage = itemView.findViewById(R.id.image_photo);
+            followButton = itemView.findViewById(R.id.button_follow);
+        }
+
+        void bind(UserProfile profile) {
+            // Bind text fields
+            usernameText.setText(profile.getUsername() != null ? profile.getUsername() : "Unknown");}
+        void bind(MoodEvent event) {
+            moodText.setText("Mood: " + (event.getEmotionalState() != null ? event.getEmotionalState() : "N/A"));
+            reasonText.setText("Reason: " + (event.getReason() != null ? event.getReason() : "N/A"));
+            socialText.setText("Social: " + (event.getSocialSituation() != null ? event.getSocialSituation() : "N/A"));
+
+            // Time field, e.g. "10 minutes ago"
+            if (event.getDate() != null) {
+                // If you have a utility method, or do a manual calculation
+                timeText.setText("Time: " + getRelativeTime(event.getDate()));
+            } else {
+                timeText.setText("Time: N/A");
+            }
+
+            // Photo
+            if (event.getPhotoUrl() != null) {
+                // Use Glide or Picasso to load
+                Glide.with(context)
+                        .load(event.getPhotoUrl())
+                        .placeholder(android.R.color.darker_gray)
+                        .into(photoImage);
+            } else {
+                photoImage.setImageResource(android.R.color.transparent);
+            }
+
+            // Follow button
+            followButton.setOnClickListener(v -> {
+                if (followListener != null) {
+                    followListener.onFollowClick(event);
+                }
+            });
+        }
+
+        private String getRelativeTime(Date date) {
+            // Example: convert to "5 minutes ago"
+            long diffMillis = System.currentTimeMillis() - date.getTime();
+            long diffMinutes = diffMillis / 60000;
+            if (diffMinutes < 1) return "Just now";
+            else if (diffMinutes < 60) return diffMinutes + " minutes ago";
+            else {
+                // etc...
+                return date.toString(); // fallback
+            }
         }
     }
 }
+

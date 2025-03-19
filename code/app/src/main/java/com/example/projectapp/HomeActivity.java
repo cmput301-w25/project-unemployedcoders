@@ -19,10 +19,20 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +44,7 @@ public class HomeActivity extends AppCompatActivity {
     private List<MoodEvent> forYouEvents = new ArrayList<>();
     private List<MoodEvent> followingEvents = new ArrayList<>();
     private Button addEventButton;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,20 +56,33 @@ public class HomeActivity extends AppCompatActivity {
         tabFollowing = findViewById(R.id.tab_following);
         addEventButton = findViewById(R.id.add_event_button);
 
-        adapter = new MoodEventRecyclerAdapter(this, forYouEvents, followingEvents, new MoodEventRecyclerAdapter.OnMoodEventClickListener() {
+        adapter = new MoodEventRecyclerAdapter(this, forYouEvents, new OnMoodEventClickListener() {
             @Override
-            public void onEditMoodEvent(MoodEvent event, int position) {}
+            public void onEditMoodEvent(MoodEvent event, int position) {
+                // Handle edit
+            }
+
             @Override
-            public void onDeleteMoodEvent(MoodEvent event, int position) {}
+            public void onDeleteMoodEvent(MoodEvent event, int position) {
+                // Handle delete
+            }
         });
+
         recyclerViewMoodEvents.setAdapter(adapter);
         recyclerViewMoodEvents.setLayoutManager(new LinearLayoutManager(this));
 
+        db = FirebaseFirestore.getInstance();
+
+        // Load public events for the "For You" tab
+        loadForYouEvents();
+
         tabForYou.setOnClickListener(v -> {
+            Log.d("HomeActivity", "For You tab clicked. Number of events: " + forYouEvents.size());
             tabForYou.setTextColor(getResources().getColor(android.R.color.white));
             tabFollowing.setTextColor(getResources().getColor(android.R.color.darker_gray));
             adapter.switchTab(0, forYouEvents);
         });
+
 
         tabFollowing.setOnClickListener(v -> {
             tabFollowing.setTextColor(getResources().getColor(android.R.color.white));
@@ -97,5 +121,27 @@ public class HomeActivity extends AppCompatActivity {
             }
             return true;
         });
+
+
+    }
+
+    private void loadForYouEvents() {
+        db.collection("moodEvents")
+                .whereEqualTo("isPublic", true)
+                .orderBy("date", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    forYouEvents.clear();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
+                        MoodEvent event = doc.toObject(MoodEvent.class);
+                        if (event != null) {
+                            forYouEvents.add(event);
+                        }
+                    }
+                    Log.d("HomeActivity", "Loaded " + forYouEvents.size() + " public events.");
+                    adapter.switchTab(0, forYouEvents);
+                })
+                .addOnFailureListener(e ->
+                        Snackbar.make(findViewById(R.id.recycler_view_mood_events), "Error loading events: " + e.getMessage(), Snackbar.LENGTH_SHORT).show());
     }
 }
