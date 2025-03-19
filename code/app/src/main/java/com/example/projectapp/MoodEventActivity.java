@@ -58,7 +58,6 @@ public class MoodEventActivity extends AppCompatActivity {
     private Spinner spinnerEmotionalState;
     private EditText editReason;
 
-    private Spinner spinnerTrigger;
     private Spinner spinnerSocialSituation;
     private Button buttonUploadPhoto;
     private Button buttonAddLocation;
@@ -91,7 +90,6 @@ public class MoodEventActivity extends AppCompatActivity {
         // Bind UI elements
         spinnerEmotionalState = findViewById(R.id.spinner_emotional_state);
         editReason = findViewById(R.id.edit_reason);
-        spinnerTrigger = findViewById(R.id.spinner_trigger);
         spinnerSocialSituation = findViewById(R.id.spinner_social_situation);
         buttonUploadPhoto = findViewById(R.id.button_upload_photo);
         buttonAddLocation = findViewById(R.id.button_add_location);
