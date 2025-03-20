@@ -165,9 +165,16 @@ public class MoodEventActivity extends AppCompatActivity {
                 if (socialSituation.equals("Choose not to answer")) {
                     socialSituation = null;
                 }
+                // Get the current user's UID
+                String userId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : null;
+                if (userId == null) {
+                    Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 MoodEvent newEvent = new MoodEvent(emotionalStateString, reason.isEmpty() ? null : reason, socialSituation, imageUri);
                 FirebaseSync fb = FirebaseSync.getInstance();
+
                 // this handles putting the new mood event in the database
                 fb.fetchUserProfileObject(new UserProfileCallback() {
                     @Override

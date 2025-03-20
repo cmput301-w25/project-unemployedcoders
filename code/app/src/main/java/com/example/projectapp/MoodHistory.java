@@ -18,6 +18,7 @@ import java.util.Collections;
  * A class to hold a user's mood history
  */
 public class MoodHistory {
+    private String userId;
     private ArrayList<MoodEvent> events;
 
     /**
@@ -27,6 +28,7 @@ public class MoodHistory {
         this.events = new ArrayList<MoodEvent>();
     }
 
+
     /**
      * This adds a given mood event to the history and sorts it in reverse chronological order
      * @param m
@@ -34,8 +36,10 @@ public class MoodHistory {
      */
     public void addEvent(MoodEvent m){
         this.events.add(m);
+        this.userId = userId;
         Collections.sort(this.events);
     }
+
 
     /**
      * This deletes a given mood event from the history and sorts it in reverse chronological order
@@ -71,6 +75,8 @@ public class MoodHistory {
     public boolean contains(MoodEvent m){
         return this.events.contains(m);
     }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
 
 

@@ -31,6 +31,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
 
     private Date date;
     private String emotionalState;
+    private String userId;
 
     private String reason;
 
@@ -89,6 +90,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         this.emotionalState = emotionalState;
         this.date = Calendar.getInstance().getTime();
         this.reason = reason;
+        this.userId = userId;
         this.socialSituation = socialSituation;
         this.moodType = MoodType.fromString(emotionalState);
         this.photoUri = photoUri;
@@ -143,6 +145,21 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         this.emotionalState = emotionalState;
         this.moodType = MoodType.fromString(emotionalState);
     }
+
+    /**
+     * This returns the user id  of the user
+     * @return
+     *      Returns the user id of the user
+     */
+
+    public String getUserId() { return userId; }
+
+    /**
+     * This sets the user id of the user
+     * @param userId
+     *      The user id to set for the user
+     */
+    public void setUserId(String userId) { this.userId = userId; }
 
     /**
      * This returns the reason of the event
