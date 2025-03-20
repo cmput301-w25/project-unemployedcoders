@@ -14,6 +14,7 @@ package com.example.projectapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -27,6 +28,10 @@ import com.example.projectapp.InboxActivity;
 import com.example.projectapp.MapActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.auth.User;
+
+import java.util.ArrayList;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -60,6 +65,31 @@ public class ProfileActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent statsIntent = new Intent(ProfileActivity.this, StatsActivity.class);
                 startActivity(statsIntent);
+            }
+        });
+
+        Button editProfileButton = findViewById(R.id.edit_profile_button);
+        editProfileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseFirestore db;
+                db = FirebaseFirestore.getInstance();
+                ProfileProvider p = ProfileProvider.getInstance(db);
+                p.listenForUpdates(new ProfileProvider.DataStatus() {
+                    @Override
+                    public void onDataUpdated(ArrayList<UserProfile> profiles) {
+                        for (UserProfile prof: profiles){
+                            Log.d("Database", prof.getUsername());
+                        }
+
+                    }
+
+                    @Override
+                    public void onError(String error) {
+
+                    }
+                });
+
             }
         });
 
