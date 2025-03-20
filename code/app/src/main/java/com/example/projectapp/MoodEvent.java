@@ -245,6 +245,15 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     }
 
     /**
+     * Gets the marker resource of the mood
+     * @return
+     *      The marker resource of the mood
+     */
+    public int getMarkerResource(){
+        return this.moodType.getMarkerResId();
+    }
+
+    /**
      * This compares two objects to see if they're the same
      * @param obj
      *      The object to compare to

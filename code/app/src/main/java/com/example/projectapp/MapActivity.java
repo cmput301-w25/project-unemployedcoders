@@ -238,7 +238,7 @@ public class MapActivity extends AppCompatActivity implements
     private void placeMoodEventMarker(MoodEvent moodEvent){
         MarkerOptions marker = new MarkerOptions().position(new LatLng(moodEvent.getLatitude(), moodEvent.getLongitude())).title(moodEvent.getEmotionalState());
 
-        Bitmap iconRes = BitmapFactory.decodeResource(getResources(), R.drawable.confusion_marker);  // raw img
+        Bitmap iconRes = BitmapFactory.decodeResource(getResources(), moodEvent.getMarkerResource());  // raw img
 
         Bitmap scaledIcon = Bitmap.createScaledBitmap(iconRes, 120, 200, false);  // scaled version
 
