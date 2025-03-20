@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -52,26 +53,6 @@ public class MapActivity extends AppCompatActivity implements
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        FirebaseSync fb = FirebaseSync.getInstance();
-        // Fetch mood history from Firebase
-        fb.fetchUserProfileObject(new UserProfileCallback() {
-            @Override
-            public void onUserProfileLoaded(UserProfile userProfile) {
-                moodHistory = userProfile.getHistory();
-
-                for (MoodEvent m: moodHistory.getEvents()){
-                    placeMoodEventMarker(m);
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(MapActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show(); // 1 time
-            }
-        });
-
-
-
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setSelectedItemId(R.id.nav_map); // Highlight current screen
         bottomNav.setOnItemSelectedListener(item -> {
@@ -109,6 +90,8 @@ public class MapActivity extends AppCompatActivity implements
 
         enableMyLocation();
         centerOnUserLocation();
+        setUpdateListener();
+        placeMoodHistoryMarkers();
     }
 
     private void enableMyLocation() {
@@ -185,6 +168,53 @@ public class MapActivity extends AppCompatActivity implements
 
         }
 
+    }
+
+    private void setUpdateListener(){
+        FirebaseSync fb = FirebaseSync.getInstance();
+
+        fb.listenForUpdates(new FirebaseSync.DataStatus() {
+            @Override
+            public void onDataUpdated() {
+                fb.fetchUserProfileObject(new UserProfileCallback() {
+                    @Override
+                    public void onUserProfileLoaded(UserProfile userProfile) {
+                       placeMoodHistoryMarkers();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(MapActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                Log.e("Update Error", error);
+            }
+        });
+    }
+
+    private void placeMoodHistoryMarkers(){
+        FirebaseSync fb = FirebaseSync.getInstance();
+        // Fetch mood history from Firebase
+        fb.fetchUserProfileObject(new UserProfileCallback() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                moodHistory = userProfile.getHistory();
+
+                map.clear();
+                for (MoodEvent m: moodHistory.getEvents()){
+                    placeMoodEventMarker(m);
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(MapActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show(); // 1 time
+            }
+        });
     }
 
     private void placeMoodEventMarker(MoodEvent moodEvent){

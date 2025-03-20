@@ -65,7 +65,7 @@ public class MoodEventActivity extends AppCompatActivity {
     private Button buttonViewMap;
     private Button buttonBackHome;
     private LatLng eventLocation;
-    private Switch switchVisibility;
+    //private Switch switchVisibility;
     private Button buttonVisibility;
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<Intent> galleryLauncher;
@@ -153,7 +153,7 @@ public class MoodEventActivity extends AppCompatActivity {
             String emotionalStateString = spinnerEmotionalState.getSelectedItem().toString();
             String reason = editReason.getText().toString().trim();
             String socialSituation = spinnerSocialSituation.getSelectedItem().toString().trim();
-            boolean isPublic = switchVisibility.isChecked();
+            //boolean isPublic = switchVisibility.isChecked();
             if (!MoodEvent.validReason(reason)) {
                 Toast.makeText(this, "Reason is invalid. (<=20 chars, <=3 words)", Toast.LENGTH_SHORT).show();
                 return;
@@ -166,6 +166,12 @@ public class MoodEventActivity extends AppCompatActivity {
                 }
 
                 MoodEvent newEvent = new MoodEvent(emotionalStateString, reason, socialSituation);
+
+                if (newEvent != null){
+                    newEvent.setLatitude(eventLocation.latitude);
+                    newEvent.setLongitude(eventLocation.longitude);
+                }
+
                 FirebaseSync fb = FirebaseSync.getInstance();
                 // this handles putting the new mood event in the database
                 fb.fetchUserProfileObject(new UserProfileCallback() {
