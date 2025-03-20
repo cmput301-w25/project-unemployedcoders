@@ -3,6 +3,8 @@ package com.example.projectapp;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +21,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -233,6 +237,12 @@ public class MapActivity extends AppCompatActivity implements
      */
     private void placeMoodEventMarker(MoodEvent moodEvent){
         MarkerOptions marker = new MarkerOptions().position(new LatLng(moodEvent.getLatitude(), moodEvent.getLongitude())).title(moodEvent.getEmotionalState());
+
+        Bitmap iconRes = BitmapFactory.decodeResource(getResources(), R.drawable.confusion_marker);  // raw img
+
+        Bitmap scaledIcon = Bitmap.createScaledBitmap(iconRes, 120, 200, false);  // scaled version
+
+        marker.icon(BitmapDescriptorFactory.fromBitmap(scaledIcon));
         map.addMarker(marker);
     }
 
