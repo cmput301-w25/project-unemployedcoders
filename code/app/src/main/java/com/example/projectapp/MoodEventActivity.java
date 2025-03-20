@@ -64,6 +64,7 @@ public class MoodEventActivity extends AppCompatActivity {
     private Spinner spinnerSocialSituation;
     private Button buttonUploadPhoto;
     private Button buttonAddLocation;
+    private FirebaseAuth mAuth;
     private Button buttonAddEvent;
     private Button buttonViewMap;
     private Button buttonBackHome;
@@ -83,6 +84,7 @@ public class MoodEventActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
 
         setContentView(R.layout.activity_mood_event);
 
