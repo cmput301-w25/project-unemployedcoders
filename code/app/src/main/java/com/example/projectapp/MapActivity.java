@@ -154,6 +154,9 @@ public class MapActivity extends AppCompatActivity implements
     }
 
 
+    /**
+     * Centers the camera on the current user's current location
+     */
     private void centerOnUserLocation(){
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -162,7 +165,7 @@ public class MapActivity extends AppCompatActivity implements
                 @Override
                 public void onSuccess(Location location) {
                     LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude()); // user's location
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 1));
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
                 }
             });
 
@@ -170,6 +173,9 @@ public class MapActivity extends AppCompatActivity implements
 
     }
 
+    /**
+     * Sets the update listener to update the mood event markers on a change from the database
+     */
     private void setUpdateListener(){
         FirebaseSync fb = FirebaseSync.getInstance();
 
@@ -196,6 +202,9 @@ public class MapActivity extends AppCompatActivity implements
         });
     }
 
+    /**
+     * Places the current user's mood events on the map
+     */
     private void placeMoodHistoryMarkers(){
         FirebaseSync fb = FirebaseSync.getInstance();
         // Fetch mood history from Firebase
@@ -217,6 +226,11 @@ public class MapActivity extends AppCompatActivity implements
         });
     }
 
+    /**
+     * Places a single mood event on the map
+     * @param moodEvent
+     *      The mood event to place
+     */
     private void placeMoodEventMarker(MoodEvent moodEvent){
         MarkerOptions marker = new MarkerOptions().position(new LatLng(moodEvent.getLatitude(), moodEvent.getLongitude())).title(moodEvent.getEmotionalState());
         map.addMarker(marker);
