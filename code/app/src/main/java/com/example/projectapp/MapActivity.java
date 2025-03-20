@@ -31,8 +31,9 @@ public class MapActivity extends AppCompatActivity implements
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean permissionDenied = false;
     private GoogleMap map;
-
     private FusedLocationProviderClient mFusedLocationClient;
+
+    private MoodHistory moodHistory;
 
     /*
     Much of the following code is from Google Maps Platform "Location Data Tutorial"
@@ -50,6 +51,26 @@ public class MapActivity extends AppCompatActivity implements
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        FirebaseSync fb = FirebaseSync.getInstance();
+        // Fetch mood history from Firebase
+        fb.fetchUserProfileObject(new UserProfileCallback() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                moodHistory = userProfile.getHistory();
+
+                for (MoodEvent m: moodHistory.getEvents()){
+                    placeMoodEventMarker(m);
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(MapActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show(); // 1 time
+            }
+        });
+
+
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setSelectedItemId(R.id.nav_map); // Highlight current screen
@@ -158,12 +179,17 @@ public class MapActivity extends AppCompatActivity implements
                 @Override
                 public void onSuccess(Location location) {
                     LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude()); // user's location
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 1));
                 }
             });
 
         }
 
+    }
+
+    private void placeMoodEventMarker(MoodEvent moodEvent){
+        MarkerOptions marker = new MarkerOptions().position(new LatLng(moodEvent.getLatitude(), moodEvent.getLongitude())).title(moodEvent.getEmotionalState());
+        map.addMarker(marker);
     }
 
 }
