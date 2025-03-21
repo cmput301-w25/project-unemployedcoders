@@ -71,6 +71,14 @@ public class ProfileProvider {
         return null;
     }
 
+    public boolean usernameAvailable(String username){
+        for (UserProfile prof: profiles){
+            if (prof.getUsername().equals(username)){
+                return false;
+            }
+        }
+        return true;
+    }
 
 
 
