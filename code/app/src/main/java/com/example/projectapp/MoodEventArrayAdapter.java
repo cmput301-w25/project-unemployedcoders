@@ -22,6 +22,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
@@ -80,7 +82,21 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
 
         MoodEvent moodEvent = events.get(position);
 
-        holder.usernameText.setText("username");
+        ProfileProvider provider = ProfileProvider.getInstance(FirebaseFirestore.getInstance());
+        provider.listenForUpdates(new ProfileProvider.DataStatus() {
+            @Override
+            public void onDataUpdated() {
+                if (moodEvent.getUserId() != null){
+                    holder.usernameText.setText("@" + provider.getProfileByUID(moodEvent.getUserId()).getUsername());
+
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                // nothing for now
+            }
+        });
 
         String[] tokens = moodEvent.getDate().toString().split(" ");
         String dateStr = tokens[1] + " " + tokens[2] + ", " + tokens[5];

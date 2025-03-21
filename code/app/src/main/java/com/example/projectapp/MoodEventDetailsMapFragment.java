@@ -15,6 +15,8 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 public class MoodEventDetailsMapFragment  extends DialogFragment {
 
     public interface EditMoodEventMapListener {
@@ -66,7 +68,22 @@ public class MoodEventDetailsMapFragment  extends DialogFragment {
 
         MoodEvent moodEvent = (MoodEvent) requireArguments().getSerializable("moodEvent");
 
-        usernameText.setText("username");
+        ProfileProvider provider = ProfileProvider.getInstance(FirebaseFirestore.getInstance());
+        provider.listenForUpdates(new ProfileProvider.DataStatus() {
+            @Override
+            public void onDataUpdated() {
+                if (moodEvent.getUserId() != null){
+                    usernameText.setText("@" + provider.getProfileByUID(moodEvent.getUserId()).getUsername());
+
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                // nothing for now
+            }
+        });
+
 
         String[] tokens = moodEvent.getDate().toString().split(" ");
         String dateStr = tokens[1] + " " + tokens[2] + ", " + tokens[5];
