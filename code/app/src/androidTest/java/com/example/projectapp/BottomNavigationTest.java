@@ -18,7 +18,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
+/**
+ * BottomNavigationTest contains instrumented tests for the BottomNavigationView in MoodEventActivity.
+ * This class verifies that clicking each navigation item (Home, Map, History, Inbox, Profile)
+ * correctly triggers an Intent to MainActivity with the appropriate fragment identifier.
+ */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class BottomNavigationTest {

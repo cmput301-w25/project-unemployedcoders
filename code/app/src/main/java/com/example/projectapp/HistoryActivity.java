@@ -30,7 +30,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 
 public class HistoryActivity extends AppCompatActivity implements MoodEventArrayAdapter.OnMoodEventClickListener,
-MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragment.DeleteMoodEventDialogListener{
+        MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragment.DeleteMoodEventDialogListener{
     private MoodHistory moodHistory;
     private ListView moodEventList;
     private MoodEventArrayAdapter moodEventAdapter;

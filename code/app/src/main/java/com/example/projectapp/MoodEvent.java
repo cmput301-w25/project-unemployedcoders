@@ -34,7 +34,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     private String userId;
 
     private String reason;
-
+    private String trigger;
     private String socialSituation;
 
     private MoodType moodType;
@@ -72,10 +72,12 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      *      The specific emotional state of the event
      * @param reason
      *      The reason for the event
+     * @param trigger
+     *      The trigger of the event
      * @param socialSituation
      *      The social situation of the event
      */
-    public MoodEvent(String emotionalState, String reason, String socialSituation){
+    public MoodEvent(String emotionalState, String reason, String trigger, String socialSituation){
         if (!validReason(reason)){
             throw new IllegalArgumentException("Not a valid reason");
         }
@@ -90,6 +92,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
 
         this.emotionalState = emotionalState;
         this.date = Calendar.getInstance().getTime();
+        this.trigger = trigger;
         this.reason = reason;
         this.socialSituation = socialSituation;
         this.moodType = MoodType.fromString(emotionalState);
@@ -119,6 +122,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         this.emotionalState = emotionalState;
         this.date = Calendar.getInstance().getTime();
         this.reason = reason;
+        this.trigger = null;
         this.socialSituation = null;
         this.moodType = MoodType.fromString(emotionalState);
     }
@@ -195,7 +199,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      */
     public void setSocialSituation(String socialSituation) {
         if (socialSituation == null){
-            this.socialSituation = null;
+            this.socialSituation = socialSituation;
         } else if (socialSituation.equals("Choose not to answer")){
             this.socialSituation = null;
         } else {
@@ -224,7 +228,8 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
             return false;
         }
 
-        return reason.length() <= 200;
+        int wordCount = reason.trim().split(" ").length;
+        return wordCount <= 3 && reason.length() <= 20;
     }
 
 
@@ -316,6 +321,16 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
             return false;
         }
 
+        if (this.trigger == null){
+            if (this.trigger != other.trigger){ // if both are null
+                return false;
+            }
+        } else {
+            if (!this.trigger.equals(other.trigger)){
+                return false;
+            }
+        }
+
         if (this.socialSituation == null){
             if (this.socialSituation != other.socialSituation){
                 return false;
@@ -351,9 +366,6 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         }
 
         return -1 * this.date.compareTo(o.date); // reverse chronological
-    }
-    public boolean isPublic() {
-        return isPublic;
     }
 
 }

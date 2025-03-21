@@ -1,17 +1,3 @@
-// -----------------------------------------------------------------------------
-// File: LoginActivity.java
-// -----------------------------------------------------------------------------
-// This file defines the LoginActivity class, which serves as the entry point
-// for user authentication in the ProjectApp application. It handles user login
-// via email and password using Firebase Authentication, navigates to HomeActivity
-// upon successful login, and provides access to the SignupActivity for new users.
-// Additionally, it implements a password reset feature using a ResetPasswordDialogFragment.
-//
-// Design Pattern: MVC (Controller) and MVC (View)
-// Outstanding Issues:
-//  N/A
-// -----------------------------------------------------------------------------
-
 package com.example.projectapp;
 
 import android.content.Intent;
@@ -22,7 +8,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
+/**
+ * LoginActivity handles user authentication using Firebase Authentication.
+ * This class provides a login interface where users can enter their email and password
+ * to sign in. It also includes a sign-up button to redirect to the SignupActivity.
+ */
 public class LoginActivity extends AppCompatActivity {
 
     private EditText editUsername, editPassword;
