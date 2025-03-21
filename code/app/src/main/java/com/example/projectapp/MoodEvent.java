@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.io.Serializable;
+import android.net.Uri;
 
 /**
  * This is a class that models a MoodEvent
@@ -30,6 +31,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
 
     private Date date;
     private String emotionalState;
+    private String userId;
 
     private String reason;
 
@@ -41,6 +43,27 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
 
     private boolean isPublic;
 
+    private Uri photoUri;
+
+
+    public MoodEvent(String emotionalState, String reason, String socialSituation, Uri photoUri) {
+        if (reason != null && !validReason(reason)) {
+            throw new IllegalArgumentException("Not a valid reason");
+        }
+        if (MoodType.fromString(emotionalState) == null) {
+            throw new IllegalArgumentException("Not a valid emotional state");
+        }
+        if (socialSituation != null && !Arrays.asList(ALL_SITUATIONS).contains(socialSituation)) {
+            throw new IllegalArgumentException("Not a valid social situation");
+        }
+
+        this.emotionalState = emotionalState;
+        this.date = Calendar.getInstance().getTime();
+        this.reason = reason;
+        this.socialSituation = socialSituation;
+        this.moodType = MoodType.fromString(emotionalState);
+        this.photoUri = photoUri;
+    }
 
     /**
      * This is one constructor for the MoodEvent class
@@ -67,9 +90,10 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         this.emotionalState = emotionalState;
         this.date = Calendar.getInstance().getTime();
         this.reason = reason;
+        this.userId = userId;
         this.socialSituation = socialSituation;
         this.moodType = MoodType.fromString(emotionalState);
-
+        this.photoUri = photoUri;
     }
 
     public MoodEvent(){
@@ -121,6 +145,21 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         this.emotionalState = emotionalState;
         this.moodType = MoodType.fromString(emotionalState);
     }
+
+    /**
+     * This returns the user id  of the user
+     * @return
+     *      Returns the user id of the user
+     */
+
+    public String getUserId() { return userId; }
+
+    /**
+     * This sets the user id of the user
+     * @param userId
+     *      The user id to set for the user
+     */
+    public void setUserId(String userId) { this.userId = userId; }
 
     /**
      * This returns the reason of the event
@@ -288,6 +327,16 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         }
 
         return true;
+    }
+
+    public Uri getPhotoUri() {
+        return photoUri;
+    }
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+    public void setPhotoUri(Uri photoUri) {
+        this.photoUri = photoUri;
     }
 
     /**
