@@ -36,6 +36,7 @@ public class MapActivity extends AppCompatActivity implements
         OnMapReadyCallback,
         GoogleMap.OnMarkerClickListener,
         MoodEventDetailsAndEditingFragment.EditMoodEventListener,
+        MoodEventDetailsMapFragment.EditMoodEventMapListener,
         ActivityCompat.OnRequestPermissionsResultCallback {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean permissionDenied = false;
@@ -271,7 +272,7 @@ public class MapActivity extends AppCompatActivity implements
         MoodEvent moodEvent = (MoodEvent)marker.getTag();
 
         if (moodEvent.getUserId() != null && moodEvent.getUserId().equals(mAuth.getCurrentUser().getUid())){
-            MoodEventDetailsAndEditingFragment.newInstance(moodEvent)
+            MoodEventDetailsMapFragment.newInstance(moodEvent)
                     .show(getSupportFragmentManager(), "Mood Event Details");
         }
 
@@ -294,5 +295,11 @@ public class MapActivity extends AppCompatActivity implements
                 Toast.makeText(MapActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void onMapMoodEventEdited(MoodEvent moodEvent) {
+        MoodEventDetailsAndEditingFragment.newInstance(moodEvent)
+                .show(getSupportFragmentManager(), "Mood Event Details");
     }
 }
