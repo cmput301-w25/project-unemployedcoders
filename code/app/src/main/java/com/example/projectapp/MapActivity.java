@@ -28,6 +28,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class MapActivity extends AppCompatActivity implements
         GoogleMap.OnMyLocationButtonClickListener,
@@ -42,6 +43,7 @@ public class MapActivity extends AppCompatActivity implements
     private FusedLocationProviderClient mFusedLocationClient;
 
     private MoodHistory moodHistory;
+    private FirebaseAuth mAuth;
 
     /*
     Much of the following code is from Google Maps Platform "Location Data Tutorial"
@@ -53,6 +55,8 @@ public class MapActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_map);
+
+        mAuth = FirebaseAuth.getInstance();
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -243,6 +247,7 @@ public class MapActivity extends AppCompatActivity implements
             return;
         }
 
+        // TODO: put users's username on the tag too, unless it's the current user's
         MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(moodEvent.getLatitude(), moodEvent.getLongitude())).title(moodEvent.getEmotionalState());
 
         Bitmap iconRes = BitmapFactory.decodeResource(getResources(), moodEvent.getMarkerResource());  // raw img
@@ -265,8 +270,10 @@ public class MapActivity extends AppCompatActivity implements
     public boolean onMarkerClick(@NonNull Marker marker) {
         MoodEvent moodEvent = (MoodEvent)marker.getTag();
 
-        MoodEventDetailsAndEditingFragment.newInstance(moodEvent)
-                .show(getSupportFragmentManager(), "Mood Event Details");
+        if (moodEvent.getUserId() != null && moodEvent.getUserId().equals(mAuth.getCurrentUser().getUid())){
+            MoodEventDetailsAndEditingFragment.newInstance(moodEvent)
+                    .show(getSupportFragmentManager(), "Mood Event Details");
+        }
 
         return false;
     }
