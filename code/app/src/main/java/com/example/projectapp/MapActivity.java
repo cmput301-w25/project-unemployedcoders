@@ -24,6 +24,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -32,6 +33,8 @@ public class MapActivity extends AppCompatActivity implements
         GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
         OnMapReadyCallback,
+        GoogleMap.OnMarkerClickListener,
+        MoodEventDetailsAndEditingFragment.EditMoodEventListener,
         ActivityCompat.OnRequestPermissionsResultCallback {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean permissionDenied = false;
@@ -236,14 +239,53 @@ public class MapActivity extends AppCompatActivity implements
      *      The mood event to place
      */
     private void placeMoodEventMarker(MoodEvent moodEvent){
-        MarkerOptions marker = new MarkerOptions().position(new LatLng(moodEvent.getLatitude(), moodEvent.getLongitude())).title(moodEvent.getEmotionalState());
+        if (moodEvent.getLatitude() == 0 && moodEvent.getLongitude() == 0){
+            return;
+        }
+
+        MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(moodEvent.getLatitude(), moodEvent.getLongitude())).title(moodEvent.getEmotionalState());
 
         Bitmap iconRes = BitmapFactory.decodeResource(getResources(), moodEvent.getMarkerResource());  // raw img
 
         Bitmap scaledIcon = Bitmap.createScaledBitmap(iconRes, 120, 200, false);  // scaled version
 
-        marker.icon(BitmapDescriptorFactory.fromBitmap(scaledIcon));
-        map.addMarker(marker);
+        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(scaledIcon));  // set the icon
+
+        Marker marker = map.addMarker(markerOptions);
+
+        if (marker != null){
+            marker.setTag(moodEvent);
+        }
+
+        map.setOnMarkerClickListener(this);
+
     }
 
+    @Override
+    public boolean onMarkerClick(@NonNull Marker marker) {
+        MoodEvent moodEvent = (MoodEvent)marker.getTag();
+
+        MoodEventDetailsAndEditingFragment.newInstance(moodEvent)
+                .show(getSupportFragmentManager(), "Mood Event Details");
+
+        return false;
+    }
+
+    @Override
+    public void onMoodEventEdited(MoodEvent moodEvent) {
+        FirebaseSync fb = FirebaseSync.getInstance();
+        fb.fetchUserProfileObject(new UserProfileCallback() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                userProfile.setHistory(moodHistory);
+                //moodEventAdapter.notifyDataSetChanged();
+                fb.storeUserData(userProfile);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(MapActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 }
