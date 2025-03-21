@@ -85,7 +85,7 @@ public class MoodEventActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        mAuth = FirebaseAuth.getInstance();
         setContentView(R.layout.activity_mood_event);
 
         Resources res = getResources();
