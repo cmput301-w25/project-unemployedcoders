@@ -173,7 +173,7 @@ public class MoodEventActivity extends AppCompatActivity {
                     Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                MoodEvent newEvent = new MoodEvent(emotionalStateString, reason.isEmpty() ? null : reason, socialSituation, imageUri);
+                MoodEvent newEvent = new MoodEvent(emotionalStateString, reason.isEmpty() ? null : reason, socialSituation, imageUri, userId);
 
                 if (newEvent != null){
                     newEvent.setLatitude(eventLocation.latitude);
