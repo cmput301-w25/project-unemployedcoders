@@ -15,18 +15,19 @@ package com.example.projectapp;
  * An enumeration to keep the information for emotional states together
  */
 public enum MoodType {
-    ANGER("Anger", R.color.anger, R.string.anger_emoticon),
-    CONFUSION("Confusion", R.color.confusion, R.string.confusion_emoticon),
-    DISGUST("Disgust", R.color.disgust, R.string.disgust_emoticon),
-    FEAR("Fear", R.color.fear, R.string.fear_emoticon),
-    HAPPINESS("Happiness", R.color.happiness, R.string.happiness_emoticon),
-    SADNESS("Sadness", R.color.sadness, R.string.sadness_emoticon),
-    SHAME("Shame", R.color.shame, R.string.shame_emoticon),
-    SURPRISE("Surprise", R.color.surprise, R.string.surprise_emoticon);
+    ANGER("Anger", R.color.anger, R.string.anger_emoticon, R.drawable.anger_marker),
+    CONFUSION("Confusion", R.color.confusion, R.string.confusion_emoticon, R.drawable.confusion_marker),
+    DISGUST("Disgust", R.color.disgust, R.string.disgust_emoticon, R.drawable.disgust_marker),
+    FEAR("Fear", R.color.fear, R.string.fear_emoticon, R.drawable.fear_marker),
+    HAPPINESS("Happiness", R.color.happiness, R.string.happiness_emoticon, R.drawable.happiness_marker),
+    SADNESS("Sadness", R.color.sadness, R.string.sadness_emoticon, R.drawable.sadness_marker),
+    SHAME("Shame", R.color.shame, R.string.shame_emoticon, R.drawable.shame_marker),
+    SURPRISE("Surprise", R.color.surprise, R.string.surprise_emoticon, R.drawable.surprise_marker);
 
     private final String displayName;
     private final int colorCode;
     private final int emoticonResId; // Now refers to a string resource
+    private final int markerResId;
 
     /**
      * Constructor for MoodType enum
@@ -37,10 +38,11 @@ public enum MoodType {
      * @param emoticonResId
      *      emoticon resource id of emotional state
      */
-    MoodType(String displayName, int colorCode, int emoticonResId) {
+    MoodType(String displayName, int colorCode, int emoticonResId, int markerResId) {
         this.displayName = displayName;
         this.colorCode = colorCode;
         this.emoticonResId = emoticonResId;
+        this.markerResId = markerResId;
     }
 
     /**
@@ -68,6 +70,15 @@ public enum MoodType {
      */
     public int getEmoticonResId() {
         return emoticonResId;
+    }
+
+    /**
+     * Gets the emotional state's marker resource id
+     * @return
+     *      the emotional state's emoticon resource id
+     */
+    public int getMarkerResId() {
+        return markerResId;
     }
 
     /**

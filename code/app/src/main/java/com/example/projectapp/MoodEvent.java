@@ -2,59 +2,52 @@
 // File: MoodEvent.java
 // -----------------------------------------------------------------------------
 // This file defines the MoodEvent class, a model class representing a single
-// mood-related event in the ProjectApp. It captures details such as the current
-// date/time, a required emotional state, an optional reason (no more than 200 characters
-// and 3 words), an optional social situation, and a flag indicating if the event is public.
-// The class implements Comparable for sorting events in reverse chronological order
-// and Serializable for potential data persistence.
+// mood-related event in the ProjectApp. It captures details such as emotional
+// state, trigger, social situation, date, and geolocation (latitude/longitude).
+// The class implements Comparable for sorting events in reverse chronological
+// order and Serializable for potential data persistence.
 //
 // Design Pattern: MVC (Model)
 // Outstanding Issues:
 //  N/A
-// -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
-import java.io.File;
+
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.io.Serializable;
+import android.net.Uri;
 
+/**
+ * This is a class that models a MoodEvent
+ */
 public class MoodEvent implements Comparable<MoodEvent>, Serializable {
 
-    public static final String[] ALL_SITUATIONS = {
-            "Alone",
-            "With one other person",
-            "With two to several people",
-            "With a crowd"
-    };
+
+    public static final String[] ALL_SITUATIONS = {"Alone" , "With one other person", "With two to several people", "With a crowd"};
 
     private Date date;
     private String emotionalState;
+    private String userId;
+
     private String reason;
+
     private String socialSituation;
+
     private MoodType moodType;
-    private double latitude;  // Stored latitude
-    private double longitude; // Stored longitude
-    private boolean isPublic; // True if the event is public
+    private double latitude;  // New: Store latitude
+    private double longitude; // New: Store longitude
 
-    private File imageFile;
+    private boolean isPublic;
 
-    private String uid;
-
+    private Uri photoUri;
 
 
-    /**
-     * Constructor that accepts emotional state, reason, social situation, and a public flag.
-     *
-     * @param emotionalState The specific emotional state of the event.
-     * @param reason         The reason for the event (<=200 characters and <=3 words).
-     * @param socialSituation The social situation of the event (must be one of ALL_SITUATIONS or null).
-     * @param isPublic       True if the event is public; false if private.
-     */
-    public MoodEvent(String emotionalState, String reason, String socialSituation, boolean isPublic) {
-        if (!validReason(reason)) {
+    public MoodEvent(String emotionalState, String reason, String socialSituation, Uri photoUri, String userId) {
+        if (reason != null && !validReason(reason)) {
             throw new IllegalArgumentException("Not a valid reason");
         }
         if (MoodType.fromString(emotionalState) == null) {
@@ -63,163 +56,304 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         if (socialSituation != null && !Arrays.asList(ALL_SITUATIONS).contains(socialSituation)) {
             throw new IllegalArgumentException("Not a valid social situation");
         }
+
         this.emotionalState = emotionalState;
         this.date = Calendar.getInstance().getTime();
         this.reason = reason;
         this.socialSituation = socialSituation;
         this.moodType = MoodType.fromString(emotionalState);
-        this.isPublic = isPublic;
+        this.photoUri = photoUri;
+        this.userId = userId;
     }
 
     /**
-     * Constructor that accepts only emotional state and reason.
-     * Social situation defaults to null and isPublic defaults to false.
-     *
-     * @param emotionalState The emotional state.
-     * @param reason         The reason.
+     * This is one constructor for the MoodEvent class
+     * @param emotionalState
+     *      The specific emotional state of the event
+     * @param reason
+     *      The reason for the event
+     * @param socialSituation
+     *      The social situation of the event
      */
-    public MoodEvent(String emotionalState, String reason) {
-        this(emotionalState, reason, null, false);
+    public MoodEvent(String emotionalState, String reason, String socialSituation){
+        if (!validReason(reason)){
+            throw new IllegalArgumentException("Not a valid reason");
+        }
+
+        if (MoodType.fromString(emotionalState) == null){
+            throw new IllegalArgumentException("Not a valid emotional state");
+        }
+
+        if (socialSituation != null && !Arrays.asList(ALL_SITUATIONS).contains(socialSituation)){
+            throw new IllegalArgumentException("Not a valid social situation");
+        }
+
+        this.emotionalState = emotionalState;
+        this.date = Calendar.getInstance().getTime();
+        this.reason = reason;
+        this.socialSituation = socialSituation;
+        this.moodType = MoodType.fromString(emotionalState);
+        this.photoUri = photoUri;
+    }
+
+    public MoodEvent(){
+        // For firebase deserialization
     }
 
     /**
-     * Empty constructor required for Firebase deserialization.
+     * This is one constructor for the MoodEvent class
+     * @param emotionalState
+     *      The specific emotional state of the event
+     * @param reason
+     *      The reason for the event
      */
-    public MoodEvent() {}
+    public MoodEvent(String emotionalState, String reason){
+        if (MoodType.fromString(emotionalState) == null){
+            throw new IllegalArgumentException("Not a valid emotional state");
+        }
 
-    // Getters and setters
+        if (!validReason(reason)){
+            throw new IllegalArgumentException("Not a valid reason");
+        }
 
+        this.emotionalState = emotionalState;
+        this.date = Calendar.getInstance().getTime();
+        this.reason = reason;
+        this.socialSituation = null;
+        this.moodType = MoodType.fromString(emotionalState);
+    }
+
+    /**
+     * This returns the emotional state of the event
+     * @return
+     *      Returns the emotional state of the event
+     */
     public String getEmotionalState() {
         return emotionalState;
     }
 
+    /**
+     * This sets the emotional state of the event
+     * @param emotionalState
+     *      The emotionalState to set for the event
+     */
     public void setEmotionalState(String emotionalState) {
-        if (MoodType.fromString(emotionalState) == null) {
+        if (MoodType.fromString(emotionalState) == null){
             throw new IllegalArgumentException("Not a valid emotional state");
         }
+
         this.emotionalState = emotionalState;
         this.moodType = MoodType.fromString(emotionalState);
     }
 
+    /**
+     * This returns the user id  of the user
+     * @return
+     *      Returns the user id of the user
+     */
+
+    public String getUserId() { return userId; }
+
+    /**
+     * This sets the user id of the user
+     * @param userId
+     *      The user id to set for the user
+     */
+    public void setUserId(String userId) { this.userId = userId; }
+
+    /**
+     * This returns the reason of the event
+     * @return
+     *      Returns the reason of the event
+     */
     public String getReason() {
         return reason;
     }
 
+    /**
+     * This sets the reason of the event
+     * @param reason
+     *      The trigger to set for the event
+     */
     public void setReason(String reason) {
-        if (!validReason(reason)) {
-            throw new IllegalArgumentException("Not a valid reason");
-        }
         this.reason = reason;
     }
 
+    /**
+     * This returns the social situation of the event
+     * @return
+     *      Returns the emotional state of the event
+     */
     public String getSocialSituation() {
         return socialSituation;
     }
-    public String getuid(){
-        return uid;
-    }
 
+    /**
+     * This sets the social situation of the event
+     * @param socialSituation
+     *      The social situation to set for the event
+     */
     public void setSocialSituation(String socialSituation) {
-        if (socialSituation == null || socialSituation.equals("Choose not to answer")) {
+        if (socialSituation == null){
+            this.socialSituation = null;
+        } else if (socialSituation.equals("Choose not to answer")){
             this.socialSituation = null;
         } else {
-            if (!Arrays.asList(ALL_SITUATIONS).contains(socialSituation)) {
-                throw new IllegalArgumentException("Not a valid social situation");
-            }
             this.socialSituation = socialSituation;
         }
     }
 
+    /**
+     * This returns the date of the event
+     * @return
+     *      Returns the date of the event
+     */
     public Date getDate() {
         return date;
     }
 
     /**
-     * Validates the reason text to ensure it is no more than 200 characters and no more than 3 words.
-     *
-     * @param reason The reason text.
-     * @return True if valid, false otherwise.
+     * This checks if a trigger is valid in length
+     * @param reason
+     *      The trigger to check
+     * @return
+     *      Whether or not the trigger is valid
      */
-    public static boolean validReason(String reason) {
-        if (reason == null || reason.trim().isEmpty()) {
+    public static boolean validReason(String reason){
+        if (reason == null || reason.trim().isEmpty()){
             return false;
         }
-        int wordCount = reason.trim().split("\\s+").length;
-        return reason.length() <= 200 && wordCount <= 3;
+
+        return reason.length() <= 200;
     }
 
+
+
+    /**
+     * Returns the latitude for this mood event.
+     * @return
+     *      The latitude value (double)
+     */
     public double getLatitude() {
         return latitude;
     }
 
+    /**
+     * Sets the latitude for this mood event.
+     * @param latitude
+     *      The latitude value (double)
+     */
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
+    /**
+     * Returns the longitude for this mood event.
+     * @return
+     *      The longitude value (double)
+     */
     public double getLongitude() {
         return longitude;
     }
 
+    /**
+     * Sets the longitude for this mood event.
+     * @param longitude
+     *      The longitude value (double)
+     */
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
 
-    public int getColorResource() {
+    /**
+     * Gets the color resource associated with the mood
+     * @return
+     *      The color resource associated with the mood
+     */
+    public int getColorResource(){
         return this.moodType.getColorCode();
     }
 
-    public int getEmoticonResource() {
+    /**
+     * Gets the emoticon resource of the mood
+     * @return
+     *      The emoticon resource of the mood
+     */
+    public int getEmoticonResource(){
         return this.moodType.getEmoticonResId();
     }
 
+    /**
+     * Gets the marker resource of the mood
+     * @return
+     *      The marker resource of the mood
+     */
+    public int getMarkerResource(){
+        return this.moodType.getMarkerResId();
+    }
+
+    /**
+     * This compares two objects to see if they're the same
+     * @param obj
+     *      The object to compare to
+     */
+    @Override
+    public boolean equals(Object obj){
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        MoodEvent other = (MoodEvent)obj;
+
+        if (!this.date.equals(other.date)){
+            return false;
+        }
+
+        if(!this.reason.equals(other.reason)){
+            return false;
+        }
+
+        if (!this.emotionalState.equals(other.emotionalState)){
+            return false;
+        }
+
+        if (this.socialSituation == null){
+            if (this.socialSituation != other.socialSituation){
+                return false;
+            }
+        } else {
+            if (!this.socialSituation.equals(other.socialSituation)){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public Uri getPhotoUri() {
+        return photoUri;
+    }
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+    public void setPhotoUri(Uri photoUri) {
+        this.photoUri = photoUri;
+    }
+
+    /**
+     * This compares two objects to see what order they should come in, in reverse chronological order
+     * @param o
+     *      The object to compare to
+     */
+    @Override
+    public int compareTo(MoodEvent o) {
+        if (o == null){
+            throw new NullPointerException("MoodEvent you're comparing to is null");
+        }
+
+        return -1 * this.date.compareTo(o.date); // reverse chronological
+    }
     public boolean isPublic() {
         return isPublic;
     }
 
-    public void setPublic(boolean isPublic) {
-        this.isPublic = isPublic;
-    }
-
-    public File getPhotoUrl() {
-        return imageFile;
-    }
-
-    public void setPhotoUrl(File imageFile) {
-        this.imageFile = imageFile;
-    }
-
-    /**
-     * Checks equality by comparing date, reason, emotional state, social situation, and public flag.
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null || getClass() != obj.getClass())
-            return false;
-        MoodEvent other = (MoodEvent) obj;
-        if (!this.date.equals(other.date))
-            return false;
-        if (!this.reason.equals(other.reason))
-            return false;
-        if (!this.emotionalState.equals(other.emotionalState))
-            return false;
-        if (this.socialSituation == null) {
-            if (other.socialSituation != null)
-                return false;
-        } else if (!this.socialSituation.equals(other.socialSituation))
-            return false;
-        return this.isPublic == other.isPublic;
-    }
-
-    /**
-     * Compares two MoodEvent objects for reverse chronological order.
-     */
-    @Override
-    public int compareTo(MoodEvent o) {
-        if (o == null) {
-            throw new NullPointerException("MoodEvent you're comparing to is null");
-        }
-        return -1 * this.date.compareTo(o.date); // reverse chronological order
-    }
 }

@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,6 +46,8 @@ public class HomeActivity extends AppCompatActivity {
     private List<MoodEvent> followingEvents = new ArrayList<>();
     private Button addEventButton;
     private FirebaseFirestore db;
+    private TextView usernameDisplay;
+    private ImageButton mapToggleButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,13 +58,34 @@ public class HomeActivity extends AppCompatActivity {
         tabForYou = findViewById(R.id.tab_for_you);
         tabFollowing = findViewById(R.id.tab_following);
         addEventButton = findViewById(R.id.add_event_button);
+        usernameDisplay = findViewById(R.id.username_display);
+        mapToggleButton = findViewById(R.id.map_toggle_button); // Bind map toggle button
 
-        adapter = new MoodEventRecyclerAdapter(this, forYouEvents, new MoodEventRecyclerAdapter.OnFollowClickListener() {
+        // Fetch the current user's profile and set the username
+        FirebaseSync fb = FirebaseSync.getInstance();
+        fb.fetchUserProfileObject(new UserProfileCallback() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (userProfile != null && userProfile.getUsername() != null) {
+                    usernameDisplay.setText("@" + userProfile.getUsername());
+                } else {
+                    usernameDisplay.setText("@unknown");
+                    Toast.makeText(HomeActivity.this, "Failed to load username", Toast.LENGTH_SHORT).show();
+                }
+            }
 
             @Override
-            public void onFollowClick(MoodEvent event) {
-
+            public void onFailure(Exception e) {
+                usernameDisplay.setText("@unknown");
+                Toast.makeText(HomeActivity.this, "Error loading profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
+        });
+
+        adapter = new MoodEventRecyclerAdapter(this, forYouEvents, followingEvents, new MoodEventRecyclerAdapter.OnMoodEventClickListener() {
+            @Override
+            public void onEditMoodEvent(MoodEvent event, int position) {}
+            @Override
+            public void onDeleteMoodEvent(MoodEvent event, int position) {}
         });
 
         recyclerViewMoodEvents.setAdapter(adapter);
