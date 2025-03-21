@@ -68,7 +68,7 @@ public class ProfileActivity extends AppCompatActivity {
             }
         });
 
-        Button editProfileButton = findViewById(R.id.edit_profile_button);
+        /*Button editProfileButton = findViewById(R.id.edit_profile_button);
         editProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -77,7 +77,8 @@ public class ProfileActivity extends AppCompatActivity {
                 ProfileProvider p = ProfileProvider.getInstance(db);
                 p.listenForUpdates(new ProfileProvider.DataStatus() {
                     @Override
-                    public void onDataUpdated(ArrayList<UserProfile> profiles) {
+                    public void onDataUpdated() {
+                        ArrayList<UserProfile> profiles = p.getProfiles();
                         for (UserProfile prof: profiles){
                             Log.d("Database", prof.getUsername());
                         }
@@ -91,7 +92,7 @@ public class ProfileActivity extends AppCompatActivity {
                 });
 
             }
-        });
+        });*/
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         if (bottomNav != null) {

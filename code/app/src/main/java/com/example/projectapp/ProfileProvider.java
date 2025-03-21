@@ -1,6 +1,7 @@
 package com.example.projectapp;
 
 import android.graphics.Movie;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -27,13 +28,8 @@ public class ProfileProvider {
     }
 
     public interface DataStatus {
-        void onDataUpdated(ArrayList<UserProfile> profiles);
+        void onDataUpdated();
         void onError(String error);
-    }
-
-    public interface ProfileProviderCallback {
-        void onProfilesLoaded();
-        void onFailure(Exception e);
     }
 
     public void listenForUpdates(final DataStatus dataStatus) {
@@ -45,37 +41,15 @@ public class ProfileProvider {
             profiles.clear();
             if (snapshot != null) {
                 for (QueryDocumentSnapshot item : snapshot) {
-                    profiles.add(item.toObject(UserProfile.class));
+                    UserProfile p = item.toObject(UserProfile.class);
+                    profiles.add(p);
+                    Log.d("FirestoreData", "Uid: " + p.getUID() + "Len of history" + p.getHistory().getEvents().size());
+
                 }
-                dataStatus.onDataUpdated(profiles);
+                dataStatus.onDataUpdated();
             }
         });
     }
-
-    /*
-    public void getUserProfiles(ProfileProviderCallback callback){
-
-
-        userCollection.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()){
-                    profiles.clear();
-                    for (DocumentSnapshot item: task.getResult()){
-                        profiles.add(item.toObject(UserProfile.class));
-                    }
-
-
-                    callback.onProfilesLoaded(profiles);
-
-
-                } else {
-                    callback.onFailure(task.getException());
-                }
-            }
-        });
-
-    }*/
 
     public static ProfileProvider getInstance(FirebaseFirestore firestore) {
         if (movieProvider == null)
@@ -86,6 +60,18 @@ public class ProfileProvider {
     public ArrayList<UserProfile> getProfiles() {
         return profiles;
     }
+
+    public UserProfile getProfileByUID(String uid){
+        for (UserProfile prof: profiles){
+            if (prof.getUID().equals(uid)){
+                return prof;
+            }
+        }
+
+        return null;
+    }
+
+
 
 
 }
