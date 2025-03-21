@@ -1,10 +1,7 @@
 package com.example.projectapp;
 
-import android.graphics.Movie;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -13,10 +10,9 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 /**
- * Singleton class that manages db operations through firestore
+ * Singleton class to manage Firebase Firestore interactions.
  */
 public class FirebaseSync {
 
@@ -29,35 +25,25 @@ public class FirebaseSync {
         void onError(String error);
     }
 
-
-    /**
-     * gets an instance of FireBaseSync, since its a singleton class
-     * @return
-     *      an instance of FireBaseSync
-     */
     public static FirebaseSync getInstance() {
-        if (firebaseSync == null)
+        if (firebaseSync == null) {
             firebaseSync = new FirebaseSync();
+        }
         return firebaseSync;
     }
 
-    /**
-     * Private constructor for FirebaseSync
-     */
-    private FirebaseSync(){
+    private FirebaseSync() {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
     }
 
     public void listenForUpdates(final DataStatus dataStatus) {
         CollectionReference profiles = db.collection("users");
-
         profiles.addSnapshotListener((snapshot, error) -> {
             if (error != null) {
                 dataStatus.onError(error.getMessage());
                 return;
             }
-
             if (snapshot != null) {
                 dataStatus.onDataUpdated();
             }
@@ -65,85 +51,63 @@ public class FirebaseSync {
     }
 
     /**
-     * stores a UserProfile object into the current FireBase user's db
-     * @param profile
-     *      the UserProfile object to store
+     * Overwrites the Firestore doc for the current user with 'profile'.
      */
-    public void storeUserData(UserProfile profile){
+    public void storeUserData(UserProfile profile) {
         FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null){
+        if (user != null) {
             String uid = user.getUid();
             db.collection("users")
                     .document(uid)
-                    .set(profile).addOnSuccessListener(aVoid -> {
-                        Log.d("Firestore", "User profile successfully saved!");
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("Firestore", "Error saving user profile", e);  // Log error
-                    });
+                    .set(profile)
+                    .addOnSuccessListener(aVoid ->
+                            Log.d("Firestore", "User profile saved! events="
+                                    + profile.getHistory().getEvents().size()))
+                    .addOnFailureListener(e ->
+                            Log.e("Firestore", "Error saving user profile", e));
         }
-
     }
 
     /**
-     * adds a MoodEvent to a user's profile and stores it in the db
-     * @param profile
-     *      The profile to store the MoodEvent in
-     * @param moodEvent
-     *      The mood event to store
+     * Appends a new MoodEvent to the user's existing history and writes to Firestore.
      */
-    public void addEventToProfile(UserProfile profile, MoodEvent moodEvent){
+    public void addEventToProfile(UserProfile profile, MoodEvent moodEvent) {
+        Log.d("FirebaseSync", "Before adding: " + profile.getHistory().getEvents().size() + " events");
         profile.getHistory().addEvent(moodEvent);
+        Log.d("FirebaseSync", "After adding: " + profile.getHistory().getEvents().size() + " events");
         storeUserData(profile);
     }
 
     /**
-     * Gets the current firebase user's UserProfile object. This has to be handled in a callback because FireStore operations are not instantaneous.
-     * @param callback
-     *      The callback object, to be instantiated by a class that is going to use it
+     * Fetches the current user's profile from Firestore.
+     * If doc is missing, calls onFailure with "No such document exists".
      */
-    public void fetchUserProfileObject(UserProfileCallback callback){
+    public void fetchUserProfileObject(UserProfileCallback callback) {
         FirebaseUser current = mAuth.getCurrentUser();
-
-        if (current != null){
-
-            /*
-            The following code was inspired by Google Firebase Firestore documentation "Get data with Cloud Firestore"
-            Written by Google.
-            Taken on 2025-03-06 by Luke Yaremko
-             */
-
-            DocumentReference ref = db.collection("users").document(current.getUid());
-
-            ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if (task.isSuccessful()){
-                        DocumentSnapshot doc = task.getResult();
-
-                        if (doc.exists()){
-                            UserProfile profile = doc.toObject(UserProfile.class);
-
-                            if (profile != null){
-                                callback.onUserProfileLoaded(profile);
-                            } else {
-                                callback.onFailure(new Exception("Error converting document to UserProfile"));
-                            }
-
-                        } else {
-                            callback.onFailure(new Exception("No such document exists"));
-                        }
-                    } else {
-                        callback.onFailure(task.getException());
-                    }
-                }
-            });
-
-        } else {
-            callback.onFailure(new Exception("No user is currently signed in"));
+        if (current == null) {
+            callback.onFailure(new Exception("No user signed in"));
+            return;
         }
-
+        DocumentReference ref = db.collection("users").document(current.getUid());
+        ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (!task.isSuccessful() || task.getResult() == null) {
+                    callback.onFailure(task.getException());
+                    return;
+                }
+                DocumentSnapshot doc = task.getResult();
+                if (doc.exists()) {
+                    UserProfile profile = doc.toObject(UserProfile.class);
+                    if (profile != null) {
+                        callback.onUserProfileLoaded(profile);
+                    } else {
+                        callback.onFailure(new Exception("Error converting document to UserProfile"));
+                    }
+                } else {
+                    callback.onFailure(new Exception("No such document exists"));
+                }
+            }
+        });
     }
 }
-
-

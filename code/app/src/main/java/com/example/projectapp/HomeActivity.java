@@ -1,17 +1,3 @@
-// -----------------------------------------------------------------------------
-// File: HomeActivity.java
-// -----------------------------------------------------------------------------
-// This file defines the HomeActivity class, which serves as the main screen in
-// the ProjectApp for displaying MoodEvent lists in "For You" and "Following" tabs.
-// It uses a RecyclerView to display events, includes tab navigation, and provides
-// a button to add new events. The activity also features a BottomNavigationView
-// for navigating between app sections. It follows the Model-View-Controller (MVC)
-// pattern, acting as the controller.
-//
-// Design Pattern: MVC (Controller)
-// Outstanding Issues:
-// N/A
-// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.content.Intent;
@@ -19,22 +5,18 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
@@ -54,14 +36,17 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_home);
 
+        String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        Log.d("UID_DEBUG", "Currently signed-in user UID: " + currentUid);
+
         recyclerViewMoodEvents = findViewById(R.id.recycler_view_mood_events);
         tabForYou = findViewById(R.id.tab_for_you);
         tabFollowing = findViewById(R.id.tab_following);
         addEventButton = findViewById(R.id.add_event_button);
         usernameDisplay = findViewById(R.id.username_display);
-        mapToggleButton = findViewById(R.id.map_toggle_button); // Bind map toggle button
+        mapToggleButton = findViewById(R.id.map_toggle_button);
 
-        // Fetch the current user's profile and set the username
+        // Fetch the current user's profile and set the username.
         FirebaseSync fb = FirebaseSync.getInstance();
         fb.fetchUserProfileObject(new UserProfileCallback() {
             @Override
@@ -73,7 +58,6 @@ public class HomeActivity extends AppCompatActivity {
                     Toast.makeText(HomeActivity.this, "Failed to load username", Toast.LENGTH_SHORT).show();
                 }
             }
-
             @Override
             public void onFailure(Exception e) {
                 usernameDisplay.setText("@unknown");
@@ -81,19 +65,15 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        adapter = new MoodEventRecyclerAdapter(this, forYouEvents, followingEvents, new MoodEventRecyclerAdapter.OnMoodEventClickListener() {
-            @Override
-            public void onEditMoodEvent(MoodEvent event, int position) {}
-            @Override
-            public void onDeleteMoodEvent(MoodEvent event, int position) {}
-        });
-
+        // Use the OnFollowClickListener from MoodEventRecyclerAdapter.
+        adapter = new MoodEventRecyclerAdapter(this, forYouEvents, event -> followUser(event.getUserId()));
         recyclerViewMoodEvents.setAdapter(adapter);
         recyclerViewMoodEvents.setLayoutManager(new LinearLayoutManager(this));
 
         db = FirebaseFirestore.getInstance();
 
-        // Load public events for the "For You" tab
+        // Load public events for the "For You" tab from the users collection,
+        // filtering the array in code.
         loadForYouEvents();
 
         tabForYou.setOnClickListener(v -> {
@@ -102,7 +82,6 @@ public class HomeActivity extends AppCompatActivity {
             tabFollowing.setTextColor(getResources().getColor(android.R.color.darker_gray));
             adapter.switchTab(0, forYouEvents);
         });
-
 
         tabFollowing.setOnClickListener(v -> {
             tabFollowing.setTextColor(getResources().getColor(android.R.color.white));
@@ -115,15 +94,16 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // Default to "For You" tab.
         tabForYou.performClick();
 
-        // Bottom Navigation Setup
+        // Bottom Navigation Setup.
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
-        bottomNav.setSelectedItemId(R.id.nav_home); // Highlight current screen
+        bottomNav.setSelectedItemId(R.id.nav_home); // Highlight current screen.
         bottomNav.setOnItemSelectedListener(item -> {
             Intent intent = null;
             if (item.getItemId() == R.id.nav_home) {
-                return true; // Already here
+                return true; // Already on Home.
             } else if (item.getItemId() == R.id.nav_map) {
                 intent = new Intent(this, MapActivity.class);
             } else if (item.getItemId() == R.id.nav_history) {
@@ -137,31 +117,44 @@ public class HomeActivity extends AppCompatActivity {
             if (intent != null) {
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
-                finish(); // Optional: close current Activity
+                finish();
             }
             return true;
         });
-
-
     }
 
+    /**
+     * Loads all user documents from "users", then loops through each user's
+     * events array (if any), collecting only those events where public=true.
+     * Finally, sorts them by date descending and updates the adapter.
+     */
     private void loadForYouEvents() {
-        db.collection("moodEvents")
-                .whereEqualTo("isPublic", true)
-                .orderBy("date", Query.Direction.DESCENDING)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
+        db.collection("users").get()
+                .addOnSuccessListener(querySnapshot -> {
                     forYouEvents.clear();
-                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
-                        MoodEvent event = doc.toObject(MoodEvent.class);
-                        if (event != null) {
-                            forYouEvents.add(event);
+                    if (querySnapshot == null || querySnapshot.isEmpty()) {
+                        // no user docs
+                        adapter.switchTab(0, forYouEvents);
+                        return;
+                    }
+                    for (DocumentSnapshot userDoc : querySnapshot) {
+                        UserProfile up = userDoc.toObject(UserProfile.class);
+                        if (up != null && up.getHistory() != null) {
+                            for (MoodEvent e : up.getHistory().getEvents()) {
+                                if (e.isPublic()) {
+                                    forYouEvents.add(e);
+                                }
+                            }
                         }
                     }
-                    Log.d("HomeActivity", "Loaded " + forYouEvents.size() + " public events.");
+                    // sort by date descending
+                    forYouEvents.sort((a,b)-> b.getDate().compareTo(a.getDate()));
                     adapter.switchTab(0, forYouEvents);
-                })
-                .addOnFailureListener(e ->
-                        Snackbar.make(findViewById(R.id.recycler_view_mood_events), "Error loading events: " + e.getMessage(), Snackbar.LENGTH_SHORT).show());
+                });
+    }
+
+
+    private void followUser(String userId) {
+        Toast.makeText(this, "Followed user: " + userId, Toast.LENGTH_SHORT).show();
     }
 }

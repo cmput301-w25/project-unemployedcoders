@@ -14,10 +14,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ForYouFragment extends Fragment {
@@ -25,6 +25,7 @@ public class ForYouFragment extends Fragment {
     private RecyclerView recyclerView;
     private MoodEventRecyclerAdapter adapter;
     private FirebaseFirestore db;
+    private ListenerRegistration listenerRegistration;
 
     @Nullable
     @Override
@@ -36,40 +37,60 @@ public class ForYouFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recycler_public_moods);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Initialize adapter with empty data
-        adapter = new MoodEventRecyclerAdapter(getContext(), new ArrayList<>(), event -> {
-            followUser(event.getuid());
-        });
+        adapter = new MoodEventRecyclerAdapter(
+                getContext(),
+                new ArrayList<>(),
+                event -> followUser(event.getUserId())
+        );
         recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
 
-        // Firestore real-time listener for public events
-        db.collection("moodEvents")
-                .whereEqualTo("isPublic", true)
-                .orderBy("date", Query.Direction.DESCENDING)
+        // Listen for changes in "users" collection
+        listenerRegistration = db.collection("users")
                 .addSnapshotListener((snapshots, error) -> {
                     if (error != null) {
                         Toast.makeText(getContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    if (snapshots != null) {
-                        List<MoodEvent> publicEvents = new ArrayList<>();
-                        for (DocumentSnapshot doc : snapshots.getDocuments()) {
-                            MoodEvent event = doc.toObject(MoodEvent.class);
-                            if (event != null) {
-                                publicEvents.add(event);
+                    if (snapshots == null) return;
+
+                    List<MoodEvent> publicEvents = new ArrayList<>();
+
+                    for (DocumentSnapshot userDoc : snapshots.getDocuments()) {
+                        UserProfile userProfile = userDoc.toObject(UserProfile.class);
+                        if (userProfile != null && userProfile.getHistory() != null) {
+                            List<MoodEvent> events = userProfile.getHistory().getEvents();
+                            if (events != null) {
+                                // Filter: only show events where isPublic == true
+                                for (MoodEvent e : events) {
+                                    if (e != null && e.isPublic()) {
+                                        publicEvents.add(e);
+                                    }
+                                }
                             }
                         }
-                        adapter.setData(publicEvents);
                     }
+
+                    // Sort by date descending
+                    Collections.sort(publicEvents, (e1, e2) -> e2.getDate().compareTo(e1.getDate()));
+
+                    // Update adapter
+                    adapter.setData(publicEvents);
                 });
 
         return view;
     }
 
     private void followUser(String userId) {
-        // Follow user logic here (e.g., update Firestore for following list)
         Toast.makeText(getContext(), "Followed user: " + userId, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (listenerRegistration != null) {
+            listenerRegistration.remove();
+        }
     }
 }

@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Random;
+import java.util.Random;  // Added import for Random
 
 public class StatsActivity extends AppCompatActivity {
 
@@ -45,7 +45,6 @@ public class StatsActivity extends AppCompatActivity {
         customRangeButton = findViewById(R.id.button_custom_range);
         spinButton = findViewById(R.id.button_spin);
 
-        // Enable rotation for the PieChart
         pieChart.setRotationEnabled(true);
 
         backButton.setOnClickListener(v -> {
@@ -53,7 +52,6 @@ public class StatsActivity extends AppCompatActivity {
             finish();
         });
 
-        // Load mood events from Firebase
         loadMoodEventsFromFirebase();
 
         dailyButton.setOnClickListener(v -> {
@@ -68,7 +66,6 @@ public class StatsActivity extends AppCompatActivity {
 
         customRangeButton.setOnClickListener(v -> showDateRangeDialog());
 
-        // Spin the chart and then highlight a random slice
         spinButton.setOnClickListener(v -> spinTheChart());
     }
 
@@ -82,7 +79,6 @@ public class StatsActivity extends AppCompatActivity {
                     if (moodEvents == null || moodEvents.isEmpty()) {
                         Snackbar.make(findViewById(R.id.stats_root), "No mood events found", Snackbar.LENGTH_SHORT).show();
                     } else {
-                        // Default to daily stats once data loads
                         dailyButton.performClick();
                     }
                 } else {
@@ -98,11 +94,6 @@ public class StatsActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Generates and displays a pie (donut) chart for the given list of mood events.
-     * This version uses the color resource from each MoodEvent (extracted from Firebase)
-     * to assign the color for each mood slice.
-     */
     private void generatePieChart(List<MoodEvent> events, String centerText) {
         if (events == null || events.isEmpty()) {
             pieChart.clear();
@@ -110,19 +101,15 @@ public class StatsActivity extends AppCompatActivity {
             return;
         }
 
-        // Maps to track counts and the associated color for each mood label.
         Map<String, Integer> moodCounts = new HashMap<>();
         Map<String, Integer> moodColorMap = new HashMap<>();
 
         for (MoodEvent event : events) {
-            // Retrieve the emoticon string using the resource ID from the event.
             String emoticon = getString(event.getEmoticonResource());
             String moodLabel = emoticon + " " + event.getEmotionalState();
             int count = moodCounts.getOrDefault(moodLabel, 0);
             moodCounts.put(moodLabel, count + 1);
-            // Only set the color once per unique mood label.
             if (!moodColorMap.containsKey(moodLabel)) {
-                // Retrieve the actual color value from the color resource.
                 int color = ContextCompat.getColor(this, event.getColorResource());
                 moodColorMap.put(moodLabel, color);
             }
@@ -132,12 +119,11 @@ public class StatsActivity extends AppCompatActivity {
         ArrayList<Integer> sliceColors = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : moodCounts.entrySet()) {
             entries.add(new PieEntry(entry.getValue(), entry.getKey()));
-            // Use the color stored for this mood label.
             sliceColors.add(moodColorMap.get(entry.getKey()));
         }
 
         PieDataSet dataSet = new PieDataSet(entries, "Mood Distribution");
-        dataSet.setColors(sliceColors); // Use custom colors from Firebase
+        dataSet.setColors(sliceColors);
         dataSet.setValueTextColor(Color.WHITE);
         dataSet.setValueTextSize(14f);
 
@@ -146,7 +132,6 @@ public class StatsActivity extends AppCompatActivity {
         pieChart.getDescription().setEnabled(false);
         pieChart.setCenterText(centerText);
         pieChart.setCenterTextSize(18f);
-        // Make it a donut chart
         pieChart.setHoleRadius(50f);
         pieChart.setTransparentCircleRadius(55f);
         pieChart.animateXY(1000, 1000, Easing.EaseInOutQuad, Easing.EaseInOutQuad);
