@@ -33,12 +33,13 @@ import com.google.firebase.firestore.auth.User;
 
 import java.util.ArrayList;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends AppCompatActivity  implements ProfileEditFragment.EditProfileListener {
+
+    UserProfile profile;
 
     @Override
     protected void onResume() {
         super.onResume();
-        showUsername();
     }
 
     @Override
@@ -46,53 +47,79 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_profile); // Must match the layout file
 
-        showUsername();
 
-        Button logOutButton = findViewById(R.id.logout_button);
-
-        logOutButton.setOnClickListener(new View.OnClickListener() {
+        ProfileProvider provider = ProfileProvider.getInstance(FirebaseFirestore.getInstance());
+        provider.listenForUpdates(new ProfileProvider.DataStatus() {
             @Override
-            public void onClick(View v) {
-                FirebaseAuth.getInstance().signOut();
-                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                startActivity(intent);
-            }
-        });
+            public void onDataUpdated() {
+                /*
+                IMPORTANT: We can't do anything until firebase actually gives the profiles back
+                 */
 
-        Button showStatsButton = findViewById(R.id.button_show_stats);
-        showStatsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent statsIntent = new Intent(ProfileActivity.this, StatsActivity.class);
-                startActivity(statsIntent);
-            }
-        });
+                Bundle info = getIntent().getExtras();
+                if (info != null && info.getString("uid") != null){
+                    profile = provider.getProfileByUID(info.getString("uid"));
+                    Log.d("Testing", "Option 1");
+                } else {
+                    if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                        profile = provider.getProfileByUID(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                        Log.d("Testing", "Option 2");
+                    }
+                }
 
-        /*Button editProfileButton = findViewById(R.id.edit_profile_button);
-        editProfileButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FirebaseFirestore db;
-                db = FirebaseFirestore.getInstance();
-                ProfileProvider p = ProfileProvider.getInstance(db);
-                p.listenForUpdates(new ProfileProvider.DataStatus() {
-                    @Override
-                    public void onDataUpdated() {
-                        ArrayList<UserProfile> profiles = p.getProfiles();
-                        for (UserProfile prof: profiles){
-                            Log.d("Database", prof.getUsername());
+                showUsername();
+
+                Button logOutButton = findViewById(R.id.logout_button);
+                Button showStatsButton = findViewById(R.id.button_show_stats);
+                Button editProfileButton = findViewById(R.id.edit_profile_button);
+
+
+                if (FirebaseAuth.getInstance().getCurrentUser() != null && profile.getUID().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
+                    logOutButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            FirebaseAuth.getInstance().signOut();
+                            Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                            startActivity(intent);
                         }
+                    });
 
-                    }
+                    showStatsButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent statsIntent = new Intent(ProfileActivity.this, StatsActivity.class);
+                            startActivity(statsIntent);
+                        }
+                    });
 
-                    @Override
-                    public void onError(String error) {
+                    editProfileButton.setOnClickListener(new View.OnClickListener() {
 
-                    }
-                });
+                        @Override
+                        public void onClick(View v) {
+                            ProfileEditFragment.newInstance(profile)
+                                    .show(getSupportFragmentManager(), "Edit Profile");
+                        }
+                    });
+                } else {
+                    logOutButton.setEnabled(false);
+                    logOutButton.setVisibility(View.GONE);
+                    showStatsButton.setEnabled(false);
+                    showStatsButton.setVisibility(View.GONE);
+                    editProfileButton.setEnabled(false);
+                    editProfileButton.setVisibility(View.GONE);
+                }
+
 
             }
-        });*/
+
+            @Override
+            public void onError(String error) {
+                // nothing
+            }
+        });
+
+
+
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         if (bottomNav != null) {
@@ -125,25 +152,19 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void showUsername(){
         TextView username_text = findViewById(R.id.profile_username);
+        username_text.setText(profile.getUsername());
+    }
 
-        FirebaseSync fb = FirebaseSync.getInstance();
-        fb.fetchUserProfileObject(new UserProfileCallback() {
-            @Override
-            public void onUserProfileLoaded(UserProfile userProfile) {
-                String username_str;
-                if (userProfile.getUsername() == null){
-                    username_str = "Username";
-                } else {
-                    username_str = userProfile.getUsername();
-                }
-
-                username_text.setText(username_str);
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(ProfileActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+    @Override
+    public void onProfileEdited(UserProfile profile) {
+        String uid = profile.getUID();
+        FirebaseFirestore.getInstance().collection("users")
+                .document(uid)
+                .set(profile)
+                .addOnSuccessListener(aVoid ->
+                        Log.d("Firestore", "User profile saved! events="
+                                + profile.getHistory().getEvents().size()))
+                .addOnFailureListener(e ->
+                        Log.e("Firestore", "Error saving user profile", e));
     }
 }

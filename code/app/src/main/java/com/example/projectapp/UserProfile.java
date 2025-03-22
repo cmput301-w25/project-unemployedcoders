@@ -38,4 +38,12 @@ public class UserProfile implements Serializable {
     public String getUID() {
         return uid;
     }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

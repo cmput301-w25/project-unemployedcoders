@@ -62,7 +62,9 @@ public class ProfileProvider {
     }
 
     public UserProfile getProfileByUID(String uid){
+
         for (UserProfile prof: profiles){
+            Log.d("Testing", "Trying " + prof.getUID());
             if (prof.getUID().equals(uid)){
                 return prof;
             }
