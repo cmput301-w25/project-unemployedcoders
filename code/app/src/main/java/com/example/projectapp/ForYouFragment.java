@@ -5,17 +5,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,57 +36,57 @@ public class ForYouFragment extends Fragment {
         adapter = new MoodEventRecyclerAdapter(
                 getContext(),
                 new ArrayList<>(),
-                event -> followUser(event.getUserId())
+                event -> followUser(event.getUsername()) // now follow uses the username
         );
         recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
 
-        // Listen for changes in "users" collection
-        listenerRegistration = db.collection("users")
-                .addSnapshotListener((snapshots, error) -> {
-                    if (error != null) {
-                        Toast.makeText(getContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    if (snapshots == null) return;
+        // Use ProfileProvider to listen for updates on user profiles.
+        ProfileProvider.getInstance(db).listenForUpdates(new ProfileProvider.DataStatus() {
+            @Override
+            public void onDataUpdated() {
+                // Get the cached list of user profiles from ProfileProvider.
+                ArrayList<UserProfile> profiles = ProfileProvider.getInstance(db).getProfiles();
+                List<MoodEvent> publicEvents = new ArrayList<>();
 
-                    List<MoodEvent> publicEvents = new ArrayList<>();
-
-                    for (DocumentSnapshot userDoc : snapshots.getDocuments()) {
-                        UserProfile userProfile = userDoc.toObject(UserProfile.class);
-                        if (userProfile != null && userProfile.getHistory() != null) {
-                            List<MoodEvent> events = userProfile.getHistory().getEvents();
-                            if (events != null) {
-                                // Filter: only show events where isPublic == true
-                                for (MoodEvent e : events) {
-                                    if (e != null && e.isPublic()) {
-                                        publicEvents.add(e);
-                                    }
-                                }
+                for (UserProfile profile : profiles) {
+                    if (profile != null && profile.getHistory() != null
+                            && profile.getHistory().getEvents() != null) {
+                        for (MoodEvent event : profile.getHistory().getEvents()) {
+                            if (event != null && event.isPublic()) {
+                                // Set the username from the profile so that the adapter can display it.
+                                event.setUsername(profile.getUsername());
+                                publicEvents.add(event);
                             }
                         }
                     }
+                }
+                // Sort events by date descending.
+                Collections.sort(publicEvents, (e1, e2) -> e2.getDate().compareTo(e1.getDate()));
+                adapter.setData(publicEvents);
+            }
 
-                    // Sort by date descending
-                    Collections.sort(publicEvents, (e1, e2) -> e2.getDate().compareTo(e1.getDate()));
-
-                    // Update adapter
-                    adapter.setData(publicEvents);
-                });
+            @Override
+            public void onError(String error) {
+                Toast.makeText(getContext(), "Error: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
 
         return view;
+
+
     }
 
-    private void followUser(String userId) {
-        Toast.makeText(getContext(), "Followed user: " + userId, Toast.LENGTH_SHORT).show();
+
+
+    private void followUser(String username) {
+        Toast.makeText(getContext(), "Followed user: " + username, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (listenerRegistration != null) {
-            listenerRegistration.remove();
-        }
+        // Optionally remove any listeners if needed.
     }
 }

@@ -24,6 +24,11 @@ public class FirebaseSync {
         void onDataUpdated();
         void onError(String error);
     }
+    /**
+     * gets an instance of FireBaseSync, since its a singleton class
+     * @return
+     *      an instance of FireBaseSync
+     */
 
     public static FirebaseSync getInstance() {
         if (firebaseSync == null) {
@@ -31,6 +36,10 @@ public class FirebaseSync {
         }
         return firebaseSync;
     }
+
+    /**
+     * Private constructor for FirebaseSync
+     */
 
     private FirebaseSync() {
         db = FirebaseFirestore.getInstance();
@@ -51,7 +60,9 @@ public class FirebaseSync {
     }
 
     /**
-     * Overwrites the Firestore doc for the current user with 'profile'.
+     * stores a UserProfile object into the current FireBase user's db
+     * @param profile
+     *      the UserProfile object to store
      */
     public void storeUserData(UserProfile profile) {
         FirebaseUser user = mAuth.getCurrentUser();
@@ -69,7 +80,11 @@ public class FirebaseSync {
     }
 
     /**
-     * Appends a new MoodEvent to the user's existing history and writes to Firestore.
+     * adds a MoodEvent to a user's profile and stores it in the db
+     * @param profile
+     *      The profile to store the MoodEvent in
+     * @param moodEvent
+     *      The mood event to store
      */
     public void addEventToProfile(UserProfile profile, MoodEvent moodEvent) {
         Log.d("FirebaseSync", "Before adding: " + profile.getHistory().getEvents().size() + " events");
@@ -79,15 +94,22 @@ public class FirebaseSync {
     }
 
     /**
-     * Fetches the current user's profile from Firestore.
-     * If doc is missing, calls onFailure with "No such document exists".
+     * Gets the current firebase user's UserProfile object. This has to be handled in a callback because FireStore operations are not instantaneous.
+     * @param callback
+     *      The callback object, to be instantiated by a class that is going to use it
      */
     public void fetchUserProfileObject(UserProfileCallback callback) {
         FirebaseUser current = mAuth.getCurrentUser();
         if (current == null) {
+            /*
+            The following code was inspired by Google Firebase Firestore documentation "Get data with Cloud Firestore"
+            Written by Google.
+            Taken on 2025-03-06 by Luke Yaremko
+             */
             callback.onFailure(new Exception("No user signed in"));
             return;
         }
+
         DocumentReference ref = db.collection("users").document(current.getUid());
         ref.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override

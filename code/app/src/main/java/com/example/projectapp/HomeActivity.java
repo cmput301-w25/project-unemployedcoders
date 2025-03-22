@@ -1,3 +1,18 @@
+// -----------------------------------------------------------------------------
+// File: HomeActivity.java
+// -----------------------------------------------------------------------------
+// This file defines the HomeActivity class, which serves as the main screen in
+// the ProjectApp for displaying MoodEvent lists in "For You" and "Following" tabs.
+// It uses a RecyclerView to display events, includes tab navigation, and provides
+// a button to add new events. The activity also features a BottomNavigationView
+// for navigating between app sections. It follows the Model-View-Controller (MVC)
+// pattern, acting as the controller.
+//
+// Design Pattern: MVC (Controller)
+// Outstanding Issues:
+// N/A
+// -----------------------------------------------------------------------------
+
 package com.example.projectapp;
 
 import android.content.Intent;
@@ -125,7 +140,7 @@ public class HomeActivity extends AppCompatActivity {
 
     /**
      * Loads all user documents from "users", then loops through each user's
-     * events array (if any), collecting only those events where public=true.
+     * events array, collecting only those events where public=true.
      * Finally, sorts them by date descending and updates the adapter.
      */
     private void loadForYouEvents() {

@@ -1,3 +1,16 @@
+// -----------------------------------------------------------------------------
+// File: MoodEventActivity.java
+// -----------------------------------------------------------------------------
+// This file defines the MoodEventActivity class, which likely handles the display
+// or management of mood-related events within the ProjectApp. It may serve as a
+// secondary activity for tracking or viewing mood data.
+//
+// Design Pattern: MVC (View)
+// Outstanding Issues:
+//  N/A
+
+// -----------------------------------------------------------------------------
+
 package com.example.projectapp;
 
 import android.content.res.Resources;
@@ -190,6 +203,7 @@ public class MoodEventActivity extends AppCompatActivity {
                 newEvent.setLatitude(eventLocation.latitude);
                 newEvent.setLongitude(eventLocation.longitude);
             }
+
 
             FirebaseSync fb = FirebaseSync.getInstance();
             fb.fetchUserProfileObject(new UserProfileCallback() {
