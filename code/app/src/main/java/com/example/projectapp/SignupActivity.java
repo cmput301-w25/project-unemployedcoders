@@ -91,63 +91,86 @@ public class SignupActivity extends AppCompatActivity {
             String email = editEmail.getText().toString().trim();
             String password = editPassword.getText().toString().trim();
 
+            EditText editUsername = findViewById(R.id.edit_username_signup);
+            EditText editName = findViewById(R.id.edit_name);
+
+            String username = editUsername.getText().toString().trim();
+            String name = editName.getText().toString().trim();
+
+            if (username.isEmpty() || name.isEmpty()) {
+                Toast.makeText(SignupActivity.this, "Username and Name cannot be empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(SignupActivity.this, "Email and Password cannot be empty", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Create new user with Firebase Auth
-            mAuth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            if (user != null) {
+            // input validation for unique usernames
+            ProfileProvider provider = ProfileProvider.getInstance(db);
+            provider.listenForUpdates(new ProfileProvider.DataStatus() {
+                @Override
+                public void onDataUpdated() {
 
-                                UserProfileChangeRequest.Builder profileUpdatesBuilder = new UserProfileChangeRequest.Builder();
-                                if (profilePhotoUri != null) {
-                                    profileUpdatesBuilder.setPhotoUri(profilePhotoUri);
-                                }
-                                // Optionally, you can set a display name here.
-                                UserProfileChangeRequest profileUpdates = profileUpdatesBuilder.build();
+                    if (provider.usernameAvailable(username)) {
+                        editUsername.setError(null);
+                        // Create new user with Firebase Auth
+                        mAuth.createUserWithEmailAndPassword(email, password)
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        FirebaseUser user = mAuth.getCurrentUser();
+                                        if (user != null) {
 
-                                user.updateProfile(profileUpdates)
-                                        .addOnCompleteListener(updateTask -> {
-                                            if (updateTask.isSuccessful()) {
-
-                                                EditText editUsername = findViewById(R.id.edit_username_signup);
-                                                EditText editName = findViewById(R.id.edit_name);
-
-                                                String username = editUsername.getText().toString().trim();
-                                                String name = editName.getText().toString().trim();
-
-                                                if (username.isEmpty() || name.isEmpty()) {
-                                                    Toast.makeText(SignupActivity.this, "Username and Name cannot be empty", Toast.LENGTH_SHORT).show();
-                                                    return;
-                                                }
-                                                // TODO: input validation for unique usernames
-
-                                                // This is what is gonna put the user's data in the firestore, but we might need to update it if we put username field in signup
-                                                UserProfile newProfile = new UserProfile(user.getUid(), username, name);
-                                                FirebaseSync fb = FirebaseSync.getInstance();
-
-                                                fb.storeUserData(newProfile);
-
-                                                Toast.makeText(SignupActivity.this, "Sign Up Successful!", Toast.LENGTH_SHORT).show();
-                                                startActivity(new Intent(SignupActivity.this, HomeActivity.class));
-                                                finish();
-                                            } else {
-                                                Toast.makeText(SignupActivity.this, "Profile update failed: " +
-                                                        Objects.requireNonNull(updateTask.getException()).getMessage(), Toast.LENGTH_SHORT).show();
+                                            UserProfileChangeRequest.Builder profileUpdatesBuilder = new UserProfileChangeRequest.Builder();
+                                            if (profilePhotoUri != null) {
+                                                profileUpdatesBuilder.setPhotoUri(profilePhotoUri);
                                             }
-                                        });
-                            }
-                        } else {
-                            Toast.makeText(SignupActivity.this, "Sign Up failed: " +
-                                    Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                                            // Optionally, you can set a display name here.
+                                            UserProfileChangeRequest profileUpdates = profileUpdatesBuilder.build();
+
+                                            user.updateProfile(profileUpdates)
+                                                    .addOnCompleteListener(updateTask -> {
+                                                        if (updateTask.isSuccessful()) {
+
+                                                            UserProfile newProfile = new UserProfile(user.getUid(), username, name);
+                                                            FirebaseSync fb = FirebaseSync.getInstance();
+
+                                                            fb.storeUserData(newProfile);
+
+                                                            Toast.makeText(SignupActivity.this, "Sign Up Successful!", Toast.LENGTH_SHORT).show();
+                                                            startActivity(new Intent(SignupActivity.this, HomeActivity.class));
+                                                            finish();
+
+                                                        } else {
+                                                            Toast.makeText(SignupActivity.this, "Profile update failed: " +
+                                                                    Objects.requireNonNull(updateTask.getException()).getMessage(), Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
+                                        }
+                                    } else {
+                                        Toast.makeText(SignupActivity.this, "Sign Up failed: " +
+                                                Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    } else {
+                        // TODO: Not show error when it's the current user's username
+                        // The error is showing instantly after siging up.
+
+                        editUsername.setError("Username taken. Choose another one");
+                        return;
+                    }
+
+                }
+
+                @Override
+                public void onError(String error) {
+                    // empty for now
+                }
+            });
         });
     }
+
 
     // Open the gallery for image selection
     private void openGallery() {

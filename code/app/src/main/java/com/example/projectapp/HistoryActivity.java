@@ -143,7 +143,7 @@ public class HistoryActivity extends AppCompatActivity implements MoodEventArray
 
             @Override
             public void onError(String error) {
-                Log.e("Movie Update Error", error);
+                Log.e("Update Error", error);
             }
         });
 

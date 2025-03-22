@@ -30,6 +30,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    // for google maps
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
@@ -53,6 +58,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     // Add Firestore dependency
     implementation("com.google.firebase:firebase-firestore:25.1.1")
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
     implementation(libs.espresso.intents)
     testImplementation("junit:junit:4.13.2")
@@ -60,4 +66,8 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     //espresso intents
     androidTestImplementation("androidx.test.espresso:espresso-intents:3.6.1")
+
+    // for google map
+    implementation("com.google.android.gms:play-services-maps:latest_version")
+
 }

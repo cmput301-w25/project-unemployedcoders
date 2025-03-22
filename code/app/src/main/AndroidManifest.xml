@@ -5,6 +5,7 @@
 
     <!-- Permissions (merged from both branches) -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
@@ -16,10 +17,7 @@
     <!-- Features and Additional Configuration -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
-    <!-- Google Maps API Key (from development) -->
-    <meta-data
-        android:name="com.google.android.geo.API_KEY"
-        android:value="YOUR_API_KEY_HERE" />
+
 
     <!-- Queries for camera and gallery (from development) -->
     <queries>
@@ -55,6 +53,15 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyChzYUR_ApTmzJbyd1JoUN9SuMMLQopfUk"
+            />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
         <!-- Launcher Activity: LoginActivity (from Login/Signin branch) -->
         <activity
             android:name=".LoginActivity"
@@ -75,6 +82,7 @@
         <activity android:name=".ProfileActivity" android:exported="false" />
         <activity android:name=".SignupActivity" android:exported="false" />
         <activity android:name=".MoodEventActivity" android:exported="false" />
+        <activity android:name=".StatsActivity" android:exported="false" />
         <activity android:name=".MapViewActivity"/>
 
     </application>

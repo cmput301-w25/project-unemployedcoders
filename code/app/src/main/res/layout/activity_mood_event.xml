@@ -49,7 +49,7 @@
         app:layout_constraintBottom_toTopOf="@+id/textView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/button_upload_photo"
-        app:layout_constraintTop_toBottomOf="@+id/spinner_trigger"
+        app:layout_constraintTop_toBottomOf="@+id/edit_reason"
         tools:srcCompat="@tools:sample/avatars" />
 
 
@@ -76,10 +76,10 @@
         android:id="@+id/spinner_emotional_state"
         android:layout_width="0dp"
         android:layout_height="57dp"
-        android:layout_marginStart="24dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="44dp"
 
-        android:layout_marginEnd="24dp"
+        android:layout_marginEnd="16dp"
         android:background="@drawable/bold_border"
         android:minHeight="48dp"
 
@@ -92,12 +92,12 @@
     <EditText
         android:id="@+id/edit_reason"
         android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginStart="24dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="40dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginEnd="16dp"
         android:background="@drawable/bold_border"
-        android:hint="Briefly Explain"
+        android:hint="Reason (max 200 characters)"
         android:minHeight="48dp"
         android:padding="8dp"
         android:shadowColor="#80000000"
@@ -107,7 +107,6 @@
         android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.476"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/spinner_emotional_state" />
 
@@ -119,7 +118,7 @@
         android:text="Select Photo (Up to 65KB)"
         app:layout_constraintBottom_toTopOf="@+id/textView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spinner_trigger" />
+        app:layout_constraintTop_toBottomOf="@+id/edit_reason" />
 
     <Button
         android:id="@+id/button_view_map"
@@ -153,21 +152,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent" />
-
-    <Spinner
-        android:id="@+id/spinner_trigger"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="24dp"
-        android:background="@drawable/bold_border"
-        android:entries="@array/mood_triggers"
-        android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
     <Button
         android:id="@+id/button_add_location"
@@ -225,19 +209,17 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <TextView
-        android:id="@+id/textView2"
+
+    <Button
+        android:id="@+id/button_visibility"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="32dp"
-        android:text="Enter a Trigger (Optional):"
-        android:textAlignment="viewStart"
-        android:textSize="20sp"
-        android:textStyle="bold"
+        android:layout_below="@id/spinner_social_situation"
+        android:text="Make Public"
+        app:layout_constraintBottom_toTopOf="@+id/button_add_event"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edit_reason" />
+        app:layout_constraintStart_toEndOf="@+id/button_add_location"
+        app:layout_constraintTop_toBottomOf="@+id/spinner_social_situation" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

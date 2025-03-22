@@ -20,6 +20,9 @@ import static androidx.activity.result.ActivityResultCallerKt.registerForActivit
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.net.Uri;
 
 import android.os.Bundle;
@@ -46,6 +49,7 @@ import android.widget.EditText;
 import android.widget.Button;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -55,15 +59,17 @@ public class MoodEventActivity extends AppCompatActivity {
 
     private Spinner spinnerEmotionalState;
     private EditText editReason;
-
-    private Spinner spinnerTrigger;
+    private static final long MAX_PHOTO_SIZE = 65536;
     private Spinner spinnerSocialSituation;
     private Button buttonUploadPhoto;
     private Button buttonAddLocation;
+    private FirebaseAuth mAuth;
     private Button buttonAddEvent;
     private Button buttonViewMap;
     private Button buttonBackHome;
     private LatLng eventLocation;
+
+    private Button buttonVisibility;
 
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<Intent> galleryLauncher;
@@ -71,6 +77,7 @@ public class MoodEventActivity extends AppCompatActivity {
     private Uri imageUri;
     private ImageView imageView;
     private static final int REQUEST_CAMERA_PERMISSION = 1001;
+    private static final int REQUEST_LOCATION_PERMISSION = 2001;
     private static final int CAMERA_REQUEST_CODE = 1002;
 
     private FirebaseAuth mAuth;
@@ -80,6 +87,7 @@ public class MoodEventActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mAuth = FirebaseAuth.getInstance();
         setContentView(R.layout.activity_mood_event);
 
         // Setting up the info for the firebase stuff
@@ -92,7 +100,6 @@ public class MoodEventActivity extends AppCompatActivity {
         // Bind UI elements
         spinnerEmotionalState = findViewById(R.id.spinner_emotional_state);
         editReason = findViewById(R.id.edit_reason);
-        spinnerTrigger = findViewById(R.id.spinner_trigger);
         spinnerSocialSituation = findViewById(R.id.spinner_social_situation);
         buttonUploadPhoto = findViewById(R.id.button_upload_photo);
         buttonAddLocation = findViewById(R.id.button_add_location);
@@ -111,20 +118,38 @@ public class MoodEventActivity extends AppCompatActivity {
 
         // Setup Add Location button
         buttonAddLocation.setOnClickListener(view -> {
-            eventLocation = new LatLng(37.7749, -122.4194); // Example: San Francisco
-            Toast.makeText(this, "Location Added!", Toast.LENGTH_SHORT).show();
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        REQUEST_LOCATION_PERMISSION);
+            } else {
+                GeoLocation geoLocation = new GeoLocation(this);
+                geoLocation.fetchFreshLocation(new GeoLocation.OnLocationReceivedListener() {
+                    @Override
+                    public void onLocationReceived(Location location) {
+                        eventLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                        Toast.makeText(MoodEventActivity.this,
+                                "Location Added: " + eventLocation.latitude + ", " + eventLocation.longitude,
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onLocationFailure(String error) {
+                        Toast.makeText(MoodEventActivity.this, error, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         });
 
-        // Setup View Map button
+        // View Map button: Opens a MapDialogFragment showing the event's location
         buttonViewMap.setOnClickListener(view -> {
             if (eventLocation == null) {
                 Toast.makeText(this, "No location added!", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Intent intent = new Intent(MoodEventActivity.this, MapViewActivity.class);
-            intent.putExtra("latitude", eventLocation.latitude);
-            intent.putExtra("longitude", eventLocation.longitude);
-            startActivity(intent);
+            MapDialogFragment dialogFragment = MapDialogFragment.newInstance(eventLocation.latitude, eventLocation.longitude);
+            dialogFragment.show(getSupportFragmentManager(), "MapDialog");
         });
 
         // Setup Add Event button (finishes activity, returns to previous screen)
@@ -134,8 +159,8 @@ public class MoodEventActivity extends AppCompatActivity {
             String trigger = spinnerTrigger.getSelectedItem().toString().trim();
             String socialSituation = spinnerSocialSituation.getSelectedItem().toString().trim();
 
-            if (!MoodEvent.validReason(reason)) {
-                Toast.makeText(this, "Reason is invalid. (<=20 chars, <=3 words)", Toast.LENGTH_SHORT).show();
+            if ((reason.isEmpty() && imageUri == null) || (!reason.isEmpty() && !MoodEvent.validReason(reason))) {
+                Toast.makeText(this, "Provide a valid reason (≤200 chars, ≤3 words) or a photo", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -144,14 +169,21 @@ public class MoodEventActivity extends AppCompatActivity {
                 if (socialSituation.equals("Choose not to answer")){
                     socialSituation = null;
                 }
+                // Get the current user's UID
+                String userId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : null;
+                if (userId == null) {
+                    Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                MoodEvent newEvent = new MoodEvent(emotionalStateString, reason.isEmpty() ? null : reason, socialSituation, imageUri, userId);
 
-                if (trigger.equals("Choose not to answer")){
-                    trigger = null;
+                if (newEvent != null){
+                    newEvent.setLatitude(eventLocation.latitude);
+                    newEvent.setLongitude(eventLocation.longitude);
                 }
 
-
-                MoodEvent newEvent = new MoodEvent(emotionalStateString, reason, trigger, socialSituation);
                 FirebaseSync fb = FirebaseSync.getInstance();
+
                 // this handles putting the new mood event in the database
                 fb.fetchUserProfileObject(new UserProfileCallback() {
                     @Override
@@ -180,8 +212,12 @@ public class MoodEventActivity extends AppCompatActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
-                        imageView.setImageURI(imageUri);
-                        Toast.makeText(this, "Photo Captured!", Toast.LENGTH_SHORT).show();
+                        Uri compressedUri = compressAndValidatePhoto(imageUri);
+                        if (compressedUri != null) {
+                            imageUri = compressedUri; // Update imageUri with compressed version
+                            imageView.setImageURI(imageUri);
+                            Toast.makeText(this, "Photo Captured!", Toast.LENGTH_SHORT).show();
+                        }
                     } else {
                         Toast.makeText(this, "Camera cancelled or failed", Toast.LENGTH_SHORT).show();
                     }
@@ -193,8 +229,12 @@ public class MoodEventActivity extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri selectedImageUri = result.getData().getData();
-                        imageView.setImageURI(selectedImageUri);
-                        Toast.makeText(this, "Image Selected!", Toast.LENGTH_SHORT).show();
+                        Uri compressedUri = compressAndValidatePhoto(selectedImageUri);
+                        if (compressedUri != null) {
+                            imageUri = compressedUri;
+                            imageView.setImageURI(imageUri);
+                            Toast.makeText(this, "Image Selected!", Toast.LENGTH_SHORT).show();
+                        }
                     } else {
                         Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show();
                     }
@@ -330,6 +370,35 @@ public class MoodEventActivity extends AppCompatActivity {
             Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show();
+        }
+    }
+    private Uri compressAndValidatePhoto(Uri inputUri) {
+        try {
+            // Get the file from URI
+            File photoFile = new File(getCacheDir(), "temp_photo.jpg");
+            Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(inputUri));
+
+            // Compress until size is under 65,536 bytes
+            int quality = 100;
+            FileOutputStream fos = new FileOutputStream(photoFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, fos);
+            fos.close();
+
+            while (photoFile.length() >= MAX_PHOTO_SIZE && quality > 0) {
+                quality -= 5;
+                fos = new FileOutputStream(photoFile);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, quality, fos);
+                fos.close();
+            }
+
+            if (photoFile.length() >= MAX_PHOTO_SIZE) {
+                throw new IOException("Cannot compress photo below 64 KB");
+            }
+
+            return Uri.fromFile(photoFile);
+        } catch (Exception e) {
+            Toast.makeText(this, "Error processing photo: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            return null;
         }
     }
 

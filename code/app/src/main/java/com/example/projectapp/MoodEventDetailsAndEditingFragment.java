@@ -135,8 +135,9 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
                     //this might need to be changed since we're using MoodHistory now
                     moodEvent.setEmotionalState(newEmotionalState);
                     moodEvent.setSocialSituation(newSituation);
-                    moodEvent.setTrigger(newTrigger);
-                    moodEvent.setReason(newReason);
+
+                    moodEvent.setReason(newReason.trim());
+
                     if (listener != null) {
                         listener.onMoodEventEdited(moodEvent); // Notify the activity to update the UI
                     }
@@ -149,7 +150,7 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
     }
 
     private boolean validInput() {
-        String reason = editReason.getText().toString();
+        String reason = editReason.getText().toString().trim();
 
         if (!MoodEvent.validReason(reason)) {
             editReason.setError("Invalid Reason");
