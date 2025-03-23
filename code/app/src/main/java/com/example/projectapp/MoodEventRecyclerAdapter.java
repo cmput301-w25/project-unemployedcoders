@@ -13,7 +13,10 @@
 
 package com.example.projectapp;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -116,6 +119,20 @@ public class MoodEventRecyclerAdapter extends
                     if (provider.getProfileByUID(event.getUserId()) != null){
                         String username = provider.getProfileByUID(event.getUserId()).getUsername();
                         usernameText.setText("@" + username);
+
+                        usernameText.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(context, ProfileActivity.class);
+                                intent.putExtra("uid",event.getUserId());
+
+                                if (intent != null) {
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                    context.startActivity(intent);
+                                }
+                            }
+                        });
+
                     } else {
                         usernameText.setText("N/A");
                     }
@@ -167,7 +184,7 @@ public class MoodEventRecyclerAdapter extends
                         .placeholder(android.R.color.darker_gray)
                         .into(photoImage);
             } else {
-                photoImage.setImageResource(android.R.color.transparent);
+                photoImage.setVisibility(View.GONE);
             }
 
             // Follow button
