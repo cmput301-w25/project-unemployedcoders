@@ -112,6 +112,25 @@
                     android:text="Show Stats"
                     android:backgroundTint="@color/anger"
                     android:textColor="@android:color/white" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/follow_profile_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/anger"
+                    android:text="Follow"
+                    android:textColor="@android:color/white" />
+
             </LinearLayout>
 
             <TextView
@@ -135,11 +154,11 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Mood History"
-                android:textSize="18sp"
-                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:text="Three Most Recent Moods"
                 android:textColor="@android:color/black"
-                android:layout_marginBottom="8dp"/>
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <ListView
                 android:id="@+id/mood_history_list"
