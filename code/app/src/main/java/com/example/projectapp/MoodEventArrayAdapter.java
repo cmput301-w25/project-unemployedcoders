@@ -17,11 +17,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.time.format.DateTimeFormatter;
@@ -56,6 +58,7 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
         TextView socialSituationText;
         TextView reasonText;
         ConstraintLayout background;
+        ImageView photo;
     }
 
     @Override
@@ -74,6 +77,7 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
             holder.socialSituationText = convertView.findViewById(R.id.social_situation_text);
             holder.background = convertView.findViewById(R.id.mood_event_background);
             holder.reasonText = convertView.findViewById(R.id.reason_text);
+            holder.photo = convertView.findViewById(R.id.mood_event_photo);
 
             convertView.setTag(holder);
         } else {
@@ -117,6 +121,16 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
 
         int color = moodEvent.getColorResource();
         holder.background.setBackgroundColor(context.getResources().getColor(color, context.getTheme()));
+
+        // Display photo
+        if (moodEvent.getPhotoUri() != null) {
+            Glide.with(context)
+                    .load(moodEvent.getPhotoUri())
+                    .placeholder(android.R.color.darker_gray)
+                    .into(holder.photo);
+        } else {
+            holder.photo.setVisibility(View.GONE);
+        }
 
         // Click listener for editing a mood event
         convertView.setOnClickListener(v -> {

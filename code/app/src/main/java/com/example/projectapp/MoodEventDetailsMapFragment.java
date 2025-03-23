@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.DialogFragment;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MoodEventDetailsMapFragment  extends DialogFragment {
@@ -32,9 +34,7 @@ public class MoodEventDetailsMapFragment  extends DialogFragment {
     private ConstraintLayout background;
     private EditMoodEventMapListener listener;
 
-
-
-
+    private ImageView photo;
     public static MoodEventDetailsMapFragment newInstance(MoodEvent moodEvent) {
         Bundle args = new Bundle();
         args.putSerializable("moodEvent", moodEvent);
@@ -65,6 +65,7 @@ public class MoodEventDetailsMapFragment  extends DialogFragment {
         socialSituationText = view.findViewById(R.id.social_situation_text);
         background = view.findViewById(R.id.mood_event_background);
         reasonText = view.findViewById(R.id.reason_text);
+        photo = view.findViewById(R.id.mood_event_photo);
 
         MoodEvent moodEvent = (MoodEvent) requireArguments().getSerializable("moodEvent");
 
@@ -104,6 +105,16 @@ public class MoodEventDetailsMapFragment  extends DialogFragment {
 
         int color = moodEvent.getColorResource();
         background.setBackgroundColor(view.getResources().getColor(color, getContext().getTheme()));
+
+        // Display photo
+        if (moodEvent.getPhotoUri() != null) {
+            Glide.with(getContext())
+                    .load(moodEvent.getPhotoUri())
+                    .placeholder(android.R.color.darker_gray)
+                    .into(photo);
+        } else {
+            photo.setVisibility(View.GONE);
+        }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
