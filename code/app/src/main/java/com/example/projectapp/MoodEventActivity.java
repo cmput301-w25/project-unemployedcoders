@@ -228,41 +228,9 @@ public class MoodEventActivity extends AppCompatActivity {
         });
     }
 
-    private void configurePhotoLaunchers() {
-        cameraLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK) {
-                        Uri compressedUri = compressAndValidatePhoto(imageUri);
-                        if (compressedUri != null) {
-                            imageUri = compressedUri;
-                            imageView.setImageURI(imageUri);
-                            Toast.makeText(this, "Photo Captured!", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(this,
-                                "Camera cancelled or failed", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
 
-        galleryLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        Uri selectedImageUri = result.getData().getData();
-                        Uri compressedUri = compressAndValidatePhoto(selectedImageUri);
-                        if (compressedUri != null) {
-                            imageUri = compressedUri;
-                            imageView.setImageURI(imageUri);
-                            Toast.makeText(this, "Image Selected!", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
-    }
+
+
 
     private void configureSpinnerAdapters() {
         String[] emotionalStates = getResources().getStringArray(R.array.emotional_states);
@@ -317,6 +285,41 @@ public class MoodEventActivity extends AppCompatActivity {
 
     //========== Camera and Gallery Handling Below ==========//
 
+    private void configurePhotoLaunchers() {
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        Uri compressedUri = compressAndValidatePhoto(imageUri);
+                        if (compressedUri != null) {
+                            imageUri = compressedUri; // Update imageUri with compressed version
+                            imageView.setImageURI(imageUri);
+                            Toast.makeText(this, "Photo Captured!", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(this, "Camera cancelled or failed", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
+        galleryLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri selectedImageUri = result.getData().getData();
+                        Uri compressedUri = compressAndValidatePhoto(selectedImageUri);
+                        if (compressedUri != null) {
+                            imageUri = compressedUri;
+                            imageView.setImageURI(imageUri);
+                            Toast.makeText(this, "Image Selected!", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
+
     private void checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -324,6 +327,23 @@ public class MoodEventActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
         } else {
             openCamera();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+            } else {
+                Toast.makeText(this,
+                        "Camera permission is required to take pictures",
+                        Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -347,15 +367,11 @@ public class MoodEventActivity extends AppCompatActivity {
             File photoFile = createImageFile();
             if (photoFile != null) {
                 imageUri = FileProvider.getUriForFile(
-                        this,
-                        getPackageName() + ".fileprovider",
-                        photoFile
-                );
+                        this, getPackageName() + ".fileprovider", photoFile);
                 cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
                 cameraLauncher.launch(cameraIntent);
             } else {
-                Toast.makeText(this, "Unable to create image file",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Unable to create image file", Toast.LENGTH_SHORT).show();
             }
         } else {
             Toast.makeText(this, "No camera app available", Toast.LENGTH_SHORT).show();
@@ -390,13 +406,34 @@ public class MoodEventActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == ImagePicker.REQUEST_CODE) {
+                Uri imageUri = data.getData();
+                imageView.setImageURI(imageUri);
+                Toast.makeText(this, "Image Selected!", Toast.LENGTH_SHORT).show();
+            } else if (requestCode == CAMERA_REQUEST_CODE) {
+                imageView.setImageURI(imageUri);
+                Toast.makeText(this, "Photo Captured!", Toast.LENGTH_SHORT).show();
+            }
+        } else if (resultCode == ImagePicker.RESULT_ERROR) {
+            Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private Uri compressAndValidatePhoto(Uri inputUri) {
         try {
+            // Get the file from URI
             File photoFile = new File(getCacheDir(), "temp_photo.jpg");
             Bitmap bitmap = BitmapFactory.decodeStream(
                     getContentResolver().openInputStream(inputUri)
             );
 
+            // Compress until size is under 65,536 bytes
             int quality = 100;
             FileOutputStream fos = new FileOutputStream(photoFile);
             bitmap.compress(Bitmap.CompressFormat.JPEG, quality, fos);
@@ -417,23 +454,6 @@ public class MoodEventActivity extends AppCompatActivity {
             Toast.makeText(this, "Error processing photo: " + e.getMessage(),
                     Toast.LENGTH_SHORT).show();
             return null;
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.length > 0 &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openCamera();
-            } else {
-                Toast.makeText(this,
-                        "Camera permission is required to take pictures",
-                        Toast.LENGTH_SHORT).show();
-            }
         }
     }
 }

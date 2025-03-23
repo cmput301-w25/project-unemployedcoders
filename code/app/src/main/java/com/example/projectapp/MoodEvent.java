@@ -40,7 +40,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     private double latitude; // New: Store latitude
     private double longitude; // New: Store longitude
     private boolean isPublic;
-    private Uri photoUri;
+    private String photoUri;
     private String username;
 
     // Public no-argument constructor required for Firestore deserialization
@@ -73,7 +73,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         this.reason = reason;
         this.socialSituation = socialSituation;
         this.moodType = MoodType.fromString(emotionalState);
-        this.photoUri = photoUri;
+        this.photoUri = String.valueOf(photoUri);
         this.userId = userId;
     }
 
@@ -277,16 +277,26 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      * Returns the photo URI associated with the event.
      * @return The photo URI.
      */
-    public Uri getPhotoUri() {
+    
+    @PropertyName("photoUri")
+    public String getPhotoUriRaw() {
         return photoUri;
     }
 
-    /**
-     * Sets the photo URI associated with the event.
-     * @param photoUri The photo URI.
-     */
-    public void setPhotoUri(Uri photoUri) {
+    @PropertyName("photoUri")
+    public void setPhotoUriRaw(String photoUri) {
         this.photoUri = photoUri;
+    }
+
+    // Convenience getter and setter for code usage
+    @Exclude
+    public Uri getPhotoUri() {
+        return (photoUri != null) ? Uri.parse(photoUri) : null;
+    }
+
+    @Exclude
+    public void setPhotoUri(Uri photoUri) {
+        this.photoUri = (photoUri != null) ? photoUri.toString() : null;
     }
 
     /**
