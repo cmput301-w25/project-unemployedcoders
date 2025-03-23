@@ -35,11 +35,7 @@ public class UserProfile implements Serializable {
      */
     public UserProfile(String uid, String username, String name) {
         this.uid = uid;
-        if (usernameAvailable(username)) {
-            this.username = username;
-        } else {
-            throw new IllegalArgumentException("Username is not available");
-        }
+        this.username = username;
         this.name = name;
         this.history = new MoodHistory();
     }
@@ -96,14 +92,12 @@ public class UserProfile implements Serializable {
         return uid;
     }
 
-    /**
-     * Checks if the specified username is available.
-     *
-     * @param username The proposed username.
-     * @return True if the username is available; false otherwise.
-     */
-    public static boolean usernameAvailable(String username) {
-        /* TODO: Implement actual username check with our database logic  */
-        return true;
+    public void setUsername(String username) {
+        this.username = username;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
 }
