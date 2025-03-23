@@ -14,6 +14,7 @@
 package com.example.projectapp;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.Date;
 import java.util.List;
 
@@ -106,9 +109,25 @@ public class MoodEventRecyclerAdapter extends
         void bind(MoodEvent event) {
             // Display user (if you only have userId, that'll show the UID)
             // If event stores an actual username field, use event.getUsername() instead
-            usernameText.setText( (event.getUserId() != null
-                    ? event.getUserId()
-                    : "N/A"));
+            ProfileProvider provider = ProfileProvider.getInstance(FirebaseFirestore.getInstance());
+            provider.listenForUpdates(new ProfileProvider.DataStatus() {
+                @Override
+                public void onDataUpdated() {
+                    if (provider.getProfileByUID(event.getUserId()) != null){
+                        String username = provider.getProfileByUID(event.getUserId()).getUsername();
+                        usernameText.setText("@" + username);
+                    } else {
+                        usernameText.setText("N/A");
+                    }
+
+
+                }
+
+                @Override
+                public void onError(String error) {
+                    Log.e("DB Error", "Error getting username");
+                }
+            });
 
             // Display mood
             moodText.setText("Mood: " + (event.getEmotionalState() != null
