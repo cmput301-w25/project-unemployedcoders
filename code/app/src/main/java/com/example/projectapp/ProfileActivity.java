@@ -135,7 +135,7 @@ public class ProfileActivity extends AppCompatActivity  implements ProfileEditFr
             bottomNav.setOnItemSelectedListener(item -> {
                 Intent intent = null;
                 if (item.getItemId() == R.id.nav_profile) {
-                    return true; // Already on Profile
+                    intent = new Intent(this, ProfileActivity.class);
                 } else if (item.getItemId() == R.id.nav_home) {
                     intent = new Intent(this, HomeActivity.class);
                 } else if (item.getItemId() == R.id.nav_map) {
