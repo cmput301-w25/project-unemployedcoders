@@ -72,6 +72,7 @@ public class ProfileActivity extends AppCompatActivity  implements ProfileEditFr
                 Button logOutButton = findViewById(R.id.logout_button);
                 Button showStatsButton = findViewById(R.id.button_show_stats);
                 Button editProfileButton = findViewById(R.id.edit_profile_button);
+                Button followButton = findViewById(R.id.follow_profile_button);
 
 
                 if (FirebaseAuth.getInstance().getCurrentUser() != null && profile.getUID().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
@@ -100,7 +101,14 @@ public class ProfileActivity extends AppCompatActivity  implements ProfileEditFr
                                     .show(getSupportFragmentManager(), "Edit Profile");
                         }
                     });
+
+                    followButton.setEnabled(false);
+                    followButton.setVisibility(View.GONE);
+
                 } else {
+
+                    // TODO: Implement follow button listener
+
                     logOutButton.setEnabled(false);
                     logOutButton.setVisibility(View.GONE);
                     showStatsButton.setEnabled(false);
