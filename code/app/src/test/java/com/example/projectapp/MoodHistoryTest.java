@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 public class MoodHistoryTest {
 
     private MoodEvent mockEvent(){
-        return new MoodEvent("Anger");
+        return new MoodEvent("Anger", "reason");
     }
 
     private MoodHistory mockHistory(){

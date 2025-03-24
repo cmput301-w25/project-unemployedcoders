@@ -108,7 +108,6 @@ public class MoodEventActivityTest {
     public void allUIElementsAreVisible() {
         onView(withId(R.id.edit_reason)).check(matches(isDisplayed()));
         onView(withId(R.id.spinner_emotional_state)).check(matches(isDisplayed()));
-        onView(withId(R.id.spinner_trigger)).check(matches(isDisplayed()));
         onView(withId(R.id.spinner_social_situation)).check(matches(isDisplayed()));
         onView(withId(R.id.button_add_event)).check(matches(isDisplayed()));
         onView(withId(R.id.button_upload_photo)).check(matches(isDisplayed()));

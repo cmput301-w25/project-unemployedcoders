@@ -91,8 +91,10 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
             @Override
             public void onDataUpdated() {
                 if (moodEvent.getUserId() != null){
-                    holder.usernameText.setText("@" + provider.getProfileByUID(moodEvent.getUserId()).getUsername());
+                    if (provider.getProfileByUID(moodEvent.getUserId()) != null){
+                        holder.usernameText.setText("@" + provider.getProfileByUID(moodEvent.getUserId()).getUsername());
 
+                    }
                 }
             }
 
