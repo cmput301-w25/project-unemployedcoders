@@ -17,7 +17,12 @@ package com.example.projectapp;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -26,14 +31,21 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 public class HistoryActivity extends AppCompatActivity implements MoodEventArrayAdapter.OnMoodEventClickListener,
 MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragment.DeleteMoodEventDialogListener{
     private MoodHistory moodHistory;
     private ListView moodEventList;
     private MoodEventArrayAdapter moodEventAdapter;
+    private EditText filterKeywordInput;
+    private Button filterApplyButton;
+
+    private ArrayList<MoodEvent> displayedMoodEvents;
 
     @Override
     public void onMoodEventEdited(MoodEvent moodEvent) {
@@ -95,6 +107,32 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
         }
     }
 
+    private Boolean isWithinPastWeek(Date eventDate) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, -7);
+        Date one_week_ago = calendar.getTime();
+        return eventDate.after(one_week_ago);
+    }
+
+    private Boolean matchesFilter(MoodEvent event, String selected_filter, String keyword) {
+        switch(selected_filter) {
+            case "No Filter":
+                return true;
+
+            case "Past Week":
+                return isWithinPastWeek(event.getDate());
+
+            case "Emotional State":
+                return event.getEmotionalState().toLowerCase().contains(keyword.toLowerCase());
+
+            case "Reason Contains":
+                return event.getReason() != null && event.getReason().toLowerCase().contains(keyword.toLowerCase());
+
+            default:
+                return false;
+        }
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +142,34 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
 
 
         moodEventList = findViewById(R.id.user_mood_event_list);
+        Spinner filter_spinner = findViewById(R.id.history_viewing_filter_spinner);
+        ArrayAdapter<CharSequence> filter_spinner_adapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.history_activity_filter_choices,
+                android.R.layout.simple_spinner_item
+        );
+        filterKeywordInput = findViewById(R.id.history_viewing_filter_keyword_input);
+        filterApplyButton = findViewById(R.id.history_viewing_filter_apply_button);
+
+        filter_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
+                String selected_filter = parent.getItemAtPosition(position).toString();
+
+                if (selected_filter.equals("Emotional State")) {
+                    filterKeywordInput.setVisibility(android.view.View.VISIBLE);
+                } else if (selected_filter.equals("Reason Contains")) {
+                    filterKeywordInput.setVisibility(android.view.View.VISIBLE);
+                } else {
+                    filterKeywordInput.setVisibility(android.view.View.GONE);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                filterKeywordInput.setVisibility(android.view.View.GONE);
+            }
+        });
 
         FirebaseSync fb = FirebaseSync.getInstance();
         // Fetch mood history from Firebase
@@ -111,7 +177,8 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
             @Override
             public void onUserProfileLoaded(UserProfile userProfile) {
                 moodHistory = userProfile.getHistory();
-                moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), moodHistory.getEvents(), HistoryActivity.this);
+                displayedMoodEvents = moodHistory.getEvents();
+                moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), displayedMoodEvents, HistoryActivity.this);
                 moodEventList.setAdapter(moodEventAdapter);
                 moodEventAdapter.notifyDataSetChanged();
             }
@@ -129,9 +196,12 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
                     @Override
                     public void onUserProfileLoaded(UserProfile userProfile) {
                         moodHistory = userProfile.getHistory();
+
                         moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), moodHistory.getEvents(), HistoryActivity.this);
                         moodEventList.setAdapter(moodEventAdapter);
                         moodEventAdapter.notifyDataSetChanged();
+                        filter_spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        filter_spinner.setAdapter(filter_spinner_adapter);
                     }
 
                     @Override
@@ -144,6 +214,43 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
             @Override
             public void onError(String error) {
                 Log.e("Update Error", error);
+            }
+        });
+
+        filterApplyButton.setOnClickListener(view -> {
+            String selected_filter = filter_spinner.getSelectedItem().toString();
+            String keyword = filterKeywordInput.getText().toString().trim();
+
+            if ((selected_filter.equals("Emotional State") || selected_filter.equals("Reason Contains")) && keyword.isEmpty())
+            {
+
+                Snackbar.make(view, "Please enter a keyword for this filter", Snackbar.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (moodHistory != null) {
+                ArrayList<MoodEvent> filteredEvents = new ArrayList<>();
+
+                for (MoodEvent event : moodHistory.getEvents()) {
+                    if (matchesFilter(event, selected_filter, keyword)) {
+                        filteredEvents.add(event);
+                    }
+                }
+
+                moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), filteredEvents, HistoryActivity.this);
+                moodEventList.setAdapter(moodEventAdapter);
+                moodEventAdapter.notifyDataSetChanged();
+                String message;
+                if (selected_filter.equals("No Filter")) {
+                    message = "All events shown.";
+                } else if (selected_filter.equals("Emotional State")) {
+                    message = "Filter applied: " + selected_filter + " is " + keyword;
+                } else if (selected_filter.equals("Reason Contains")) {
+                    message = "Filter applied: " + selected_filter + " " + keyword;
+                } else {
+                    message = "Filter applied: " + selected_filter;
+                }
+                Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show();
             }
         });
 
