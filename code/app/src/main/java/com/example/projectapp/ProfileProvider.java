@@ -1,6 +1,5 @@
 package com.example.projectapp;
 
-import android.graphics.Movie;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -18,7 +17,7 @@ import java.util.ArrayList;
 
 public class ProfileProvider {
 
-    private static ProfileProvider movieProvider;
+    private static ProfileProvider profileProvider;
     private final ArrayList<UserProfile> profiles;
     private final CollectionReference userCollection;
 
@@ -52,9 +51,9 @@ public class ProfileProvider {
     }
 
     public static ProfileProvider getInstance(FirebaseFirestore firestore) {
-        if (movieProvider == null)
-            movieProvider = new ProfileProvider(firestore);
-        return movieProvider;
+        if (profileProvider == null)
+            profileProvider = new ProfileProvider(firestore);
+        return profileProvider;
     }
 
     public ArrayList<UserProfile> getProfiles() {
@@ -80,6 +79,10 @@ public class ProfileProvider {
             }
         }
         return true;
+    }
+
+    public static void setInstanceForTesting(FirebaseFirestore firestore) {
+        profileProvider = new ProfileProvider(firestore);
     }
 
 

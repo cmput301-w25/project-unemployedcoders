@@ -14,12 +14,16 @@ import static org.junit.Assert.assertEquals;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -60,8 +64,14 @@ public class HistoryActivityTest {
         FirebaseFirestore.getInstance().useEmulator(androidLocalhost, portNumber);
 
         mAuth = FirebaseAuth.getInstance();
-        mAuth.signInWithEmailAndPassword("uitest@email.com", "password");
-        Thread.sleep(5000); // needs time to log in
+        mAuth.createUserWithEmailAndPassword("uitest@email.com", "password").addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                mAuth.signInWithEmailAndPassword("uitest@email.com", "password");
+            }
+        });
+
+        Thread.sleep(10000); // needs time to log in
 
     }
 
@@ -98,7 +108,7 @@ public class HistoryActivityTest {
         CollectionReference usersRef = db.collection("users");
         String uid = mAuth.getCurrentUser().getUid();
         UserProfile profile = new UserProfile(uid, "TestUser", "Test Guy");
-        MoodEvent testEvent = new MoodEvent("Happiness", "Happy guy", null, null);
+        MoodEvent testEvent = new MoodEvent("Happiness", "Happy guy", null, null, profile.getUID());
         profile.getHistory().addEvent(testEvent);
         usersRef.document(uid).set(profile);
 
@@ -133,8 +143,7 @@ public class HistoryActivityTest {
         onView(withText(getHappyEmoticon() + " Happiness")).perform(click());
 
         onView(withId(R.id.details_fragment_edit_reason)).perform(ViewActions.clearText());
-        onView(withId(R.id.details_fragment_edit_reason)).perform(ViewActions.typeText("Yippee Yippee Yippee Yippee"));
-
+        onView(withId(R.id.details_fragment_edit_reason)).perform(ViewActions.typeText("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")); // 201 A's
 
         onView(withId(android.R.id.button1)).perform(click());
         onView(withId(R.id.details_fragment_edit_reason)).check(matches(hasErrorText("Invalid Reason")));
