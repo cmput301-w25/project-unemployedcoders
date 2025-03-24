@@ -428,7 +428,8 @@ public class MoodEventActivity extends AppCompatActivity {
     private Uri compressAndValidatePhoto(Uri inputUri) {
         try {
             // Get the file from URI
-            File photoFile = new File(getCacheDir(), "temp_photo.jpg");
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+            File photoFile = new File(getCacheDir(), "temp_photo_"+timeStamp+".jpg");
             Bitmap bitmap = BitmapFactory.decodeStream(
                     getContentResolver().openInputStream(inputUri)
             );
