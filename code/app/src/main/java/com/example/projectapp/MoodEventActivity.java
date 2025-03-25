@@ -24,6 +24,7 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -45,6 +46,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FieldValue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -53,9 +56,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-/**
- * This activity handles creating a new MoodEvent and appending it to Firestore.
- */
 public class MoodEventActivity extends AppCompatActivity {
 
     private Spinner spinnerEmotionalState, spinnerSocialSituation;
@@ -92,6 +92,8 @@ public class MoodEventActivity extends AppCompatActivity {
         storageRef = storage.getReference();
 
         bindUIElements();
+        // Hide the ImageView by default so there's no empty space if no photo is selected.
+        imageView.setVisibility(View.GONE);
         configureVisibilityToggle();
         configureLocationButton();
         configureViewMapButton();
@@ -99,7 +101,7 @@ public class MoodEventActivity extends AppCompatActivity {
         configurePhotoLaunchers();
         configureSpinnerAdapters();
         configureUploadPhotoButton();
-        configureBottomNav(); // set up bottom nav
+        configureBottomNav();
     }
 
     private void bindUIElements() {
@@ -325,10 +327,13 @@ public class MoodEventActivity extends AppCompatActivity {
                         Uri compressedUri = compressAndValidatePhoto(imageUri);
                         if (compressedUri != null) {
                             imageUri = compressedUri;
+                            imageView.setVisibility(View.VISIBLE); // Show image when available
                             imageView.setImageURI(imageUri);
                             Toast.makeText(this, "Photo Captured!", Toast.LENGTH_SHORT).show();
                         }
                     } else {
+                        // Hide image if no photo is captured
+                        imageView.setVisibility(View.GONE);
                         Toast.makeText(this, "Camera cancelled or failed", Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -342,10 +347,12 @@ public class MoodEventActivity extends AppCompatActivity {
                         Uri compressedUri = compressAndValidatePhoto(selectedImageUri);
                         if (compressedUri != null) {
                             imageUri = compressedUri;
+                            imageView.setVisibility(View.VISIBLE); // Show image when available
                             imageView.setImageURI(imageUri);
                             Toast.makeText(this, "Image Selected!", Toast.LENGTH_SHORT).show();
                         }
                     } else {
+                        imageView.setVisibility(View.GONE);
                         Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show();
                     }
                 }

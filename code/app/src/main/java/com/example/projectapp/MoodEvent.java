@@ -73,7 +73,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         this.reason = reason;
         this.socialSituation = socialSituation;
         this.moodType = MoodType.fromString(emotionalState);
-        this.photoUri = String.valueOf(photoUri);
+        this.photoUri = (photoUri != null) ? photoUri.toString() : null;
         this.userId = userId;
     }
 
