@@ -28,6 +28,7 @@ import com.example.projectapp.InboxActivity;
 import com.example.projectapp.MapActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.auth.User;
 
@@ -106,8 +107,48 @@ public class ProfileActivity extends AppCompatActivity  implements ProfileEditFr
                     followButton.setVisibility(View.GONE);
 
                 } else {
+                    followButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            String currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                            String targetUserUid = profile.getUID();
 
-                    // TODO: Implement follow button listener
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                            // Update the current user's "following" list and count
+                            db.collection("users").document(currentUserUid)
+                                    .update(
+                                            "following", FieldValue.arrayUnion(targetUserUid),
+                                            "followingCount", FieldValue.increment(1)
+                                    )
+                                    .addOnSuccessListener(aVoid -> {
+                                        Log.d("Firestore", "Successfully updated following list for user: " + currentUserUid);
+
+                                        // Update the target user's "followers" list and count
+                                        db.collection("users").document(targetUserUid)
+                                                .update(
+                                                        "followers", FieldValue.arrayUnion(currentUserUid),
+                                                        "followersCount", FieldValue.increment(1)
+                                                )
+                                                .addOnSuccessListener(aVoid2 -> {
+                                                    Log.d("Firestore", "Successfully updated followers list for user: " + targetUserUid);
+                                                    Toast.makeText(ProfileActivity.this, "Now following " + profile.getUsername(), Toast.LENGTH_SHORT).show();
+                                                    followButton.setEnabled(false); // Disable button after following
+                                                    followButton.setText("Following");
+                                                })
+                                                .addOnFailureListener(e -> {
+                                                    Log.e("Firestore", "Error updating followers list", e);
+                                                    Toast.makeText(ProfileActivity.this, "Failed to follow user", Toast.LENGTH_SHORT).show();
+                                                });
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e("Firestore", "Error updating following list", e);
+                                        Toast.makeText(ProfileActivity.this, "Failed to follow user", Toast.LENGTH_SHORT).show();
+                                    });
+                        }
+                    });
+
+
 
                     logOutButton.setEnabled(false);
                     logOutButton.setVisibility(View.GONE);
