@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -108,16 +109,15 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             provider.listenForUpdates(new ProfileProvider.DataStatus() {
                 @Override
                 public void onDataUpdated() {
-                    if (provider.getProfileByUID(event.getUserId()) != null) {
-                        String username = provider.getProfileByUID(event.getUserId()).getUsername();
-                        usernameText.setText("@" + username);
-
+                    UserProfile profile = provider.getProfileByUID(event.getUserId());
+                    if (profile != null && profile.getUsername() != null) {
+                        usernameText.setText("@" + profile.getUsername());
                         // When clicking the username, open ProfileActivity
                         usernameText.setOnClickListener(v -> {
-                            Intent intent = new Intent(context, ProfileActivity.class);
+                            Intent intent = new Intent(itemView.getContext(), ProfileActivity.class);
                             intent.putExtra("uid", event.getUserId());
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                            context.startActivity(intent);
+                            itemView.getContext().startActivity(intent);
                         });
                     } else {
                         usernameText.setText("N/A");
@@ -130,21 +130,15 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
                 }
             });
 
-            // Display mood
+            // Set mood details
             moodText.setText("Mood: " + (event.getEmotionalState() != null ? event.getEmotionalState() : "N/A"));
-            // Display reason
             reasonText.setText("Reason: " + (event.getReason() != null ? event.getReason() : "N/A"));
-            // Display social situation
             socialText.setText("Social: " + (event.getSocialSituation() != null ? event.getSocialSituation() : "N/A"));
-
-            // Display time
             if (event.getDate() != null) {
                 timeText.setText("Time: " + getRelativeTime(event.getDate()));
             } else {
                 timeText.setText("Time: N/A");
             }
-
-            // Display location if lat/long != 0
             double lat = event.getLatitude();
             double lng = event.getLongitude();
             if (lat == 0.0 && lng == 0.0) {
@@ -152,10 +146,8 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             } else {
                 locationText.setText("Location: " + lat + ", " + lng);
             }
-
-            // Display photo with Glide
             if (event.getPhotoUri() != null) {
-                Glide.with(context)
+                Glide.with(itemView.getContext())
                         .load(event.getPhotoUri())
                         .placeholder(android.R.color.darker_gray)
                         .into(photoImage);
@@ -163,17 +155,34 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
                 photoImage.setVisibility(View.GONE);
             }
 
-            // Hide follow button if this post belongs to the current user
+            // Manage follow button behavior:
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-            if (currentUser != null && currentUser.getUid().equals(event.getUserId())) {
-                followButton.setVisibility(View.GONE);
-            } else {
-                followButton.setVisibility(View.VISIBLE);
-                followButton.setOnClickListener(v -> {
-                    if (followListener != null) {
-                        followListener.onFollowClick(event);
+            if (currentUser != null) {
+                // Hide follow button if the event belongs to the current user.
+                if (currentUser.getUid().equals(event.getUserId())) {
+                    followButton.setVisibility(View.GONE);
+                } else {
+                    // Check if the current user is already following this event's user.
+                    UserProfile currentUserProfile = ProfileProvider.getInstance(FirebaseFirestore.getInstance())
+                            .getProfileByUID(currentUser.getUid());
+                    if (currentUserProfile != null && currentUserProfile.getFollowing().contains(event.getUserId())) {
+                        // Already following: show "Following" text and disable clicks.
+                        followButton.setText("Already Following");
+                        followButton.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.white));
+                        followButton.setEnabled(false);
+                        followButton.setVisibility(View.VISIBLE);
+                    } else {
+                        // Not following yet: show "Follow" and attach click listener.
+                        followButton.setText("Follow");
+                        followButton.setEnabled(true);
+                        followButton.setVisibility(View.VISIBLE);
+                        followButton.setOnClickListener(v -> {
+                            if (followListener != null) {
+                                followListener.onFollowClick(event);
+                            }
+                        });
                     }
-                });
+                }
             }
         }
 
@@ -185,4 +194,5 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             else return date.toString();
         }
     }
+
 }

@@ -15,6 +15,7 @@ package com.example.projectapp;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -139,28 +140,40 @@ public class ForYouFragment extends Fragment {
      * @param targetUserId The UID of the user to follow.
      */
     private void followUser(String targetUserId) {
+        // Log that the method was invoked.
+        Log.d("FollowDebug", "followUser called with targetUserId: " + targetUserId);
+
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
+            Log.d("FollowDebug", "No logged in user found.");
             Toast.makeText(getContext(), "No logged in user.", Toast.LENGTH_SHORT).show();
             return;
         }
         String currentUid = currentUser.getUid();
+        Log.d("FollowDebug", "Current user UID: " + currentUid);
 
         // Prevent following yourself.
         if (currentUid.equals(targetUserId)) {
+            Log.d("FollowDebug", "Blocked attempt to follow yourself. currentUid equals targetUserId.");
             Toast.makeText(getContext(), "You cannot follow yourself.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Retrieve the current user's username from ProfileProvider.
+        // Debug log to ensure targetUserId is valid.
+        Log.d("FollowDebug", "Trying to follow UID: " + targetUserId);
+
+        // Retrieve the current user's username (for logging purposes only; follow request uses UID).
         String currentUsername = "Unknown";
         UserProfile myProfile = ProfileProvider.getInstance(db).getProfileByUID(currentUid);
         if (myProfile != null && myProfile.getUsername() != null) {
             currentUsername = myProfile.getUsername();
+            Log.d("FollowDebug", "Current user's username: " + currentUsername);
+        } else {
+            Log.d("FollowDebug", "Profile for current user not found or username is null.");
         }
 
-        // Create a new FollowRequest object.
-        FollowRequest request = new FollowRequest(currentUid, currentUsername, "pending");
+        // Create a new FollowRequest object using the current user's UID for both fields.
+        FollowRequest request = new FollowRequest(currentUid, currentUid, "pending");
 
         // Write the follow request to the target user's "requests" subcollection.
         db.collection("users")
@@ -168,13 +181,16 @@ public class ForYouFragment extends Fragment {
                 .collection("requests")
                 .document(currentUid)
                 .set(request)
-                .addOnSuccessListener(aVoid ->
-                        Toast.makeText(getContext(), "Follow request sent!", Toast.LENGTH_SHORT).show()
-                )
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Failed to send follow request: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FollowDebug", "Follow request successfully written to Firestore for targetUserId: " + targetUserId);
+                    Toast.makeText(getContext(), "Follow request sent!", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FollowDebug", "Failed to send follow request: " + e.getMessage());
+                    Toast.makeText(getContext(), "Failed to send follow request: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
+
 
     @Override
     public void onResume() {

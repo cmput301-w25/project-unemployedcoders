@@ -2,7 +2,6 @@ package com.example.projectapp;
 
 /**
  * Model class for storing a follow request in Firestore.
- * Documents go in users/{targetUid}/requests/{requesterUid}.
  */
 public class FollowRequest {
     private String fromUid;       // who is requesting
@@ -26,13 +25,7 @@ public class FollowRequest {
         this.fromUid = fromUid;
     }
 
-    public String getFromUsername() {
-        return fromUsername;
-    }
 
-    public void setFromUsername(String fromUsername) {
-        this.fromUsername = fromUsername;
-    }
 
     public String getStatus() {
         return status;

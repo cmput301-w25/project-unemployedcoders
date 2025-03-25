@@ -6,6 +6,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 /**
  * ViewHolder for a single FollowRequest item with Accept/Decline buttons.
  */
@@ -23,11 +25,17 @@ public class FollowViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void bind(FollowRequest request) {
-        text1.setText("From: @" + request.getFromUsername());
+        // Use ProfileProvider to get the profile by UID and display the current username.
+        UserProfile profile = ProfileProvider.getInstance(FirebaseFirestore.getInstance())
+                .getProfileByUID(request.getFromUid());
+        if (profile != null && profile.getUsername() != null) {
+            text1.setText("From: @" + profile.getUsername());
+        } else {
+            text1.setText("From: " + request.getFromUid());
+        }
         text2.setText("Status: " + request.getStatus());
 
         acceptButton.setOnClickListener(v -> {
-            // Cast the context to InboxActivity and call onAcceptClicked()
             ((InboxActivity) itemView.getContext()).onAcceptClicked(request);
         });
 
