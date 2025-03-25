@@ -4,17 +4,15 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.auth.User;
 
 import java.util.ArrayList;
 
+/**
+ * Provides user profiles from Firestore. Singleton pattern.
+ */
 public class ProfileProvider {
 
     private static ProfileProvider profileProvider;
@@ -41,6 +39,8 @@ public class ProfileProvider {
             if (snapshot != null) {
                 for (QueryDocumentSnapshot item : snapshot) {
                     UserProfile p = item.toObject(UserProfile.class);
+                    // CRUCIAL: set the UID from the doc ID
+                    p.setUID(item.getId());
                     profiles.add(p);
                 }
                 dataStatus.onDataUpdated();
@@ -66,7 +66,22 @@ public class ProfileProvider {
                 return prof;
             }
         }
+        return null;
+    }
 
+    /**
+     * Helper method to get a UserProfile by username.
+     * Assumes usernames are unique.
+     *
+     * @param username The username to search for.
+     * @return The matching UserProfile, or null if not found.
+     */
+    public UserProfile getProfileByUsername(String username) {
+        for (UserProfile prof : profiles) {
+            if (prof.getUsername() != null && prof.getUsername().equals(username)) {
+                return prof;
+            }
+        }
         return null;
     }
 

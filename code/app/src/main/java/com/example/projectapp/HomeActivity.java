@@ -15,6 +15,8 @@
 
 package com.example.projectapp;
 
+import static androidx.test.InstrumentationRegistry.getContext;
+
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,6 +30,7 @@ import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
@@ -169,7 +172,55 @@ public class HomeActivity extends AppCompatActivity {
     }
 
 
-    private void followUser(String userId) {
-        Toast.makeText(this, "Followed user: " + userId, Toast.LENGTH_SHORT).show();
+    private void followUser(String targetUserId) {
+        // Log that the method was invoked.
+        Log.d("FollowDebug", "followUser called with targetUserId: " + targetUserId);
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            Log.d("FollowDebug", "No logged in user found.");
+            Toast.makeText(getContext(), "No logged in user.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String currentUid = currentUser.getUid();
+        Log.d("FollowDebug", "Current user UID: " + currentUid);
+
+        // Prevent following yourself.
+        if (currentUid.equals(targetUserId)) {
+            Toast.makeText(getContext(), "You cannot follow yourself.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Debug log to ensure targetUserId is valid.
+        Log.d("FollowDebug", "Trying to follow UID: " + targetUserId);
+
+        // Retrieve the current user's username (for logging purposes only; follow request uses UID).
+        String currentUsername = "Unknown";
+        UserProfile myProfile = ProfileProvider.getInstance(db).getProfileByUID(currentUid);
+        if (myProfile != null && myProfile.getUsername() != null) {
+            currentUsername = myProfile.getUsername();
+            Log.d("FollowDebug", "Current user's username: " + currentUsername);
+        } else {
+            Log.d("FollowDebug", "Profile for current user not found or username is null.");
+        }
+
+        // Create a new FollowRequest object using the current user's UID for both fields.
+        FollowRequest request = new FollowRequest(currentUid, currentUid, "pending");
+
+        // Write the follow request to the target user's "requests" subcollection.
+        db.collection("users")
+                .document(targetUserId)
+                .collection("requests")
+                .document(currentUid)
+                .set(request)
+                .addOnSuccessListener(aVoid -> {
+
+                    // Use this (the activity context) instead of getContext().
+                    Toast.makeText(HomeActivity.this, "Follow request sent!", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+
+                    Toast.makeText(HomeActivity.this, "Failed to send follow request: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 }
