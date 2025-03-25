@@ -1,48 +1,38 @@
-// -----------------------------------------------------------------------------
-// File: ProfileActivity.java
-// -----------------------------------------------------------------------------
-// This file defines the ProfileActivity class, which serves as the user profile
-// screen in the ProjectApp. It sets up a BottomNavigationView for navigating
-// between app sections and highlights the "Profile" tab. The activity follows
-// the Model-View-Controller (MVC) pattern, acting as the controller.
-//
-// Design Pattern: MVC (Controller)
-// Outstanding Issues:
-// N/A
-// -----------------------------------------------------------------------------
-
 package com.example.projectapp;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import com.example.projectapp.HistoryActivity;
-import com.example.projectapp.HomeActivity;
-import com.example.projectapp.InboxActivity;
-import com.example.projectapp.MapActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.squareup.picasso.Picasso;
+
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Locale;
 
 public class ProfileActivity extends AppCompatActivity implements ProfileEditFragment.EditProfileListener {
 
     UserProfile profile;
-    Button followButton; // Declare as a field so it can be updated later
+    Button followButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_profile); // Must match the layout file
+        setContentView(R.layout.fragment_profile);
 
-        // Initialize followButton from layout.
         followButton = findViewById(R.id.follow_profile_button);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -50,7 +40,6 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
         provider.listenForUpdates(new ProfileProvider.DataStatus() {
             @Override
             public void onDataUpdated() {
-                // Determine which profile to display.
                 Bundle info = getIntent().getExtras();
                 if (info != null && info.getString("uid") != null) {
                     profile = provider.getProfileByUID(info.getString("uid"));
@@ -63,12 +52,12 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                 }
 
                 showUsername();
+                showRecentEvents();
 
                 Button logOutButton = findViewById(R.id.logout_button);
                 Button showStatsButton = findViewById(R.id.button_show_stats);
                 Button editProfileButton = findViewById(R.id.edit_profile_button);
 
-                // If the profile is the current user's own profile, hide follow button.
                 if (FirebaseAuth.getInstance().getCurrentUser() != null &&
                         profile.getUID().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
                     logOutButton.setOnClickListener(v -> {
@@ -91,8 +80,6 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                     followButton.setEnabled(false);
                     followButton.setVisibility(View.GONE);
                 } else {
-                    // Viewing someone else's profile.
-                    // Hide options for self.
                     logOutButton.setEnabled(false);
                     logOutButton.setVisibility(View.GONE);
                     showStatsButton.setEnabled(false);
@@ -100,10 +87,8 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                     editProfileButton.setEnabled(false);
                     editProfileButton.setVisibility(View.GONE);
 
-                    // Set up follow button.
                     FirebaseAuth auth = FirebaseAuth.getInstance();
                     if (auth.getCurrentUser() != null) {
-                        // Get current user's profile to check following list.
                         UserProfile currentUserProfile = provider.getProfileByUID(auth.getCurrentUser().getUid());
                         if (currentUserProfile != null &&
                                 currentUserProfile.getFollowing().contains(profile.getUID())) {
@@ -129,14 +114,13 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
 
             @Override
             public void onError(String error) {
-                // Optionally handle error here.
+                Log.e("ProfileActivity", "Error loading profile data: " + error);
             }
         });
 
-        // Bottom Navigation Setup.
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         if (bottomNav != null) {
-            bottomNav.setSelectedItemId(R.id.nav_profile); // Highlight "Profile"
+            bottomNav.setSelectedItemId(R.id.nav_profile);
             bottomNav.setOnItemSelectedListener(item -> {
                 Intent intent = null;
                 if (item.getItemId() == R.id.nav_profile) {
@@ -163,21 +147,86 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
         }
     }
 
-    private void showUsername(){
-        TextView username_text = findViewById(R.id.profile_username);
+    private void showUsername() {
+        TextView usernameText = findViewById(R.id.profile_username);
         if (profile != null && profile.getUsername() != null) {
-            username_text.setText(profile.getUsername());
+            usernameText.setText(profile.getUsername());
         } else {
-            username_text.setText("N/A");
+            usernameText.setText("N/A");
         }
     }
 
-    /**
-     * Sends a follow request to the specified target user.
-     * The follow request is written to the target user's "requests" subcollection.
-     *
-     * @param targetUserId The UID of the user to follow.
-     */
+    private void showRecentEvents() {
+        LinearLayout moodHistoryContainer = findViewById(R.id.mood_history_container);
+        if (moodHistoryContainer == null) {
+            Log.e("ProfileActivity", "LinearLayout with ID mood_history_container not found in layout");
+            return;
+        }
+
+        if (profile == null) {
+            Log.e("ProfileActivity", "Profile is null in showRecentEvents");
+            return;
+        }
+
+        // Clear any existing views
+        moodHistoryContainer.removeAllViews();
+
+        // Get the 3 most recent events
+        List<MoodEvent> recentEvents = profile.getRecentEvents();
+        boolean isOwnProfile = FirebaseAuth.getInstance().getCurrentUser() != null &&
+                profile.getUID().equals(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+        // Inflate public_mood_item.xml for each event
+        LayoutInflater inflater = LayoutInflater.from(this);
+        for (MoodEvent event : recentEvents) {
+            View itemView = inflater.inflate(R.layout.public_mood_item, moodHistoryContainer, false);
+
+            // Populate the views
+            TextView usernameText = itemView.findViewById(R.id.text_username);
+            TextView moodText = itemView.findViewById(R.id.text_mood);
+            TextView reasonText = itemView.findViewById(R.id.text_reason);
+            TextView socialSituationText = itemView.findViewById(R.id.text_social_situation);
+            ImageView photoImage = itemView.findViewById(R.id.image_photo);
+            TextView timeText = itemView.findViewById(R.id.text_time);
+            TextView locationText = itemView.findViewById(R.id.text_location);
+            Button followButton = itemView.findViewById(R.id.button_follow);
+
+
+            usernameText.setText(profile.getUsername() != null ? profile.getUsername() : "N/A");
+            moodText.setText("Mood: " + event.getEmotionalState());
+            reasonText.setText("Reason: " + (event.getReason() != null ? event.getReason() : "N/A"));
+            socialSituationText.setText("Social: " + (event.getSocialSituation() != null ? event.getSocialSituation() : "N/A"));
+            timeText.setText("Time: " + new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()).format(event.getDate()));
+
+
+            if (event.getLatitude() != 0.0 || event.getLongitude() != 0.0) {
+                locationText.setText(String.format(Locale.getDefault(), "Location: (%.4f, %.4f)", event.getLatitude(), event.getLongitude()));
+            } else {
+                locationText.setText("Location: N/A");
+            }
+
+            // Handle the photo
+            if (event.getPhotoUriRaw() != null && !event.getPhotoUriRaw().isEmpty()) {
+                Picasso.get().load(event.getPhotoUriRaw()).into(photoImage);
+            } else {
+                photoImage.setVisibility(View.GONE);
+            }
+
+            // Handle the follow button visibility
+            if (isOwnProfile) {
+                followButton.setVisibility(View.GONE);
+            } else {
+                followButton.setVisibility(View.VISIBLE);
+                followButton.setOnClickListener(v -> {
+                    sendFollowRequest(profile.getUID());
+                });
+            }
+
+            // Add the inflated view to the container
+            moodHistoryContainer.addView(itemView);
+        }
+    }
+
     private void sendFollowRequest(String targetUserId) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() == null) {
@@ -189,7 +238,6 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
             Toast.makeText(ProfileActivity.this, "You cannot follow yourself.", Toast.LENGTH_SHORT).show();
             return;
         }
-        // Create a new FollowRequest object using the current user's UID for both fields.
         FollowRequest request = new FollowRequest(currentUid, currentUid, "pending");
 
         FirebaseFirestore.getInstance().collection("users")
@@ -199,7 +247,6 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                 .set(request)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(ProfileActivity.this, "Follow request sent!", Toast.LENGTH_SHORT).show();
-                    // Update the button state to reflect that the request was sent.
                     followButton.setText("Following");
                     followButton.setEnabled(false);
                 })
@@ -208,11 +255,6 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                 });
     }
 
-    /**
-     * Unfollows the target user by removing their UID from the current user's "following" array.
-     *
-     * @param targetUserId The UID of the user to unfollow.
-     */
     private void unfollowUser(String targetUserId) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() == null) {
@@ -229,7 +271,6 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                     .set(currentUserProfile)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(ProfileActivity.this, "Unfollowed successfully", Toast.LENGTH_SHORT).show();
-                        // Update button state to allow sending a follow request again.
                         followButton.setText("Follow");
                         followButton.setOnClickListener(v -> {
                             sendFollowRequest(targetUserId);
