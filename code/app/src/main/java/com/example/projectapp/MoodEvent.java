@@ -150,14 +150,6 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     }
 
     /**
-     * Sets the user ID of the event's creator.
-     * @param userId The user ID to set.
-     */
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    /**
      * Returns the username of the event's creator.
      * @return The username.
      */
@@ -172,6 +164,15 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     public void setUsername(String username) {
         this.username = username;
     }
+
+    /**
+     * Sets the user ID of the event's creator.
+     * @param userId The user ID to set.
+     */
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
 
     /**
      * Returns the reason for the event.
@@ -351,4 +352,25 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         }
         return -1 * this.date.compareTo(o.date);
     }
+
+    @Override
+    public boolean equals(Object o){
+        if (this == o){
+            return true;
+        }
+
+        MoodEvent m = (MoodEvent)o;
+
+        boolean reasonSame = this.reason != null && this.reason.equals(m.reason) || this.reason == m.reason;
+        boolean situationSame =  this.socialSituation != null && this.socialSituation.equals(m.socialSituation) || this.socialSituation == m.socialSituation;
+        boolean emotionalStateSame = this.emotionalState.equals(m.emotionalState);
+        boolean uidSame = this.userId.equals(m.userId);
+        boolean locationSame = this.latitude == m.latitude && this.longitude == m.longitude;
+        boolean dateSame = this.date.equals(m.date);
+
+        return reasonSame && situationSame && emotionalStateSame && uidSame && locationSame && dateSame;
+
+    }
+
+
 }

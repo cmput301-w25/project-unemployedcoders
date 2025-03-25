@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -21,14 +22,17 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
 
 public class MapActivity extends AppCompatActivity implements
         GoogleMap.OnMyLocationButtonClickListener,
@@ -37,14 +41,20 @@ public class MapActivity extends AppCompatActivity implements
         GoogleMap.OnMarkerClickListener,
         MoodEventDetailsAndEditingFragment.EditMoodEventListener,
         MoodEventDetailsMapFragment.EditMoodEventMapListener,
+        FilterFragment.FilterListener,
         ActivityCompat.OnRequestPermissionsResultCallback {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean permissionDenied = false;
     private GoogleMap map;
     private FusedLocationProviderClient mFusedLocationClient;
 
-    private MoodHistory moodHistory;
+    private MoodHistory currentUserMoodHistory;
+    private MoodHistory displayHistory;
     private FirebaseAuth mAuth;
+
+    private ProfileProvider provider;
+
+    private ArrayList<String> filters;
 
     /*
     Much of the following code is from Google Maps Platform "Location Data Tutorial"
@@ -64,6 +74,17 @@ public class MapActivity extends AppCompatActivity implements
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        filters = new ArrayList<>();
+
+        FloatingActionButton filterButton = findViewById(R.id.map_filter_button);
+
+        filterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FilterFragment.newInstance(filters).show(getSupportFragmentManager(), "SelectFilters");
+            }
+        });
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setSelectedItemId(R.id.nav_map); // Highlight current screen
@@ -103,7 +124,6 @@ public class MapActivity extends AppCompatActivity implements
         enableMyLocation();
         centerOnUserLocation();
         setUpdateListener();
-        placeMoodHistoryMarkers();
     }
 
     private void enableMyLocation() {
@@ -189,53 +209,32 @@ public class MapActivity extends AppCompatActivity implements
      * Sets the update listener to update the mood event markers on a change from the database
      */
     private void setUpdateListener(){
-        FirebaseSync fb = FirebaseSync.getInstance();
+        provider = ProfileProvider.getInstance(FirebaseFirestore.getInstance());
 
-        fb.listenForUpdates(new FirebaseSync.DataStatus() {
+        provider.listenForUpdates(new ProfileProvider.DataStatus() {
             @Override
             public void onDataUpdated() {
-                fb.fetchUserProfileObject(new UserProfileCallback() {
-                    @Override
-                    public void onUserProfileLoaded(UserProfile userProfile) {
-                       placeMoodHistoryMarkers();
-                    }
-
-                    @Override
-                    public void onFailure(Exception e) {
-                        Toast.makeText(MapActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-
-            @Override
-            public void onError(String error) {
-                Log.e("Update Error", error);
-            }
-        });
-    }
-
-    /**
-     * Places the current user's mood events on the map
-     */
-    private void placeMoodHistoryMarkers(){
-        FirebaseSync fb = FirebaseSync.getInstance();
-        // Fetch mood history from Firebase
-        fb.fetchUserProfileObject(new UserProfileCallback() {
-            @Override
-            public void onUserProfileLoaded(UserProfile userProfile) {
-                moodHistory = userProfile.getHistory();
-
-                map.clear();
-                for (MoodEvent m: moodHistory.getEvents()){
-                    placeMoodEventMarker(m);
+                if (mAuth.getCurrentUser() != null) {
+                    currentUserMoodHistory = provider.getProfileByUID(mAuth.getCurrentUser().getUid()).getHistory();
+                    placeMoodHistoryMarkers(provider.getProfileByUID(mAuth.getCurrentUser().getUid()));
                 }
             }
 
             @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(MapActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show(); // 1 time
+            public void onError(String error) {
+                Toast.makeText(MapActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void placeMoodHistoryMarkers(UserProfile currentUser){
+        // TODO: Logic to get the user's followed users
+        map.clear();
+        displayHistory = currentUser.getHistory().getFilteredVersion(filters);
+        for (MoodEvent event: displayHistory.getEvents()){
+            Log.d("Markers", "Placed " + event.getReason());
+            placeMoodEventMarker(event);
+        }
     }
 
     /**
@@ -272,7 +271,7 @@ public class MapActivity extends AppCompatActivity implements
         MoodEvent moodEvent = (MoodEvent)marker.getTag();
 
         if (moodEvent.getUserId() != null && moodEvent.getUserId().equals(mAuth.getCurrentUser().getUid())){
-            MoodEventDetailsMapFragment.newInstance(moodEvent)
+            MoodEventDetailsMapFragment.newInstance(currentUserMoodHistory.getEvents().get(currentUserMoodHistory.getEvents().indexOf(moodEvent)))
                     .show(getSupportFragmentManager(), "Mood Event Details");
         }
 
@@ -285,7 +284,7 @@ public class MapActivity extends AppCompatActivity implements
         fb.fetchUserProfileObject(new UserProfileCallback() {
             @Override
             public void onUserProfileLoaded(UserProfile userProfile) {
-                userProfile.setHistory(moodHistory);
+                userProfile.setHistory(currentUserMoodHistory); // TODO: This needs to change once filters are shown.
                 //moodEventAdapter.notifyDataSetChanged();
                 fb.storeUserData(userProfile);
             }
@@ -301,5 +300,14 @@ public class MapActivity extends AppCompatActivity implements
     public void onMapMoodEventEdited(MoodEvent moodEvent) {
         MoodEventDetailsAndEditingFragment.newInstance(moodEvent)
                 .show(getSupportFragmentManager(), "Mood Event Details");
+    }
+
+    @Override
+    public void onFiltersEdited(ArrayList<String> filters) {
+        this.filters = filters;
+        map.clear();
+        if (mAuth.getCurrentUser() != null){
+            placeMoodHistoryMarkers(provider.getProfileByUID(mAuth.getCurrentUser().getUid()));
+        }
     }
 }

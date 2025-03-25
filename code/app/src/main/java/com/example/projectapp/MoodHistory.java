@@ -13,7 +13,9 @@
 package com.example.projectapp;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 
 /**
  * A class to hold a user's mood history.
@@ -100,4 +102,57 @@ public class MoodHistory {
     public void setUserId(String userId) {
         this.userId = userId;
     }
+
+
+    public static Boolean isWithinPastWeek(Date eventDate) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, -7);
+        Date one_week_ago = calendar.getTime();
+        return eventDate.after(one_week_ago);
+    }
+
+    public static Boolean matchesFilter(MoodEvent event, String selected_filter, String keyword) {
+        switch(selected_filter) {
+            case "Just Me":
+            case "Both":
+            case "Just People I'm Following":
+            case "No Filter":
+                return true;
+            case "Past Week":
+                return isWithinPastWeek(event.getDate());
+
+            case "Emotional State":
+                return event.getEmotionalState().toLowerCase().contains(keyword.toLowerCase());
+
+            case "Reason Contains":
+                return event.getReason() != null && event.getReason().toLowerCase().contains(keyword.toLowerCase());
+
+            default:
+                return false;
+        }
+    }
+
+    public MoodHistory getFilteredVersion(ArrayList<String> filters){
+        MoodHistory filteredHistory = new MoodHistory();
+        for (MoodEvent moodEvent: events){
+            boolean shouldBeIncluded = true;
+            for (String filter: filters){
+                 if (filter.startsWith("Emotional State") || filter.startsWith("Reason Contains")){
+                     String[] split = filter.split(":");
+                     String filterCategory = split[0];
+                     String filterKeyword = split[1];
+                     shouldBeIncluded = shouldBeIncluded && matchesFilter(moodEvent, filterCategory, filterKeyword);
+                 }
+
+            }
+
+            if (shouldBeIncluded){
+                filteredHistory.addEvent(moodEvent);
+            }
+
+        }
+
+        return filteredHistory;
+    }
+
 }

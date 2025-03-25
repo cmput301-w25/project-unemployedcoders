@@ -14,6 +14,8 @@
 
 package com.example.projectapp;
 
+import static com.example.projectapp.MoodHistory.matchesFilter;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -106,33 +108,6 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
             moodEventAdapter.notifyDataSetChanged();
         }
     }
-
-    private Boolean isWithinPastWeek(Date eventDate) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_YEAR, -7);
-        Date one_week_ago = calendar.getTime();
-        return eventDate.after(one_week_ago);
-    }
-
-    private Boolean matchesFilter(MoodEvent event, String selected_filter, String keyword) {
-        switch(selected_filter) {
-            case "No Filter":
-                return true;
-
-            case "Past Week":
-                return isWithinPastWeek(event.getDate());
-
-            case "Emotional State":
-                return event.getEmotionalState().toLowerCase().contains(keyword.toLowerCase());
-
-            case "Reason Contains":
-                return event.getReason() != null && event.getReason().toLowerCase().contains(keyword.toLowerCase());
-
-            default:
-                return false;
-        }
-    }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -232,7 +207,7 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
                 ArrayList<MoodEvent> filteredEvents = new ArrayList<>();
 
                 for (MoodEvent event : moodHistory.getEvents()) {
-                    if (matchesFilter(event, selected_filter, keyword)) {
+                    if (MoodHistory.matchesFilter(event, selected_filter, keyword)) {
                         filteredEvents.add(event);
                     }
                 }

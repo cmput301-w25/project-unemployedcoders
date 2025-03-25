@@ -42,8 +42,6 @@ public class ProfileProvider {
                 for (QueryDocumentSnapshot item : snapshot) {
                     UserProfile p = item.toObject(UserProfile.class);
                     profiles.add(p);
-                    Log.d("FirestoreData", "Uid: " + p.getUID() + "Len of history" + p.getHistory().getEvents().size());
-
                 }
                 dataStatus.onDataUpdated();
             }

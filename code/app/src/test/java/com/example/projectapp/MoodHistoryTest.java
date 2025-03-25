@@ -34,4 +34,9 @@ public class MoodHistoryTest {
         assertFalse(m.contains(event));
     }
 
+    @Test
+    public void testFilter(){
+
+    }
+
 }
