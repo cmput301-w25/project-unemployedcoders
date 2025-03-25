@@ -14,6 +14,7 @@
 package com.example.projectapp;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * A class to model a user's profile.
@@ -24,6 +25,9 @@ public class UserProfile implements Serializable {
     private String username;
     private String name; // the user's actual name
     private String uid;
+
+    // The UIDs of users that THIS user is following
+    private ArrayList<String> following = new ArrayList<>();
 
     /**
      * Constructs a new UserProfile with the specified Firebase UID, username, and name.
@@ -92,6 +96,15 @@ public class UserProfile implements Serializable {
         return uid;
     }
 
+    /**
+     * Sets the user's Firebase UID.
+     *
+     * @param uid The UID to set.
+     */
+    public void setUID(String uid) {
+        this.uid = uid;
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -100,4 +113,19 @@ public class UserProfile implements Serializable {
         this.name = name;
     }
 
+    /**
+     * Returns the list of UIDs that this user follows.
+     * @return The following list.
+     */
+    public ArrayList<String> getFollowing() {
+        return following;
+    }
+
+    /**
+     * Sets the following list for this user.
+     * @param following The new list of user UIDs.
+     */
+    public void setFollowing(ArrayList<String> following) {
+        this.following = following;
+    }
 }

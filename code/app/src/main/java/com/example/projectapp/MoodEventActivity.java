@@ -7,8 +7,7 @@
 //
 // Design Pattern: MVC (View)
 // Outstanding Issues:
-//  N/A
-
+// N/A
 // -----------------------------------------------------------------------------
 
 package com.example.projectapp;
@@ -44,6 +43,8 @@ import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -70,7 +71,14 @@ public class MoodEventActivity extends AppCompatActivity {
     private LatLng eventLocation;
     private boolean isPublic = false; // toggled by buttonVisibility
     private FirebaseAuth mAuth;
-    private ActivityResultLauncher<Intent> cameraLauncher, galleryLauncher;
+
+    // Declare the launchers only once at the class level.
+    private ActivityResultLauncher<Intent> cameraLauncher;
+    private ActivityResultLauncher<Intent> galleryLauncher;
+
+    // Firebase Storage reference
+    private FirebaseStorage storage;
+    private StorageReference storageRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +86,10 @@ public class MoodEventActivity extends AppCompatActivity {
         setContentView(R.layout.activity_mood_event);
 
         mAuth = FirebaseAuth.getInstance();
+
+        // Initialize Firebase Storage
+        storage = FirebaseStorage.getInstance();
+        storageRef = storage.getReference();
 
         bindUIElements();
         configureVisibilityToggle();
@@ -87,7 +99,7 @@ public class MoodEventActivity extends AppCompatActivity {
         configurePhotoLaunchers();
         configureSpinnerAdapters();
         configureUploadPhotoButton();
-        configureBottomNav();  // <-- call bottom nav setup here
+        configureBottomNav(); // set up bottom nav
     }
 
     private void bindUIElements() {
@@ -112,6 +124,7 @@ public class MoodEventActivity extends AppCompatActivity {
                     "Event is now " + (isPublic ? "Public" : "Private"),
                     Toast.LENGTH_SHORT).show();
         });
+
         // Back button → main page
         buttonBackHome.setOnClickListener(view -> {
             Intent intent = new Intent(MoodEventActivity.this, MainActivity.class);
@@ -154,15 +167,15 @@ public class MoodEventActivity extends AppCompatActivity {
                 Toast.makeText(this, "No location added!", Toast.LENGTH_SHORT).show();
                 return;
             }
-            MapDialogFragment dialogFragment = MapDialogFragment
-                    .newInstance(eventLocation.latitude, eventLocation.longitude);
+            MapDialogFragment dialogFragment =
+                    MapDialogFragment.newInstance(eventLocation.latitude, eventLocation.longitude);
             dialogFragment.show(getSupportFragmentManager(), "MapDialog");
         });
     }
 
     /**
-     * The crucial logic that fetches the user profile, appends a new event,
-     * and writes to Firestore.
+     * This method uploads the image (if one exists) to Firebase Storage, retrieves the download URL,
+     * sets it on the new MoodEvent, and then writes the event to Firestore.
      */
     private void configureAddEventButton() {
         buttonAddEvent.setOnClickListener(view -> {
@@ -198,39 +211,63 @@ public class MoodEventActivity extends AppCompatActivity {
             );
             newEvent.setPublic(isPublic);
 
-
             if (eventLocation != null) {
                 newEvent.setLatitude(eventLocation.latitude);
                 newEvent.setLongitude(eventLocation.longitude);
             }
 
-
-            FirebaseSync fb = FirebaseSync.getInstance();
-            fb.fetchUserProfileObject(new UserProfileCallback() {
-                @Override
-                public void onUserProfileLoaded(UserProfile userProfile) {
-                    fb.addEventToProfile(userProfile, newEvent);
-                    Toast.makeText(MoodEventActivity.this,
-                            "Mood Event Added!",
-                            Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    Toast.makeText(MoodEventActivity.this,
-                            "Failed to add event: " + e.getMessage(),
-                            Toast.LENGTH_SHORT).show();
-                }
-            });
+            // If there's an image, upload it to Firebase Storage first.
+            if (imageUri != null) {
+                String fileName = "images/" + System.currentTimeMillis() + ".jpg";
+                StorageReference fileRef = storageRef.child(fileName);
+                fileRef.putFile(imageUri)
+                        .addOnSuccessListener(taskSnapshot -> {
+                            fileRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
+                                newEvent.setPhotoUri(Uri.parse(downloadUri.toString()));
+                                addEventAndFinish(newEvent);
+                            }).addOnFailureListener(e -> {
+                                Toast.makeText(MoodEventActivity.this,
+                                        "Failed to get download URL: " + e.getMessage(),
+                                        Toast.LENGTH_SHORT).show();
+                            });
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(MoodEventActivity.this,
+                                    "Upload failed: " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
+                        });
+            } else {
+                addEventAndFinish(newEvent);
+            }
         });
     }
 
+    /**
+     * Helper method that adds the event to the user's profile via FirebaseSync
+     * and then navigates back to HomeActivity.
+     */
+    private void addEventAndFinish(MoodEvent event) {
+        FirebaseSync fb = FirebaseSync.getInstance();
+        fb.fetchUserProfileObject(new UserProfileCallback() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                fb.addEventToProfile(userProfile, event);
+                Toast.makeText(MoodEventActivity.this,
+                        "Mood Event Added!",
+                        Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
 
-
-
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(MoodEventActivity.this,
+                        "Failed to add event: " + e.getMessage(),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     private void configureSpinnerAdapters() {
         String[] emotionalStates = getResources().getStringArray(R.array.emotional_states);
@@ -247,7 +284,6 @@ public class MoodEventActivity extends AppCompatActivity {
             showImagePickerDialog();
         });
     }
-
 
     private void configureBottomNav() {
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
@@ -266,22 +302,18 @@ public class MoodEventActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_profile) {
                 intent = new Intent(this, ProfileActivity.class);
             } else {
-                // Unknown item
                 return false;
             }
 
-            // If we found a matching intent, start that Activity
             if (intent != null) {
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 finish();
             }
 
-            // Returning true indicates we handled this menu item
             return true;
         });
     }
-
 
     //========== Camera and Gallery Handling Below ==========//
 
@@ -292,7 +324,7 @@ public class MoodEventActivity extends AppCompatActivity {
                     if (result.getResultCode() == RESULT_OK) {
                         Uri compressedUri = compressAndValidatePhoto(imageUri);
                         if (compressedUri != null) {
-                            imageUri = compressedUri; // Update imageUri with compressed version
+                            imageUri = compressedUri;
                             imageView.setImageURI(imageUri);
                             Toast.makeText(this, "Photo Captured!", Toast.LENGTH_SHORT).show();
                         }
@@ -331,9 +363,11 @@ public class MoodEventActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(
+            int requestCode,
+            @NonNull String[] permissions,
+            @NonNull int[] grantResults
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CAMERA_PERMISSION) {
             if (grantResults.length > 0 &&
@@ -367,7 +401,10 @@ public class MoodEventActivity extends AppCompatActivity {
             File photoFile = createImageFile();
             if (photoFile != null) {
                 imageUri = FileProvider.getUriForFile(
-                        this, getPackageName() + ".fileprovider", photoFile);
+                        this,
+                        getPackageName() + ".fileprovider",
+                        photoFile
+                );
                 cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
                 cameraLauncher.launch(cameraIntent);
             } else {
@@ -406,35 +443,19 @@ public class MoodEventActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            if (requestCode == ImagePicker.REQUEST_CODE) {
-                Uri imageUri = data.getData();
-                imageView.setImageURI(imageUri);
-                Toast.makeText(this, "Image Selected!", Toast.LENGTH_SHORT).show();
-            } else if (requestCode == CAMERA_REQUEST_CODE) {
-                imageView.setImageURI(imageUri);
-                Toast.makeText(this, "Photo Captured!", Toast.LENGTH_SHORT).show();
-            }
-        } else if (resultCode == ImagePicker.RESULT_ERROR) {
-            Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show();
-        }
-    }
-
+    /**
+     * Compresses the given Uri into a unique new file under 64 KB if possible.
+     * Creates a time-stamped file name so each new image has a different path.
+     */
     private Uri compressAndValidatePhoto(Uri inputUri) {
         try {
-            // Get the file from URI
             String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-            File photoFile = new File(getCacheDir(), "temp_photo_"+timeStamp+".jpg");
+            File photoFile = new File(getCacheDir(), "temp_photo_" + timeStamp + ".jpg");
+
             Bitmap bitmap = BitmapFactory.decodeStream(
                     getContentResolver().openInputStream(inputUri)
             );
 
-            // Compress until size is under 65,536 bytes
             int quality = 100;
             FileOutputStream fos = new FileOutputStream(photoFile);
             bitmap.compress(Bitmap.CompressFormat.JPEG, quality, fos);
@@ -451,6 +472,7 @@ public class MoodEventActivity extends AppCompatActivity {
                 throw new IOException("Cannot compress photo below 64 KB");
             }
             return Uri.fromFile(photoFile);
+
         } catch (Exception e) {
             Toast.makeText(this, "Error processing photo: " + e.getMessage(),
                     Toast.LENGTH_SHORT).show();

@@ -1,21 +1,18 @@
 package com.example.projectapp;
 
-import android.graphics.Movie;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.auth.User;
 
 import java.util.ArrayList;
 
+/**
+ * Provides user profiles from Firestore. Singleton pattern.
+ */
 public class ProfileProvider {
 
     private static ProfileProvider movieProvider;
@@ -42,9 +39,11 @@ public class ProfileProvider {
             if (snapshot != null) {
                 for (QueryDocumentSnapshot item : snapshot) {
                     UserProfile p = item.toObject(UserProfile.class);
+                    // CRUCIAL: set the UID from the doc ID
+                    p.setUID(item.getId());
                     profiles.add(p);
-                    Log.d("FirestoreData", "Uid: " + p.getUID() + "Len of history" + p.getHistory().getEvents().size());
-
+                    Log.d("FirestoreData", "Uid: " + p.getUID()
+                            + " Len of history: " + p.getHistory().getEvents().size());
                 }
                 dataStatus.onDataUpdated();
             }
@@ -52,8 +51,9 @@ public class ProfileProvider {
     }
 
     public static ProfileProvider getInstance(FirebaseFirestore firestore) {
-        if (movieProvider == null)
+        if (movieProvider == null) {
             movieProvider = new ProfileProvider(firestore);
+        }
         return movieProvider;
     }
 
@@ -61,27 +61,38 @@ public class ProfileProvider {
         return profiles;
     }
 
-    public UserProfile getProfileByUID(String uid){
-
-        for (UserProfile prof: profiles){
+    public UserProfile getProfileByUID(String uid) {
+        for (UserProfile prof : profiles) {
             Log.d("Testing", "Trying " + prof.getUID());
-            if (prof.getUID().equals(uid)){
+            if (prof.getUID().equals(uid)) {
                 return prof;
             }
         }
-
         return null;
     }
 
-    public boolean usernameAvailable(String username){
-        for (UserProfile prof: profiles){
-            if (prof.getUsername().equals(username)){
+    /**
+     * Helper method to get a UserProfile by username.
+     * Assumes usernames are unique.
+     *
+     * @param username The username to search for.
+     * @return The matching UserProfile, or null if not found.
+     */
+    public UserProfile getProfileByUsername(String username) {
+        for (UserProfile prof : profiles) {
+            if (prof.getUsername() != null && prof.getUsername().equals(username)) {
+                return prof;
+            }
+        }
+        return null;
+    }
+
+    public boolean usernameAvailable(String username) {
+        for (UserProfile prof : profiles) {
+            if (prof.getUsername().equals(username)) {
                 return false;
             }
         }
         return true;
     }
-
-
-
 }

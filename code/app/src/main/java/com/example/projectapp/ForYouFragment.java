@@ -1,27 +1,57 @@
+// -----------------------------------------------------------------------------
+// File: ForYouFragment.java
+// -----------------------------------------------------------------------------
+// This fragment displays public MoodEvents from user profiles that are less
+// than 30 minutes old. It listens for updates via ProfileProvider, filters out
+// events older than 30 minutes, sorts them in reverse chronological order, and
+// updates the RecyclerView adapter.
+//
+// Design Pattern: MVC (View)
+// Outstanding Issues:
+// N/A
+// -----------------------------------------------------------------------------
+
 package com.example.projectapp;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Displays public MoodEvents and allows sending follow requests.
+ */
 public class ForYouFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private MoodEventRecyclerAdapter adapter;
     private FirebaseFirestore db;
     private ListenerRegistration listenerRegistration;
+
+    // Keep a list of the latest unfiltered public events.
+    private List<MoodEvent> latestPublicEvents = new ArrayList<>();
+
+    // Handler & Runnable for periodic re-check.
+    private static final long REFRESH_INTERVAL_MS = 60_000; // 1 minute
+    private Handler refreshHandler = new Handler();
+    private Runnable refreshRunnable;
 
     @Nullable
     @Override
@@ -33,38 +63,43 @@ public class ForYouFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recycler_public_moods);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        // When the follow button is clicked, we now use the event's userId.
         adapter = new MoodEventRecyclerAdapter(
                 getContext(),
                 new ArrayList<>(),
-                event -> followUser(event.getUsername()) // now follow uses the username
+                event -> followUser(event.getUserId())
         );
         recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
 
-        // Use ProfileProvider to listen for updates on user profiles.
+        // Listen for updates on user profiles via ProfileProvider.
         ProfileProvider.getInstance(db).listenForUpdates(new ProfileProvider.DataStatus() {
             @Override
             public void onDataUpdated() {
-                // Get the cached list of user profiles from ProfileProvider.
                 ArrayList<UserProfile> profiles = ProfileProvider.getInstance(db).getProfiles();
                 List<MoodEvent> publicEvents = new ArrayList<>();
 
+                // Loop through each profile, and for each mood event in history…
                 for (UserProfile profile : profiles) {
-                    if (profile != null && profile.getHistory() != null
-                            && profile.getHistory().getEvents() != null) {
+                    if (profile != null && profile.getHistory() != null &&
+                            profile.getHistory().getEvents() != null) {
                         for (MoodEvent event : profile.getHistory().getEvents()) {
                             if (event != null && event.isPublic()) {
-                                // Set the username from the profile so that the adapter can display it.
+                                // CRUCIAL: Set both the userId and username from the profile.
+                                event.setUserId(profile.getUID());
                                 event.setUsername(profile.getUsername());
                                 publicEvents.add(event);
                             }
                         }
                     }
                 }
-                // Sort events by date descending.
-                Collections.sort(publicEvents, (e1, e2) -> e2.getDate().compareTo(e1.getDate()));
-                adapter.setData(publicEvents);
+
+                // Save the unfiltered list for future time-based checks.
+                latestPublicEvents = publicEvents;
+
+                // Filter & sort events immediately.
+                filterAndDisplayEvents(latestPublicEvents);
             }
 
             @Override
@@ -74,19 +109,94 @@ public class ForYouFragment extends Fragment {
         });
 
         return view;
-
-
     }
 
+    /**
+     * Filters out events older than 30 minutes, sorts them, and updates the adapter.
+     *
+     * @param events The list of unfiltered events.
+     */
+    private void filterAndDisplayEvents(List<MoodEvent> events) {
+        long thirtyMinutesInMillis = 30 * 60 * 1000;
+        long currentTime = System.currentTimeMillis();
 
+        List<MoodEvent> filteredEvents = new ArrayList<>();
+        for (MoodEvent event : events) {
+            if (currentTime - event.getDate().getTime() <= thirtyMinutesInMillis) {
+                filteredEvents.add(event);
+            }
+        }
 
-    private void followUser(String username) {
-        Toast.makeText(getContext(), "Followed user: " + username, Toast.LENGTH_SHORT).show();
+        // Sort events by date descending.
+        Collections.sort(filteredEvents, (e1, e2) -> e2.getDate().compareTo(e1.getDate()));
+        adapter.setData(filteredEvents);
+    }
+
+    /**
+     * Sends a follow request to the specified user.
+     * A new FollowRequest is created in the target user's "requests" subcollection.
+     *
+     * @param targetUserId The UID of the user to follow.
+     */
+    private void followUser(String targetUserId) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(getContext(), "No logged in user.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String currentUid = currentUser.getUid();
+
+        // Prevent following yourself.
+        if (currentUid.equals(targetUserId)) {
+            Toast.makeText(getContext(), "You cannot follow yourself.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Retrieve the current user's username from ProfileProvider.
+        String currentUsername = "Unknown";
+        UserProfile myProfile = ProfileProvider.getInstance(db).getProfileByUID(currentUid);
+        if (myProfile != null && myProfile.getUsername() != null) {
+            currentUsername = myProfile.getUsername();
+        }
+
+        // Create a new FollowRequest object.
+        FollowRequest request = new FollowRequest(currentUid, currentUsername, "pending");
+
+        // Write the follow request to the target user's "requests" subcollection.
+        db.collection("users")
+                .document(targetUserId)
+                .collection("requests")
+                .document(currentUid)
+                .set(request)
+                .addOnSuccessListener(aVoid ->
+                        Toast.makeText(getContext(), "Follow request sent!", Toast.LENGTH_SHORT).show()
+                )
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(), "Failed to send follow request: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshRunnable = () -> {
+            filterAndDisplayEvents(latestPublicEvents);
+            refreshHandler.postDelayed(refreshRunnable, REFRESH_INTERVAL_MS);
+        };
+        refreshHandler.postDelayed(refreshRunnable, REFRESH_INTERVAL_MS);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        refreshHandler.removeCallbacks(refreshRunnable);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Optionally remove any listeners if needed.
+        if (listenerRegistration != null) {
+            listenerRegistration.remove();
+        }
     }
 }
