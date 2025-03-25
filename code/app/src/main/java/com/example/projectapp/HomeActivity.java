@@ -92,7 +92,7 @@ public class HomeActivity extends AppCompatActivity {
 
         // Load public events for the "For You" tab from the users collection,
         // filtering the array in code.
-        loadForYouEvents();
+        setUpdateListener();
 
         tabForYou.setOnClickListener(v -> {
             Log.d("HomeActivity", "For You tab clicked. Number of events: " + forYouEvents.size());
@@ -141,36 +141,75 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+    private void setUpdateListener(){
+        ProfileProvider provider = ProfileProvider.getInstance(db);
+        provider.listenForUpdates(new ProfileProvider.DataStatus() {
+            @Override
+            public void onDataUpdated() {
+                loadForYouEvents();
+                loadFollowingEvents();
+                adapter.notifyDataSetChanged();
+
+            }
+
+            @Override
+            public void onError(String error) {
+                Log.e("Error", "Error in Home Page: " + error);
+            }
+        });
+    }
+
     /**
      * Loads all user documents from "users", then loops through each user's
      * events array, collecting only those events where public=true.
      * Finally, sorts them by date descending and updates the adapter.
      */
     private void loadForYouEvents() {
-        db.collection("users").get()
-                .addOnSuccessListener(querySnapshot -> {
-                    forYouEvents.clear();
-                    if (querySnapshot == null || querySnapshot.isEmpty()) {
-                        // no user docs
-                        adapter.switchTab(0, forYouEvents);
-                        return;
+
+        forYouEvents.clear();
+        ProfileProvider provider = ProfileProvider.getInstance(db);
+        ArrayList<UserProfile> profiles = provider.getProfiles();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+
+        if (mAuth.getCurrentUser() != null){
+            UserProfile currentUser = provider.getProfileByUID(mAuth.getCurrentUser().getUid());
+            for (UserProfile p: profiles){
+                for (MoodEvent event: p.getHistory().getEvents()){
+                    if (event.isPublic()){
+                        forYouEvents.add(event);
                     }
-                    for (DocumentSnapshot userDoc : querySnapshot) {
-                        UserProfile up = userDoc.toObject(UserProfile.class);
-                        if (up != null && up.getHistory() != null) {
-                            for (MoodEvent e : up.getHistory().getEvents()) {
-                                if (e.isPublic()) {
-                                    forYouEvents.add(e);
-                                }
-                            }
-                        }
-                    }
-                    // sort by date descending
-                    forYouEvents.sort((a,b)-> b.getDate().compareTo(a.getDate()));
-                    adapter.switchTab(0, forYouEvents);
-                });
+                }
+
+            }
+        }
+
+        forYouEvents.sort((a,b)-> b.getDate().compareTo(a.getDate()));
+
     }
 
+
+    private void loadFollowingEvents(){
+        followingEvents.clear();
+        ProfileProvider provider = ProfileProvider.getInstance(db);
+        ArrayList<UserProfile> profiles = provider.getProfiles();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+
+        if (mAuth.getCurrentUser() != null){
+            UserProfile currentUser = provider.getProfileByUID(mAuth.getCurrentUser().getUid());
+            for (UserProfile p: profiles){
+                if (currentUser.getFollowing().contains(p.getUID())){
+                    for (MoodEvent event: p.getHistory().getEvents()){
+                        if (event.isPublic()){
+                            followingEvents.add(event);
+                        }
+                    }
+                }
+            }
+        }
+
+        followingEvents.sort((a,b)-> b.getDate().compareTo(a.getDate()));
+
+    }
 
     private void followUser(String targetUserId) {
         // Log that the method was invoked.
