@@ -75,6 +75,7 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                         FirebaseAuth.getInstance().signOut();
                         Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                         startActivity(intent);
+                        finish();
                     });
 
                     showStatsButton.setOnClickListener(v -> {
