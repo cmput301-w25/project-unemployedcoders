@@ -58,8 +58,7 @@ dependencies {
     annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
     implementation ("com.google.firebase:firebase-storage:20.2.1")
 
-
-
+    implementation("com.google.maps.android:android-maps-utils:3.5.3");
 
     // Firebase BoM to manage Firebase library versions
     implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
