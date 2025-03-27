@@ -12,8 +12,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/bottom_nav">
 
-
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -30,7 +28,6 @@
                 android:textColor="@android:color/white"
                 android:layout_gravity="right|top"
                 android:layout_marginTop="1dp"/>
-
 
             <ImageView
                 android:id="@+id/profile_image"
@@ -52,6 +49,16 @@
                 android:textColor="@android:color/black"
                 android:layout_gravity="center"
                 android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/profile_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Name"
+                android:textSize="14sp"
+                android:textColor="@android:color/darker_gray"
+                android:layout_gravity="center"
+                android:layout_marginBottom="12dp"/>
 
             <TextView
                 android:id="@+id/profile_bio"
@@ -112,12 +119,11 @@
                     android:text="Show Stats"
                     android:backgroundTint="@color/anger"
                     android:textColor="@android:color/white" />
-
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -130,7 +136,6 @@
                     android:backgroundTint="@color/anger"
                     android:text="Follow"
                     android:textColor="@android:color/white" />
-
             </LinearLayout>
 
             <TextView
@@ -160,8 +165,8 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <ListView
-                android:id="@+id/mood_history_list"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view_mood_history"
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
                 android:divider="@android:color/darker_gray"

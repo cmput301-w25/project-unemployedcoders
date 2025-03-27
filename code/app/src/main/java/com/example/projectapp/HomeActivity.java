@@ -1,18 +1,3 @@
-// -----------------------------------------------------------------------------
-// File: HomeActivity.java
-// -----------------------------------------------------------------------------
-// This file defines the HomeActivity class, which serves as the main screen in
-// the ProjectApp for displaying MoodEvent lists in "For You" and "Following" tabs.
-// It uses a RecyclerView to display events, includes tab navigation, and provides
-// a button to add new events. The activity also features a BottomNavigationView
-// for navigating between app sections. It follows the Model-View-Controller (MVC)
-// pattern, acting as the controller.
-//
-// Design Pattern: MVC (Controller)
-// Outstanding Issues:
-// N/A
-// -----------------------------------------------------------------------------
-
 package com.example.projectapp;
 
 import android.content.Intent;
@@ -26,7 +11,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -42,9 +26,11 @@ public class HomeActivity extends AppCompatActivity {
     private List<MoodEvent> forYouEvents = new ArrayList<>();
     private List<MoodEvent> followingEvents = new ArrayList<>();
     private Button addEventButton;
+    private Button searchButton;
     private FirebaseFirestore db;
     private TextView usernameDisplay;
     private ImageButton mapToggleButton;
+    private static final String TAG = "HomeActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,14 +38,32 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.fragment_home);
 
         String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        Log.d("UID_DEBUG", "Currently signed-in user UID: " + currentUid);
+        Log.d(TAG, "Currently signed-in user UID: " + currentUid);
 
         recyclerViewMoodEvents = findViewById(R.id.recycler_view_mood_events);
         tabForYou = findViewById(R.id.tab_for_you);
         tabFollowing = findViewById(R.id.tab_following);
         addEventButton = findViewById(R.id.add_event_button);
+        searchButton = findViewById(R.id.search_button);
         usernameDisplay = findViewById(R.id.username_display);
         mapToggleButton = findViewById(R.id.map_toggle_button);
+
+        // Log if searchButton is null
+        if (searchButton == null) {
+            Log.e(TAG, "Search button not found in layout");
+        } else {
+            Log.d(TAG, "Search button found, setting click listener");
+            searchButton.setOnClickListener(v -> {
+                Log.d(TAG, "Search button clicked, launching SearchActivity");
+                Intent intent = new Intent(HomeActivity.this, SearchActivity.class);
+                try {
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error launching SearchActivity", e);
+                    Toast.makeText(HomeActivity.this, "Failed to launch SearchActivity: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
 
         // Fetch the current user's profile and set the username.
         FirebaseSync fb = FirebaseSync.getInstance();
@@ -87,8 +91,7 @@ public class HomeActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
-        // Load public events for the "For You" tab from the users collection,
-        // filtering the array in code.
+        // Load public events for the "For You" tab from the users collection.
         loadForYouEvents();
 
         tabForYou.setOnClickListener(v -> {
@@ -138,17 +141,11 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Loads all user documents from "users", then loops through each user's
-     * events array, collecting only those events where public=true.
-     * Finally, sorts them by date descending and updates the adapter.
-     */
     private void loadForYouEvents() {
         db.collection("users").get()
                 .addOnSuccessListener(querySnapshot -> {
                     forYouEvents.clear();
                     if (querySnapshot == null || querySnapshot.isEmpty()) {
-                        // no user docs
                         adapter.switchTab(0, forYouEvents);
                         return;
                     }
@@ -162,12 +159,10 @@ public class HomeActivity extends AppCompatActivity {
                             }
                         }
                     }
-                    // sort by date descending
-                    forYouEvents.sort((a,b)-> b.getDate().compareTo(a.getDate()));
+                    forYouEvents.sort((a, b) -> b.getDate().compareTo(a.getDate()));
                     adapter.switchTab(0, forYouEvents);
                 });
     }
-
 
     private void followUser(String userId) {
         Toast.makeText(this, "Followed user: " + userId, Toast.LENGTH_SHORT).show();

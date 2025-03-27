@@ -84,6 +84,7 @@
         <activity android:name=".MoodEventActivity" android:exported="false" />
         <activity android:name=".StatsActivity" android:exported="false" />
         <activity android:name=".MapViewActivity"/>
+        <activity android:name=".SearchActivity" />
 
     </application>
 </manifest>

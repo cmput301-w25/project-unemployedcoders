@@ -1,15 +1,3 @@
-// -----------------------------------------------------------------------------
-// File: MainActivity.java
-// -----------------------------------------------------------------------------
-// This file defines the MainActivity class, serving as the primary activity
-// for the ProjectApp application after successful login. It likely acts as
-// the main view or dashboard for the app.
-//
-// Design Pattern: MVC (View)
-// Outstanding Issues:
-//  N/A
-
-// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.content.Intent;
@@ -17,12 +5,12 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 
-   import com.example.projectapp.HistoryActivity;
-   import com.example.projectapp.HomeActivity;
-   import com.example.projectapp.InboxActivity;
-   import com.example.projectapp.MapActivity;
-   import com.example.projectapp.ProfileActivity;
-   import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.example.projectapp.HistoryActivity;
+import com.example.projectapp.HomeActivity;
+import com.example.projectapp.InboxActivity;
+import com.example.projectapp.MapActivity;
+import com.example.projectapp.ProfileActivity;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "onCreate: Launching HomeActivity");
             Intent intent = new Intent(this, HomeActivity.class);
             startActivity(intent);
+            finish(); // Finish MainActivity to remove it from the back stack
         } else {
             Log.d(TAG, "onCreate: Saved instance state exists, skipping default launch");
         }
@@ -51,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = null;
                 Log.d(TAG, "onItemSelected: Item ID = " + item.getItemId());
 
-                // Match selected item and create the respective Intent
                 if (item.getItemId() == R.id.nav_home) {
                     intent = new Intent(this, HomeActivity.class);
                 } else if (item.getItemId() == R.id.nav_map) {
@@ -64,10 +52,11 @@ public class MainActivity extends AppCompatActivity {
                     intent = new Intent(this, ProfileActivity.class);
                 }
 
-                // Launch the selected Activity if intent is not null
                 if (intent != null) {
                     Log.d(TAG, "onItemSelected: Launching " + intent.getComponent().getShortClassName());
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
+                    finish(); // Finish MainActivity after launching the new activity
                 }
 
                 return true;
