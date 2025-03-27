@@ -79,4 +79,7 @@ dependencies {
     // for google map
     implementation("com.google.android.gms:play-services-maps:latest_version")
 
+    //google JSON
+    implementation(libs.gson);
+
 }

@@ -16,7 +16,10 @@ package com.example.projectapp;
 
 import static com.example.projectapp.MoodHistory.matchesFilter;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.AdapterView;
@@ -38,6 +41,7 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class HistoryActivity extends AppCompatActivity implements MoodEventArrayAdapter.OnMoodEventClickListener,
 MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragment.DeleteMoodEventDialogListener{
@@ -49,9 +53,25 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
 
     private ArrayList<MoodEvent> displayedMoodEvents;
 
+    private List<MoodEvent> pendingEdits = new ArrayList<>();
+    private List<MoodEvent> pendingDeletes = new ArrayList<>();
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnected();
+    }
+
     @Override
     public void onMoodEventEdited(MoodEvent moodEvent) {
-
+        if (isNetworkAvailable()) {
+            syncEditedEvent(moodEvent);
+        } else {
+            pendingEdits.add(moodEvent);
+            Toast.makeText(this, "No Internet, changes will sync when reconnected", Toast.LENGTH_SHORT).show();
+        }
+    }
+    private void syncEditedEvent(MoodEvent moodEvent) {
         FirebaseSync fb = FirebaseSync.getInstance();
         fb.fetchUserProfileObject(new UserProfileCallback() {
             @Override
@@ -66,7 +86,6 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
                 Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-
     }
     @Override
     public void onEditMoodEvent(MoodEvent moodEvent, int position) {
@@ -76,7 +95,15 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
 
     @Override
     public void onMoodEventDeleted(MoodEvent moodEvent) {
+        if (isNetworkAvailable()) {
+            syncDeletedEvent(moodEvent);
+        } else {
+            pendingDeletes.add(moodEvent);
+            Toast.makeText(this, "No internet, deletion will sync when reconnected", Toast.LENGTH_SHORT).show();
+        }
+    }
 
+    private void syncDeletedEvent(MoodEvent moodEvent) {
         FirebaseSync fb = FirebaseSync.getInstance();
         fb.fetchUserProfileObject(new UserProfileCallback() {
             @Override
@@ -92,8 +119,6 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
                 Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-
-
     }
 
     @Override
@@ -104,6 +129,17 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
     @Override
     protected void onResume() {
         super.onResume();
+        if (isNetworkAvailable()) {
+            for (MoodEvent event : pendingEdits) {
+                syncEditedEvent(event);
+            }
+            pendingEdits.clear();
+
+            for (MoodEvent event : pendingDeletes) {
+                syncDeletedEvent(event);
+            }
+            pendingDeletes.clear();
+        }
         if (moodEventAdapter != null){
             moodEventAdapter.notifyDataSetChanged();
         }
