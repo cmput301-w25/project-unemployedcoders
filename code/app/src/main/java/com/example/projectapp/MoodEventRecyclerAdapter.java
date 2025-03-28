@@ -1,16 +1,3 @@
-// -----------------------------------------------------------------------------
-// File: MoodEventRecyclerAdapter.java
-// -----------------------------------------------------------------------------
-// This file defines the MoodEventRecyclerAdapter class, a custom RecyclerView
-// Adapter for displaying MoodEvent objects in a list within the ProjectApp.
-// It supports two tabs ("For You" and "Following") for switching between event
-// lists and provides click listeners for editing and deleting mood events.
-//
-// Design Pattern: Adapter
-// Outstanding Issues:
-// N/A
-// -----------------------------------------------------------------------------
-
 package com.example.projectapp;
 
 import static androidx.core.content.ContextCompat.startActivity;
@@ -46,6 +33,10 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
     private final Context context;
     private final OnFollowClickListener followListener;
 
+    // Define view types
+    private static final int VIEW_TYPE_WITH_IMAGE = 1;
+    private static final int VIEW_TYPE_NO_IMAGE = 2;
+
     public interface OnFollowClickListener {
         void onFollowClick(MoodEvent event);
     }
@@ -66,12 +57,26 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
         notifyDataSetChanged();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        MoodEvent event = moodEvents.get(position);
+        // Check if the event has a photo URI
+        return (event.getPhotoUri() != null && !event.getPhotoUri().toString().isEmpty())
+                ? VIEW_TYPE_WITH_IMAGE
+                : VIEW_TYPE_NO_IMAGE;
+    }
+
     @NonNull
     @Override
     public MoodEventRecyclerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Inflate the layout from public_mood_item.xml
-        View itemView = LayoutInflater.from(context).inflate(R.layout.public_mood_item, parent, false);
-        return new ViewHolder(itemView);
+        // Inflate the appropriate layout based on the view type
+        View itemView;
+        if (viewType == VIEW_TYPE_WITH_IMAGE) {
+            itemView = LayoutInflater.from(context).inflate(R.layout.public_mood_item, parent, false);
+        } else {
+            itemView = LayoutInflater.from(context).inflate(R.layout.public_mood_item_no_img, parent, false);
+        }
+        return new ViewHolder(itemView, viewType);
     }
 
     @Override
@@ -87,20 +92,24 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
 
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView usernameText, moodText, reasonText, socialText, timeText, locationText;
-        ImageView photoImage;
+        ImageView photoImage; // Will be null for VIEW_TYPE_NO_IMAGE
         Button followButton;
+        int viewType;
 
-        ViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView, int viewType) {
             super(itemView);
+            this.viewType = viewType;
             usernameText = itemView.findViewById(R.id.text_username);
             moodText = itemView.findViewById(R.id.text_mood);
             reasonText = itemView.findViewById(R.id.text_reason);
             socialText = itemView.findViewById(R.id.text_social_situation);
             timeText = itemView.findViewById(R.id.text_time);
-            photoImage = itemView.findViewById(R.id.image_photo);
-            followButton = itemView.findViewById(R.id.button_follow);
-            // Ensure your layout (public_mood_item.xml) defines text_location
             locationText = itemView.findViewById(R.id.text_location);
+            followButton = itemView.findViewById(R.id.button_follow);
+            // Only initialize photoImage if the layout has it
+            if (viewType == VIEW_TYPE_WITH_IMAGE) {
+                photoImage = itemView.findViewById(R.id.image_photo);
+            }
         }
 
         void bind(MoodEvent event) {
@@ -146,33 +155,33 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             } else {
                 locationText.setText("Location: " + lat + ", " + lng);
             }
-            if (event.getPhotoUri() != null) {
+
+            // Load the image only if the view type includes an ImageView
+            if (viewType == VIEW_TYPE_WITH_IMAGE && photoImage != null) {
                 Glide.with(itemView.getContext())
                         .load(event.getPhotoUri())
                         .placeholder(android.R.color.darker_gray)
                         .into(photoImage);
-            } else {
-                photoImage.setVisibility(View.GONE);
             }
 
-            // Manage follow button behavior:
+            // Manage follow button behavior
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
             if (currentUser != null) {
-                // Hide follow button if the event belongs to the current user.
+                // Hide follow button if the event belongs to the current user
                 if (currentUser.getUid().equals(event.getUserId())) {
                     followButton.setVisibility(View.GONE);
                 } else {
-                    // Check if the current user is already following this event's user.
+                    // Check if the current user is already following this event's user
                     UserProfile currentUserProfile = ProfileProvider.getInstance(FirebaseFirestore.getInstance())
                             .getProfileByUID(currentUser.getUid());
                     if (currentUserProfile != null && currentUserProfile.getFollowing().contains(event.getUserId())) {
-                        // Already following: show "Following" text and disable clicks.
+                        // Already following: show "Following" text and disable clicks
                         followButton.setText("Already Following");
                         followButton.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.white));
                         followButton.setEnabled(false);
                         followButton.setVisibility(View.VISIBLE);
                     } else {
-                        // Not following yet: show "Follow" and attach click listener.
+                        // Not following yet: show "Follow" and attach click listener
                         followButton.setText("Follow");
                         followButton.setEnabled(true);
                         followButton.setVisibility(View.VISIBLE);
@@ -194,5 +203,4 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             else return date.toString();
         }
     }
-
 }

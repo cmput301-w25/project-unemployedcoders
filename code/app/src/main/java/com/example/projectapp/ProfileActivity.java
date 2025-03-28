@@ -176,21 +176,26 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
         boolean isOwnProfile = FirebaseAuth.getInstance().getCurrentUser() != null &&
                 profile.getUID().equals(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
-        // Inflate public_mood_item.xml for each event
+        // Inflate the appropriate layout for each event
         LayoutInflater inflater = LayoutInflater.from(this);
         for (MoodEvent event : recentEvents) {
-            View itemView = inflater.inflate(R.layout.public_mood_item, moodHistoryContainer, false);
+            // Determine which layout to use based on whether the event has a photo
+            boolean hasPhoto = event.getPhotoUriRaw() != null && !event.getPhotoUriRaw().isEmpty();
+            View itemView = inflater.inflate(
+                    hasPhoto ? R.layout.public_mood_item : R.layout.public_mood_item_no_img,
+                    moodHistoryContainer,
+                    false
+            );
 
             // Populate the views
             TextView usernameText = itemView.findViewById(R.id.text_username);
             TextView moodText = itemView.findViewById(R.id.text_mood);
             TextView reasonText = itemView.findViewById(R.id.text_reason);
             TextView socialSituationText = itemView.findViewById(R.id.text_social_situation);
-            ImageView photoImage = itemView.findViewById(R.id.image_photo);
+            ImageView photoImage = hasPhoto ? itemView.findViewById(R.id.image_photo) : null;
             TextView timeText = itemView.findViewById(R.id.text_time);
             TextView locationText = itemView.findViewById(R.id.text_location);
             Button followButton = itemView.findViewById(R.id.button_follow);
-
 
             usernameText.setText(profile.getUsername() != null ? profile.getUsername() : "N/A");
             moodText.setText("Mood: " + event.getEmotionalState());
@@ -198,18 +203,15 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
             socialSituationText.setText("Social: " + (event.getSocialSituation() != null ? event.getSocialSituation() : "N/A"));
             timeText.setText("Time: " + new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()).format(event.getDate()));
 
-
             if (event.getLatitude() != 0.0 || event.getLongitude() != 0.0) {
                 locationText.setText(String.format(Locale.getDefault(), "Location: (%.4f, %.4f)", event.getLatitude(), event.getLongitude()));
             } else {
                 locationText.setText("Location: N/A");
             }
 
-            // Handle the photo
-            if (event.getPhotoUriRaw() != null && !event.getPhotoUriRaw().isEmpty()) {
+            // Load the photo if the layout includes an ImageView
+            if (hasPhoto && photoImage != null) {
                 Picasso.get().load(event.getPhotoUriRaw()).into(photoImage);
-            } else {
-                photoImage.setVisibility(View.GONE);
             }
 
             // Handle the follow button visibility
