@@ -80,6 +80,7 @@ public class MapActivity extends AppCompatActivity implements
         mapFragment.getMapAsync(this);
 
         filters = new ArrayList<>();
+        filters.add("Both");
 
         FloatingActionButton filterButton = findViewById(R.id.map_filter_button);
 
@@ -233,21 +234,28 @@ public class MapActivity extends AppCompatActivity implements
                 @Override
                 public void onSuccess(Location location) {
                     map.clear();
-                    displayHistory = currentUser.getHistory().getFilteredVersion(filters);
 
-                    ArrayList<UserProfile> profiles = provider.getProfiles();
-                    for (UserProfile other: profiles){
-                        if (!currentUser.getUID().equals(other.getUID()) && currentUser.getFollowing().contains(other.getUID())){  // other is followed by current
-                            ArrayList<MoodEvent> otherHistory = other.getHistory().getFilteredVersion(filters).getEvents();
-                            for (MoodEvent event: otherHistory){
-                                LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude()); // user's location
-                                if (event.isPublic() && withinFiveKM(event, currentLocation)){
-                                    displayHistory.addEvent(event);
+                    if (filters.contains("Just Me") || filters.contains("Both")){
+                        displayHistory = currentUser.getHistory().getFilteredVersion(filters);
+                    } else {
+                        displayHistory = new MoodHistory();
+                    }
+
+
+                    if (filters.contains("Just People I'm Following") || filters.contains("Both")) {
+                        ArrayList<UserProfile> profiles = provider.getProfiles();
+                        for (UserProfile other : profiles) {
+                            if (!currentUser.getUID().equals(other.getUID()) && currentUser.getFollowing().contains(other.getUID())) {  // other is followed by current
+                                ArrayList<MoodEvent> otherHistory = other.getHistory().getFilteredVersion(filters).getEvents();
+                                for (MoodEvent event : otherHistory) {
+                                    LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude()); // user's location
+                                    if (event.isPublic() && withinFiveKM(event, currentLocation)) {
+                                        displayHistory.addEvent(event);
+                                    }
                                 }
                             }
                         }
                     }
-
                     for (MoodEvent event: displayHistory.getEvents()){
                         placeMoodEventMarker(event);
                     }
