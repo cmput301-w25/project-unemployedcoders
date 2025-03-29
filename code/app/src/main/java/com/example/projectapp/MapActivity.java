@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +22,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -30,13 +32,15 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.auth.User;
+import com.google.maps.android.SphericalUtil;
 
 import java.util.ArrayList;
 
 public class MapActivity extends AppCompatActivity implements
         GoogleMap.OnMyLocationButtonClickListener,
-        GoogleMap.OnMyLocationClickListener,
         OnMapReadyCallback,
         GoogleMap.OnMarkerClickListener,
         MoodEventDetailsAndEditingFragment.EditMoodEventListener,
@@ -76,6 +80,7 @@ public class MapActivity extends AppCompatActivity implements
         mapFragment.getMapAsync(this);
 
         filters = new ArrayList<>();
+        filters.add("Both");
 
         FloatingActionButton filterButton = findViewById(R.id.map_filter_button);
 
@@ -114,16 +119,14 @@ public class MapActivity extends AppCompatActivity implements
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         map = googleMap;
-        map.addMarker(new MarkerOptions()
-                .position(new LatLng(0, 0))
-                .title("Marker"));
 
         map.setOnMyLocationButtonClickListener(this);
-        map.setOnMyLocationClickListener(this);
+        map.setOnMarkerClickListener(this);
 
         enableMyLocation();
         centerOnUserLocation();
         setUpdateListener();
+
     }
 
     private void enableMyLocation() {
@@ -149,10 +152,6 @@ public class MapActivity extends AppCompatActivity implements
         return false;
     }
 
-    @Override
-    public void onMyLocationClick(@NonNull Location location) {
-        Toast.makeText(this, "Current location:\n" + location, Toast.LENGTH_LONG).show();
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
@@ -228,12 +227,41 @@ public class MapActivity extends AppCompatActivity implements
     }
 
     private void placeMoodHistoryMarkers(UserProfile currentUser){
-        // TODO: Logic to get the user's followed users
-        map.clear();
-        displayHistory = currentUser.getHistory().getFilteredVersion(filters);
-        for (MoodEvent event: displayHistory.getEvents()){
-            Log.d("Markers", "Placed " + event.getReason());
-            placeMoodEventMarker(event);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        } else {
+            mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    map.clear();
+
+                    if (filters.contains("Just Me") || filters.contains("Both")){
+                        displayHistory = currentUser.getHistory().getFilteredVersion(filters);
+                    } else {
+                        displayHistory = new MoodHistory();
+                    }
+
+
+                    if (filters.contains("Just People I'm Following") || filters.contains("Both")) {
+                        ArrayList<UserProfile> profiles = provider.getProfiles();
+                        for (UserProfile other : profiles) {
+                            if (!currentUser.getUID().equals(other.getUID()) && currentUser.getFollowing().contains(other.getUID())) {  // other is followed by current
+                                ArrayList<MoodEvent> otherHistory = other.getHistory().getFilteredVersion(filters).getEvents();
+                                for (MoodEvent event : otherHistory) {
+                                    LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude()); // user's location
+                                    if (event.isPublic() && withinFiveKM(event, currentLocation)) {
+                                        displayHistory.addEvent(event);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for (MoodEvent event: displayHistory.getEvents()){
+                        placeMoodEventMarker(event);
+                    }
+                }
+            });
+
         }
     }
 
@@ -248,7 +276,8 @@ public class MapActivity extends AppCompatActivity implements
         }
 
         // TODO: put users's username on the tag too, unless it's the current user's
-        MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(moodEvent.getLatitude(), moodEvent.getLongitude())).title(moodEvent.getEmotionalState());
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(new LatLng(moodEvent.getLatitude(), moodEvent.getLongitude())).title("@" + provider.getProfileByUID(moodEvent.getUserId()).getUsername());
 
         Bitmap iconRes = BitmapFactory.decodeResource(getResources(), moodEvent.getMarkerResource());  // raw img
 
@@ -262,7 +291,6 @@ public class MapActivity extends AppCompatActivity implements
             marker.setTag(moodEvent);
         }
 
-        map.setOnMarkerClickListener(this);
 
     }
 
@@ -270,12 +298,11 @@ public class MapActivity extends AppCompatActivity implements
     public boolean onMarkerClick(@NonNull Marker marker) {
         MoodEvent moodEvent = (MoodEvent)marker.getTag();
 
-        if (moodEvent.getUserId() != null && moodEvent.getUserId().equals(mAuth.getCurrentUser().getUid())){
-            MoodEventDetailsMapFragment.newInstance(currentUserMoodHistory.getEvents().get(currentUserMoodHistory.getEvents().indexOf(moodEvent)))
-                    .show(getSupportFragmentManager(), "Mood Event Details");
-        }
 
-        return false;
+        MoodEventDetailsMapFragment.newInstance(displayHistory.getEvents().get(displayHistory.getEvents().indexOf(moodEvent)))
+                .show(getSupportFragmentManager(), "Mood Event Details");
+
+        return false;  // to continue the default behavior of the map
     }
 
     @Override
@@ -298,8 +325,10 @@ public class MapActivity extends AppCompatActivity implements
 
     @Override
     public void onMapMoodEventEdited(MoodEvent moodEvent) {
-        MoodEventDetailsAndEditingFragment.newInstance(moodEvent)
-                .show(getSupportFragmentManager(), "Mood Event Details");
+        if (moodEvent.getUserId() != null && moodEvent.getUserId().equals(mAuth.getCurrentUser().getUid())){
+            MoodEventDetailsAndEditingFragment.newInstance(moodEvent)
+                    .show(getSupportFragmentManager(), "Mood Event Details");
+        }
     }
 
     @Override
@@ -308,6 +337,23 @@ public class MapActivity extends AppCompatActivity implements
         map.clear();
         if (mAuth.getCurrentUser() != null){
             placeMoodHistoryMarkers(provider.getProfileByUID(mAuth.getCurrentUser().getUid()));
+        }
+    }
+
+    private boolean withinFiveKM(MoodEvent event, LatLng currentLoc){
+        return SphericalUtil.computeDistanceBetween(new LatLng(event.getLatitude(), event.getLongitude()), currentLoc) <= 5000;
+    }
+
+    private void updateDisplay(){
+        FirebaseUser authUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (authUser != null){
+            UserProfile currentUser = provider.getProfileByUID(FirebaseAuth.getInstance().getCurrentUser().getUid());
+            if (currentUser != null) {
+                placeMoodHistoryMarkers(currentUser);
+
+
+            }
         }
     }
 }
