@@ -28,7 +28,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -45,9 +44,11 @@ public class HomeActivity extends AppCompatActivity {
     private List<MoodEvent> forYouEvents = new ArrayList<>();
     private List<MoodEvent> followingEvents = new ArrayList<>();
     private Button addEventButton;
+    private Button searchButton;
     private FirebaseFirestore db;
     private TextView usernameDisplay;
     private ImageButton mapToggleButton;
+    private static final String TAG = "HomeActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,14 +56,32 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.fragment_home);
 
         String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        Log.d("UID_DEBUG", "Currently signed-in user UID: " + currentUid);
+        Log.d(TAG, "Currently signed-in user UID: " + currentUid);
 
         recyclerViewMoodEvents = findViewById(R.id.recycler_view_mood_events);
         tabForYou = findViewById(R.id.tab_for_you);
         tabFollowing = findViewById(R.id.tab_following);
         addEventButton = findViewById(R.id.add_event_button);
+        searchButton = findViewById(R.id.search_button);
         usernameDisplay = findViewById(R.id.username_display);
         mapToggleButton = findViewById(R.id.map_toggle_button);
+
+        // Log if searchButton is null
+        if (searchButton == null) {
+            Log.e(TAG, "Search button not found in layout");
+        } else {
+            Log.d(TAG, "Search button found, setting click listener");
+            searchButton.setOnClickListener(v -> {
+                Log.d(TAG, "Search button clicked, launching SearchActivity");
+                Intent intent = new Intent(HomeActivity.this, SearchActivity.class);
+                try {
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error launching SearchActivity", e);
+                    Toast.makeText(HomeActivity.this, "Failed to launch SearchActivity: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
 
         // Fetch the current user's profile and set the username.
         FirebaseSync fb = FirebaseSync.getInstance();

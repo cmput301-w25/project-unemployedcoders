@@ -1,3 +1,15 @@
+// -----------------------------------------------------------------------------
+// File: ProfileActivity.java
+// -----------------------------------------------------------------------------
+// This file defines the ProfileActivity class, which serves as the user profile
+// screen in the ProjectApp. It sets up a BottomNavigationView for navigating
+// between app sections and highlights the "Profile" tab. The activity follows
+// the Model-View-Controller (MVC) pattern, acting as the controller.
+//
+// Design Pattern: MVC (Controller)
+// Outstanding Issues:
+// N/A
+// -----------------------------------------------------------------------------
 package com.example.projectapp;
 
 import android.content.Intent;
@@ -10,10 +22,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -22,17 +35,37 @@ import com.squareup.picasso.Picasso;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProfileActivity extends AppCompatActivity implements ProfileEditFragment.EditProfileListener {
 
     UserProfile profile;
-    Button followButton;
+    private RecyclerView recyclerViewMoodHistory;
+    private MoodEventRecyclerAdapter moodAdapter;
+    private List<MoodEvent> moodEvents;
+    private Button followButton;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_profile);
 
+        // Enable back button
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
+        recyclerViewMoodHistory = findViewById(R.id.recycler_view_mood_history);
+        moodEvents = new ArrayList<>();
+        moodAdapter = new MoodEventRecyclerAdapter(this, moodEvents, event -> followUser(event.getUserId()));
+        recyclerViewMoodHistory.setAdapter(moodAdapter);
+        recyclerViewMoodHistory.setLayoutManager(new LinearLayoutManager(this));
         followButton = findViewById(R.id.follow_profile_button);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -40,6 +73,10 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
         provider.listenForUpdates(new ProfileProvider.DataStatus() {
             @Override
             public void onDataUpdated() {
+                /*
+                IMPORTANT: We can't do anything until firebase actually gives the profiles back
+                 */
+
                 Bundle info = getIntent().getExtras();
                 if (info != null && info.getString("uid") != null) {
                     profile = provider.getProfileByUID(info.getString("uid"));
@@ -53,10 +90,18 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
 
                 showUsername();
                 showRecentEvents();
+                if (profile == null) {
+                    Toast.makeText(ProfileActivity.this, "User not found", Toast.LENGTH_SHORT).show();
+                    finish();
+                    return;
+                }
+
+                showUserDetails();
 
                 Button logOutButton = findViewById(R.id.logout_button);
                 Button showStatsButton = findViewById(R.id.button_show_stats);
                 Button editProfileButton = findViewById(R.id.edit_profile_button);
+                Button followButton = findViewById(R.id.follow_profile_button);
 
                 if (FirebaseAuth.getInstance().getCurrentUser() != null &&
                         profile.getUID().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
@@ -69,7 +114,7 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
 
                     showStatsButton.setOnClickListener(v -> {
                         Intent statsIntent = new Intent(ProfileActivity.this, StatsActivity.class);
-                        startActivity(statsIntent);
+                        startActivity(statsIntent); // Fixed: Changed 'intent' to 'statsIntent'
                     });
 
                     editProfileButton.setOnClickListener(v -> {
@@ -114,7 +159,7 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
 
             @Override
             public void onError(String error) {
-                Log.e("ProfileActivity", "Error loading profile data: " + error);
+                Toast.makeText(ProfileActivity.this, "Error loading profile: " + error, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -144,6 +189,28 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
             });
         } else {
             Log.e("ProfileActivity", "BottomNavigationView not found");
+            Log.e("ProfileActivity", "BottomNavigationView not found");
+        }
+    }
+
+    private void showUserDetails() {
+        TextView usernameText = findViewById(R.id.profile_username);
+        TextView nameText = findViewById(R.id.profile_name);
+        usernameText.setText("@" + profile.getUsername());
+        nameText.setText("Name: " + profile.getName());
+
+        // Display mood history (only public events if not the current user)
+        moodEvents.clear();
+        if (profile.getHistory() != null) {
+            boolean isCurrentUser = FirebaseAuth.getInstance().getCurrentUser() != null &&
+                    profile.getUID().equals(FirebaseAuth.getInstance().getCurrentUser().getUid());
+            for (MoodEvent event : profile.getHistory().getEvents()) {
+                if (isCurrentUser || event.isPublic()) {
+                    moodEvents.add(event);
+                }
+            }
+            moodEvents.sort((a, b) -> b.getDate().compareTo(a.getDate())); // Sort by date descending
+            moodAdapter.switchTab(0, moodEvents);
         }
     }
 
@@ -282,6 +349,8 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                         Toast.makeText(ProfileActivity.this, "Failed to unfollow: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
         }
+    private void followUser(String userId) {
+        Toast.makeText(this, "Followed user: " + userId, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -294,5 +363,16 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                         Log.d("Firestore", "User profile saved! events=" + profile.getHistory().getEvents().size()))
                 .addOnFailureListener(e ->
                         Log.e("Firestore", "Error saving user profile", e));
+        this.profile = profile; // Update local profile
+        showUserDetails(); // Refresh UI
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish();
+        return true;
     }
 }

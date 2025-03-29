@@ -60,6 +60,7 @@ dependencies {
 
     implementation("com.google.maps.android:android-maps-utils:3.5.3");
 
+
     // Firebase BoM to manage Firebase library versions
     implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
     // Add Firebase Authentication without a version (managed by the BoM)
@@ -77,5 +78,7 @@ dependencies {
 
     // for google map
     implementation("com.google.android.gms:play-services-maps:latest_version")
+    implementation("androidx.room:room-runtime:2.6.1")
+    annotationProcessor("androidx.room:room-compiler:2.6.1")
 
 }
