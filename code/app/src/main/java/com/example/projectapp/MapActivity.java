@@ -5,7 +5,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -283,14 +287,37 @@ public class MapActivity extends AppCompatActivity implements
 
         Bitmap scaledIcon = Bitmap.createScaledBitmap(iconRes, 120, 200, false);  // scaled version
 
-        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(scaledIcon));  // set the icon
+
+
+
+        Bitmap extraSpace = Bitmap.createBitmap(300, 250, Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(extraSpace);
+        canvas.drawColor(Color.TRANSPARENT);
+        canvas.drawBitmap(scaledIcon, 90, 50, null);
+
+        Paint paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(30);
+        paint.setTypeface(Typeface.DEFAULT_BOLD);
+        paint.setAntiAlias(true);
+
+        float textWidth = paint.measureText("@" + provider.getProfileByUID(moodEvent.getUserId()).getUsername());
+
+        canvas.drawText("@" + provider.getProfileByUID(moodEvent.getUserId()).getUsername(), 150 - textWidth/2, 30, paint);
+
+        Bitmap exactSpace = Bitmap.createBitmap((int) Math.max(textWidth, 80), 250, Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(exactSpace);
+        canvas.drawColor(Color.TRANSPARENT);
+        canvas.drawBitmap(extraSpace, -1* (300-textWidth)/2, 0, null);
+
+        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(exactSpace));  // set the icon
 
         Marker marker = map.addMarker(markerOptions);
 
         if (marker != null){
             marker.setTag(moodEvent);
         }
-
 
     }
 
