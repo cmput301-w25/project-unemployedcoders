@@ -19,7 +19,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
+import org.w3c.dom.Text;
+
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -50,6 +53,23 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                         Log.d("Testing", "Option 2");
                     }
                 }
+
+                ArrayList<UserProfile> followers = new ArrayList<>();
+                int followerCount = 0;
+                for (UserProfile p: provider.getProfiles()){
+                    if (p.getFollowing().contains(profile.getUID())){
+                        followerCount++;
+                        followers.add(p);
+                    }
+                }
+
+                int followingCount = profile.getFollowing().size();
+
+                TextView followerText = findViewById(R.id.followers_count);
+                TextView followingText = findViewById(R.id.following_count);
+
+                followerText.setText("Followers: " + followerCount);
+                followingText.setText("Following: " + followingCount);
 
                 showUsername();
                 showRecentEvents();
