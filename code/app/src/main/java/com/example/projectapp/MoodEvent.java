@@ -68,6 +68,9 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
                 !Arrays.asList(ALL_SITUATIONS).contains(socialSituation)) {
             throw new IllegalArgumentException("Not a valid social situation");
         }
+        if (userId == null){
+            throw new IllegalArgumentException("Cannot have null uid");
+        }
         this.emotionalState = emotionalState;
         this.date = Calendar.getInstance().getTime();
         this.reason = reason;
@@ -75,50 +78,6 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         this.moodType = MoodType.fromString(emotionalState);
         this.photoUri = (photoUri != null) ? photoUri.toString() : null;
         this.userId = userId;
-    }
-
-    /**
-     * Constructor for mood events when no photo is provided.
-     * @param emotionalState The specific emotional state of the event.
-     * @param reason The reason for the event.
-     * @param socialSituation The social situation of the event.
-     */
-    public MoodEvent(String emotionalState, String reason, String socialSituation) {
-        if (!validReason(reason)) {
-            throw new IllegalArgumentException("Not a valid reason");
-        }
-        if (MoodType.fromString(emotionalState) == null) {
-            throw new IllegalArgumentException("Not a valid emotional state");
-        }
-        if (socialSituation != null &&
-                !Arrays.asList(ALL_SITUATIONS).contains(socialSituation)) {
-            throw new IllegalArgumentException("Not a valid social situation");
-        }
-        this.emotionalState = emotionalState;
-        this.date = Calendar.getInstance().getTime();
-        this.reason = reason;
-        this.socialSituation = socialSituation;
-        this.moodType = MoodType.fromString(emotionalState);
-        this.photoUri = null;
-    }
-
-    /**
-     * Constructor for mood events when no social situation is provided.
-     * @param emotionalState The specific emotional state of the event.
-     * @param reason The reason for the event.
-     */
-    public MoodEvent(String emotionalState, String reason) {
-        if (MoodType.fromString(emotionalState) == null) {
-            throw new IllegalArgumentException("Not a valid emotional state");
-        }
-        if (!validReason(reason)) {
-            throw new IllegalArgumentException("Not a valid reason");
-        }
-        this.emotionalState = emotionalState;
-        this.date = Calendar.getInstance().getTime();
-        this.reason = reason;
-        this.socialSituation = null;
-        this.moodType = MoodType.fromString(emotionalState);
     }
 
     /**
@@ -357,6 +316,10 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     public boolean equals(Object o){
         if (this == o){
             return true;
+        }
+
+        if (o == null){
+            return false;
         }
 
         MoodEvent m = (MoodEvent)o;
