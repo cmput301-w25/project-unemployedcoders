@@ -110,7 +110,8 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         // Use the OnFollowClickListener from MoodEventRecyclerAdapter.
-        adapter = new MoodEventRecyclerAdapter(this, forYouEvents, event -> followUser(event.getUserId()));
+        adapter = new MoodEventRecyclerAdapter(HomeActivity.this, forYouEvents, event -> followUser(event.getUserId()));
+
         recyclerViewMoodEvents.setAdapter(adapter);
         recyclerViewMoodEvents.setLayoutManager(new LinearLayoutManager(this));
 

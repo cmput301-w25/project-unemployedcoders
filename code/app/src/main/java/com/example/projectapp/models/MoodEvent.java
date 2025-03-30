@@ -20,6 +20,7 @@ import com.example.projectapp.R;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.PropertyName;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -240,6 +241,17 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      */
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    private ArrayList<Comment> comments = new ArrayList<>();
+
+    // Getter and setter
+    public ArrayList<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(ArrayList<Comment> comments) {
+        this.comments = comments;
     }
 
     /**

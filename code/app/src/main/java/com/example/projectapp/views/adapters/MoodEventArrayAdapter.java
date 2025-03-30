@@ -61,6 +61,8 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
         TextView reasonText;
         ConstraintLayout background;
         ImageView photo;
+
+
     }
 
     @Override
