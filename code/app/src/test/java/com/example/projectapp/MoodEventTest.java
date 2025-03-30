@@ -6,6 +6,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.example.projectapp.models.MoodEvent;
+
 public class MoodEventTest {
 
     private MoodEvent mockEvent(){

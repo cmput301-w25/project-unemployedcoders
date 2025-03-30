@@ -6,6 +6,10 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.example.projectapp.database_util.ProfileProvider;
+import com.example.projectapp.models.MoodEvent;
+import com.example.projectapp.models.MoodHistory;
+import com.example.projectapp.models.UserProfile;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;

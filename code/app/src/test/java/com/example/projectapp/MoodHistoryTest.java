@@ -6,6 +6,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.example.projectapp.models.MoodEvent;
+import com.example.projectapp.models.MoodHistory;
+
 import java.util.ArrayList;
 
 public class MoodHistoryTest {

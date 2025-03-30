@@ -13,6 +13,9 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
+import com.example.projectapp.views.activities.MainActivity;
+import com.example.projectapp.views.activities.MoodEventActivity;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

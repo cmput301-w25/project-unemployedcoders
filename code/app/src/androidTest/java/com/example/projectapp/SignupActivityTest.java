@@ -16,15 +16,14 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import android.app.Instrumentation;
 import android.content.Intent;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.util.Log;
 
-import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
+import com.example.projectapp.views.activities.SignupActivity;
 import com.google.firebase.auth.FirebaseAuth;
 
 import org.junit.After;
