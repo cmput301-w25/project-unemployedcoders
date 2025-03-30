@@ -18,6 +18,7 @@ import static com.example.projectapp.MoodHistory.matchesFilter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -37,7 +38,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -55,6 +59,14 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
 
     private List<MoodEvent> pendingEdits = new ArrayList<>();
     private List<MoodEvent> pendingDeletes = new ArrayList<>();
+    private int lastSelectedPosition = -1;
+    private boolean unsyncedEdits = false;
+    private static final String PREFS_NAME = "OfflineSyncPrefs";
+    private static final String KEY_UNSYNCED_EDITS = "unsyncedEdits";
+    private static final String KEY_UNSYNCED_HISTORY = "unsyncedMoodHistory";
+    private boolean suppressNextFirebaseUpdate = false;
+
+
 
     private boolean isNetworkAvailable() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -62,13 +74,58 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
         return activeNetwork != null && activeNetwork.isConnected();
     }
 
+    private void setUnsyncedEdits(boolean value) {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        prefs.edit().putBoolean(KEY_UNSYNCED_EDITS, value).apply();
+    }
+
+    private boolean getUnsyncedEdits() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        return prefs.getBoolean(KEY_UNSYNCED_EDITS, false);
+    }
+
+    private void saveLocalMoodHistory() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        Gson gson = new Gson();
+        String json = gson.toJson(moodHistory.getEvents());
+
+        editor.putString(KEY_UNSYNCED_HISTORY, json);
+        editor.apply();
+    }
+
+    private ArrayList<MoodEvent> loadLocalMoodEvents() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String json = prefs.getString(KEY_UNSYNCED_HISTORY, null);
+
+        if (json != null) {
+            Gson gson = new Gson();
+            Type type = new TypeToken<ArrayList<MoodEvent>>() {}.getType();
+            return gson.fromJson(json, type);
+        }
+
+        return null;
+    }
+
+    private void clearLocalMoodHistory() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        prefs.edit().remove(KEY_UNSYNCED_HISTORY).apply();
+    }
+
+
     @Override
     public void onMoodEventEdited(MoodEvent moodEvent) {
         if (isNetworkAvailable()) {
-            syncEditedEvent(moodEvent);
+            syncMoodHistory();
         } else {
-            pendingEdits.add(moodEvent);
             Toast.makeText(this, "No Internet, changes will sync when reconnected", Toast.LENGTH_SHORT).show();
+            setUnsyncedEdits(true);
+            saveLocalMoodHistory();
+        }
+
+        if (moodEventAdapter != null) {
+            moodEventAdapter.notifyDataSetChanged();
         }
     }
     private void syncEditedEvent(MoodEvent moodEvent) {
@@ -87,6 +144,70 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
             }
         });
     }
+
+    private void listenForFirebaseUpdates() {
+        FirebaseSync.getInstance().listenForUpdates(new FirebaseSync.DataStatus() {
+            @Override
+            public void onDataUpdated() {
+                if (suppressNextFirebaseUpdate) {
+                    suppressNextFirebaseUpdate = false;
+                    return;
+                }
+
+                FirebaseSync.getInstance().fetchUserProfileObject(new UserProfileCallback() {
+                    @Override
+                    public void onUserProfileLoaded(UserProfile userProfile) {
+                        moodHistory = userProfile.getHistory();
+                        displayedMoodEvents = moodHistory.getEvents();
+
+                        moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), displayedMoodEvents, HistoryActivity.this);
+                        moodEventList.setAdapter(moodEventAdapter);
+                        moodEventAdapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                Log.e("Update Error", error);
+            }
+        });
+    }
+
+    private void syncMoodHistory() {
+        suppressNextFirebaseUpdate = true;
+
+        FirebaseSync fb = FirebaseSync.getInstance();
+        fb.fetchUserProfileObject(new UserProfileCallback() {
+            @Override
+            public void onUserProfileLoaded(UserProfile userProfile) {
+                if (moodHistory != null && moodHistory.getEvents() != null) {
+                    userProfile.getHistory().setEvents(new ArrayList<>(moodHistory.getEvents()));
+                }
+
+                fb.storeUserData(userProfile);
+
+                // Wait ~1 second before listening to allow write to reach server
+                new android.os.Handler().postDelayed(() -> {
+                    clearLocalMoodHistory();
+                    setUnsyncedEdits(false);
+                    listenForFirebaseUpdates(); // 🔥 safe to listen now
+                }, 1000); // 1 second delay
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
     @Override
     public void onEditMoodEvent(MoodEvent moodEvent, int position) {
         MoodEventDetailsAndEditingFragment.newInstance(moodEvent)
@@ -95,11 +216,22 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
 
     @Override
     public void onMoodEventDeleted(MoodEvent moodEvent) {
+        try {
+            moodHistory.deleteEvent(moodEvent);
+        } catch (IllegalArgumentException e) {
+            Log.w("MoodEventDelete", "Tried to delete an event that doesn't exist");
+        }
+
         if (isNetworkAvailable()) {
-            syncDeletedEvent(moodEvent);
+            syncMoodHistory();
         } else {
-            pendingDeletes.add(moodEvent);
+            setUnsyncedEdits(true);
+            saveLocalMoodHistory();
             Toast.makeText(this, "No internet, deletion will sync when reconnected", Toast.LENGTH_SHORT).show();
+        }
+
+        if (moodEventAdapter != null) {
+            moodEventAdapter.notifyDataSetChanged();
         }
     }
 
@@ -126,21 +258,66 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
         MoodEventDeleteFragment.newInstance(moodEvent).show(getSupportFragmentManager(), "DeleteMoodEvent");
     }
 
+    private void savePendingEdits() {
+        SharedPreferences prefs = getSharedPreferences("PendingChanges", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        Gson gson = new Gson();
+        String json = gson.toJson(pendingEdits);
+
+        editor.putString("pendingEdits", json);
+        editor.apply();
+    }
+
+    private void loadPendingEdits() {
+        SharedPreferences prefs = getSharedPreferences("PendingChanges", MODE_PRIVATE);
+        String json = prefs.getString("pendingEdits", null);
+
+        if (json != null) {
+            Gson gson = new Gson();
+            Type type = new TypeToken<List<MoodEvent>>() {}.getType();
+            pendingEdits = gson.fromJson(json, type);
+        } else {
+            pendingEdits = new ArrayList<>();
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        if (isNetworkAvailable()) {
-            for (MoodEvent event : pendingEdits) {
-                syncEditedEvent(event);
-            }
-            pendingEdits.clear();
 
-            for (MoodEvent event : pendingDeletes) {
-                syncDeletedEvent(event);
+        ArrayList<MoodEvent> localEvents = loadLocalMoodEvents();
+
+        if (!isNetworkAvailable() && localEvents != null) {
+            if (moodHistory == null) {
+                moodHistory = new MoodHistory();
             }
-            pendingDeletes.clear();
+            moodHistory.setEvents(localEvents);
+            displayedMoodEvents = localEvents;
+
+            if (moodEventAdapter == null) {
+                moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), displayedMoodEvents, this);
+                moodEventList.setAdapter(moodEventAdapter);
+            } else {
+                moodEventAdapter.clear();
+                moodEventAdapter.addAll(displayedMoodEvents);
+            }
+
+            moodEventAdapter.notifyDataSetChanged();
+            return;
         }
-        if (moodEventAdapter != null){
+
+        if (isNetworkAvailable() && getUnsyncedEdits()) {
+            if (localEvents != null) {
+                if (moodHistory == null) moodHistory = new MoodHistory();
+                moodHistory.setEvents(localEvents);
+                syncMoodHistory();
+            }
+        } else {
+            listenForFirebaseUpdates();
+        }
+
+        if (moodEventAdapter != null) {
             moodEventAdapter.notifyDataSetChanged();
         }
     }
@@ -182,51 +359,35 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
             }
         });
 
-        FirebaseSync fb = FirebaseSync.getInstance();
-        // Fetch mood history from Firebase
-        fb.fetchUserProfileObject(new UserProfileCallback() {
-            @Override
-            public void onUserProfileLoaded(UserProfile userProfile) {
-                moodHistory = userProfile.getHistory();
-                displayedMoodEvents = moodHistory.getEvents();
-                moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), displayedMoodEvents, HistoryActivity.this);
-                moodEventList.setAdapter(moodEventAdapter);
-                moodEventAdapter.notifyDataSetChanged();
-            }
+        ArrayList<MoodEvent> localEvents = loadLocalMoodEvents();
 
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show(); // 1 time
-            }
-        });
+        if (getUnsyncedEdits() && localEvents != null) {
+            moodHistory = new MoodHistory();
+            moodHistory.setEvents(localEvents);
+            displayedMoodEvents = localEvents;
+            moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), displayedMoodEvents, this);
+            moodEventList.setAdapter(moodEventAdapter);
+            moodEventAdapter.notifyDataSetChanged();
+        } else {
+            // Fetch moodhistory from Firebase
+            FirebaseSync fb = FirebaseSync.getInstance();
+            fb.fetchUserProfileObject(new UserProfileCallback() {
+                @Override
+                public void onUserProfileLoaded(UserProfile userProfile) {
+                    moodHistory = userProfile.getHistory();
+                    displayedMoodEvents = moodHistory.getEvents();
+                    moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), displayedMoodEvents, HistoryActivity.this);
+                    moodEventList.setAdapter(moodEventAdapter);
+                    moodEventAdapter.notifyDataSetChanged();
+                }
 
-        fb.listenForUpdates(new FirebaseSync.DataStatus() {
-            @Override
-            public void onDataUpdated() {
-                fb.fetchUserProfileObject(new UserProfileCallback() {
-                    @Override
-                    public void onUserProfileLoaded(UserProfile userProfile) {
-                        moodHistory = userProfile.getHistory();
+                @Override
+                public void onFailure(Exception e) {
+                    Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
 
-                        moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), moodHistory.getEvents(), HistoryActivity.this);
-                        moodEventList.setAdapter(moodEventAdapter);
-                        moodEventAdapter.notifyDataSetChanged();
-                        filter_spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        filter_spinner.setAdapter(filter_spinner_adapter);
-                    }
-
-                    @Override
-                    public void onFailure(Exception e) {
-                        Toast.makeText(HistoryActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-
-            @Override
-            public void onError(String error) {
-                Log.e("Update Error", error);
-            }
-        });
 
         filterApplyButton.setOnClickListener(view -> {
             String selected_filter = filter_spinner.getSelectedItem().toString();
