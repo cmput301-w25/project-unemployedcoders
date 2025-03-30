@@ -186,18 +186,63 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
         fb.fetchUserProfileObject(new UserProfileCallback() {
             @Override
             public void onUserProfileLoaded(UserProfile userProfile) {
-                if (moodHistory != null && moodHistory.getEvents() != null) {
-                    userProfile.getHistory().setEvents(new ArrayList<>(moodHistory.getEvents()));
+                // Load local edited mood history if it exists
+                MoodHistory editedHistory;
+                ArrayList<MoodEvent> localEvents = loadLocalMoodEvents();
+                if (localEvents != null && !localEvents.isEmpty()) {
+                    editedHistory = new MoodHistory();
+                    editedHistory.setEvents(localEvents);
+                } else {
+                    editedHistory = userProfile.getHistory();
                 }
 
+                // Load offline additions
+                SharedPreferences prefs = getSharedPreferences("PendingMoodEvents", MODE_PRIVATE);
+                String json = prefs.getString("pendingMoodEvents", null);
+                List<MoodEvent> pendingAdditions = new ArrayList<>();
+                if (json != null) {
+                    Gson gson = new Gson();
+                    Type type = new TypeToken<List<MoodEvent>>() {}.getType();
+                    pendingAdditions = gson.fromJson(json, type);
+                }
+
+                // Merge additions into editedHistory
+                for (MoodEvent event : pendingAdditions) {
+                    editedHistory.addEvent(event);
+                }
+
+                // Save merged result
+                userProfile.getHistory().setEvents(new ArrayList<>(editedHistory.getEvents()));
                 fb.storeUserData(userProfile);
 
-                // Wait ~1 second before listening to allow write to reach server
-                new android.os.Handler().postDelayed(() -> {
-                    clearLocalMoodHistory();
-                    setUnsyncedEdits(false);
-                    listenForFirebaseUpdates(); // 🔥 safe to listen now
-                }, 1000); // 1 second delay
+                // Clear local changes
+                prefs.edit().remove("pendingMoodEvents").apply();
+                clearLocalMoodHistory();
+                setUnsyncedEdits(false);
+
+                // Re-fetch to refresh UI
+                fb.fetchUserProfileObject(new UserProfileCallback() {
+                    @Override
+                    public void onUserProfileLoaded(UserProfile updatedProfile) {
+                        moodHistory = updatedProfile.getHistory();
+                        displayedMoodEvents = moodHistory.getEvents();
+
+                        if (moodEventAdapter == null) {
+                            moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), displayedMoodEvents, HistoryActivity.this);
+                            moodEventList.setAdapter(moodEventAdapter);
+                        } else {
+                            moodEventAdapter.clear();
+                            moodEventAdapter.addAll(displayedMoodEvents);
+                        }
+
+                        moodEventAdapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(HistoryActivity.this, "Error reloading: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
 
             @Override
@@ -285,7 +330,8 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
     @Override
     protected void onResume() {
         super.onResume();
-
+        SharedPreferences state = getSharedPreferences("OfflineSyncPrefs", MODE_PRIVATE);
+        boolean justSyncedOfflineEvents = state.getBoolean("offlineEventsSynced", false);
         ArrayList<MoodEvent> localEvents = loadLocalMoodEvents();
 
         if (!isNetworkAvailable() && localEvents != null) {
@@ -307,12 +353,16 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
             return;
         }
 
-        if (isNetworkAvailable() && getUnsyncedEdits()) {
+        if (justSyncedOfflineEvents || (isNetworkAvailable() && getUnsyncedEdits())) {
+            state.edit().putBoolean("offlineEventsSynced", false).apply(); // Reset the flag
+
+            if (moodHistory == null) moodHistory = new MoodHistory();
+
             if (localEvents != null) {
-                if (moodHistory == null) moodHistory = new MoodHistory();
                 moodHistory.setEvents(localEvents);
-                syncMoodHistory();
             }
+
+            syncMoodHistory();
         } else {
             listenForFirebaseUpdates();
         }

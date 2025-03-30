@@ -17,7 +17,11 @@ package com.example.projectapp;
 
 import static androidx.test.InstrumentationRegistry.getContext;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,6 +37,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -139,6 +147,26 @@ public class HomeActivity extends AppCompatActivity {
             }
             return true;
         });
+    }
+
+    /*helper to detect if user is connected to the internet*/
+    private boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnected();
+    }
+    private void syncPendingMoodEventsIfOnline() {
+        if (!isNetworkAvailable()) return;
+
+        SharedPreferences prefs = getSharedPreferences("PendingMoodEvents", MODE_PRIVATE);
+        String json = prefs.getString("pendingMoodEvents", null);
+        if (json == null) return;
+
+        // Just flag that these need syncing — HistoryActivity will handle upload
+        SharedPreferences state = getSharedPreferences("OfflineSyncPrefs", MODE_PRIVATE);
+        state.edit().putBoolean("offlineEventsSynced", true).apply();
+
+        Toast.makeText(HomeActivity.this, "Offline additions ready to sync", Toast.LENGTH_SHORT).show();
     }
 
     private void setUpdateListener(){
@@ -262,4 +290,11 @@ public class HomeActivity extends AppCompatActivity {
                     Toast.makeText(HomeActivity.this, "Failed to send follow request: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        syncPendingMoodEventsIfOnline(); //syncs offline-added mood events when coming back to HomeActivity
+    }
+
 }
