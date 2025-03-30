@@ -83,7 +83,6 @@
         <activity android:name=".views.activities.SignupActivity" android:exported="false" />
         <activity android:name=".views.activities.MoodEventActivity" android:exported="false" />
         <activity android:name=".views.activities.StatsActivity" android:exported="false" />
-        <activity android:name=".MapViewActivity"/>
         <activity android:name=".views.activities.SearchActivity" />
 
     </application>

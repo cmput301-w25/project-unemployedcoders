@@ -238,9 +238,14 @@ public class MapActivity extends AppCompatActivity implements
         provider.listenForUpdates(new ProfileProvider.DataStatus() {
             @Override
             public void onDataUpdated() {
-                if (mAuth.getCurrentUser() != null) {
-                    currentUserMoodHistory = provider.getProfileByUID(mAuth.getCurrentUser().getUid()).getHistory();
-                    placeMoodHistoryMarkers(provider.getProfileByUID(mAuth.getCurrentUser().getUid()));
+                FirebaseUser user = mAuth.getCurrentUser();
+                if (user != null) {
+                    UserProfile current = provider.getProfileByUID(user.getUid());
+                    if (current != null){
+                        currentUserMoodHistory = current.getHistory();
+                        placeMoodHistoryMarkers(current);
+                    }
+
                 }
             }
 

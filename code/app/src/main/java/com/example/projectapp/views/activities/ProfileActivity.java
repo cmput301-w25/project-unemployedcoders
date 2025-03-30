@@ -83,16 +83,20 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                     }
                 }
 
+
                 ArrayList<UserProfile> followers = new ArrayList<>();
                 int followerCount = 0;
-                for (UserProfile p: provider.getProfiles()){
-                    if (p.getFollowing().contains(profile.getUID())){
-                        followerCount++;
-                        followers.add(p);
+                int followingCount = 0;
+                if (profile != null && provider.getProfiles() != null){
+                    for (UserProfile p: provider.getProfiles()){
+                        if (p.getFollowing().contains(profile.getUID())){
+                            followerCount++;
+                            followers.add(p);
+                        }
                     }
-                }
 
-                int followingCount = profile.getFollowing().size();
+                    followingCount = profile.getFollowing().size();
+                }
 
                 TextView followerText = findViewById(R.id.followers_count);
                 TextView followingText = findViewById(R.id.following_count);

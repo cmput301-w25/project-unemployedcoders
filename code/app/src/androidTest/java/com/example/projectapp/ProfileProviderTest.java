@@ -40,12 +40,16 @@ public class ProfileProviderTest {
     */
     @BeforeClass
     public static void setup() throws InterruptedException {
+        Thread.sleep(10000);
         // Specific address for emulated device to access our localHost
         String androidLocalhost = "10.0.2.2";
 
         int portNumber = 8080;
-        FirebaseFirestore.getInstance().useEmulator(androidLocalhost, portNumber);
-
+        try {
+            FirebaseFirestore.getInstance().useEmulator(androidLocalhost, portNumber);
+        } catch (IllegalStateException e){
+            // do nothing
+        }
         mAuth = FirebaseAuth.getInstance();
         mAuth.createUserWithEmailAndPassword("uitest@email.com", "password").addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
