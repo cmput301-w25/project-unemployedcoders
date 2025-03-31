@@ -2,6 +2,7 @@ package com.example.projectapp.views.fragments;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -10,9 +11,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
+
 import com.example.projectapp.R;
 import com.example.projectapp.models.UserProfile;
+import com.example.projectapp.views.activities.ProfileActivity;
 import com.example.projectapp.views.adapters.UserAdapter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +50,16 @@ public class FollowListDialogFragment extends DialogFragment {
             followType = getArguments().getString(ARG_FOLLOW_TYPE);
             profiles = (ArrayList<UserProfile>) getArguments().getSerializable(ARG_PROFILES_LIST);
         }
-        adapter = new UserAdapter(getContext(), profiles, (UserAdapter.OnUserClickListener) getContext());
+        // Provide an inline listener that launches the ProfileActivity when a user is clicked.
+        adapter = new UserAdapter(getContext(), profiles, new UserAdapter.OnUserClickListener() {
+            @Override
+            public void onUserClick(UserProfile user) {
+                Intent intent = new Intent(getContext(), ProfileActivity.class);
+                intent.putExtra("uid", user.getUID());
+                startActivity(intent);
+                dismiss(); // close the dialog after clicking
+            }
+        });
         recyclerView.setAdapter(adapter);
         builder.setView(view)
                 .setTitle(followType.equals("followers") ? "Followers" : "Following")

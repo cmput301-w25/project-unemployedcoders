@@ -53,7 +53,6 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
 
     UserProfile profile;
     private Button followButton, backToSearchButton;
-    private Button followButton;
     private List<MoodEvent> recentEvents = new ArrayList<>();
 
     @Override
