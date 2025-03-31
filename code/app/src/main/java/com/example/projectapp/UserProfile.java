@@ -1,19 +1,7 @@
-// -----------------------------------------------------------------------------
-// File: UserProfile.java
-// -----------------------------------------------------------------------------
-// This file defines the UserProfile class, a model class in the ProjectApp that
-// represents a user's profile. It stores the user's username, name, and mood history.
-// The class is part of the Model-View-Controller (MVC) pattern, acting as the model
-// for user-related data.
-//
-// Design Pattern: MVC (Model)
-// Outstanding Issues:
-// N/A
-// -----------------------------------------------------------------------------
-
 package com.example.projectapp;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * A class to model a user's profile.
@@ -24,6 +12,10 @@ public class UserProfile implements Serializable {
     private String username;
     private String name; // the user's actual name
     private String uid;
+    private ArrayList<String> following = new ArrayList<>(); // List of UIDs this user follows
+    private ArrayList<String> followers = new ArrayList<>(); // List of UIDs following this user
+    private int followingCount = 0; // Optional: for display
+    private int followersCount = 0; // Optional: for display
 
     /**
      * Constructs a new UserProfile with the specified Firebase UID, username, and name.
@@ -100,4 +92,79 @@ public class UserProfile implements Serializable {
         this.name = name;
     }
 
+    // Added getters and setters for followers and following
+
+    /**
+     * Returns the list of UIDs this user is following.
+     *
+     * @return The list of followed user UIDs.
+     */
+    public ArrayList<String> getFollowing() {
+        return following;
+    }
+
+    /**
+     * Sets the list of UIDs this user is following and updates the count.
+     *
+     * @param following The list of followed user UIDs.
+     */
+    public void setFollowing(ArrayList<String> following) {
+        this.following = following != null ? following : new ArrayList<>(); // Prevent null
+        this.followingCount = this.following.size();
+    }
+
+    /**
+     * Returns the list of UIDs following this user.
+     *
+     * @return The list of follower UIDs.
+     */
+    public ArrayList<String> getFollowers() {
+        return followers;
+    }
+
+    /**
+     * Sets the list of UIDs following this user and updates the count.
+     *
+     * @param followers The list of follower UIDs.
+     */
+    public void setFollowers(ArrayList<String> followers) {
+        this.followers = followers != null ? followers : new ArrayList<>(); // Prevent null
+        this.followersCount = this.followers.size();
+    }
+
+    /**
+     * Returns the number of users this user is following.
+     *
+     * @return The following count.
+     */
+    public int getFollowingCount() {
+        return followingCount;
+    }
+
+    /**
+     * Sets the following count.
+     *
+     * @param followingCount The number of users followed.
+     */
+    public void setFollowingCount(int followingCount) {
+        this.followingCount = followingCount;
+    }
+
+    /**
+     * Returns the number of users following this user.
+     *
+     * @return The followers count.
+     */
+    public int getFollowersCount() {
+        return followersCount;
+    }
+
+    /**
+     * Sets the followers count.
+     *
+     * @param followersCount The number of followers.
+     */
+    public void setFollowersCount(int followersCount) {
+        this.followersCount = followersCount;
+    }
 }

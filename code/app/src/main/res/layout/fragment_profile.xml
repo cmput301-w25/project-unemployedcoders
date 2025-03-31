@@ -29,6 +29,16 @@
                 android:layout_gravity="right|top"
                 android:layout_marginTop="1dp"/>
 
+            <!-- Explicit Back to Search Button -->
+            <Button
+                android:id="@+id/back_to_search_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Back"
+                android:visibility="gone"
+                android:layout_gravity="left|top"
+                android:layout_marginTop="1dp"/>
+
             <ImageView
                 android:id="@+id/profile_image"
                 android:layout_width="120dp"

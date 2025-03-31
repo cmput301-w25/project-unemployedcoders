@@ -1,19 +1,4 @@
-// -----------------------------------------------------------------------------
-// File: MoodEventRecyclerAdapter.java
-// -----------------------------------------------------------------------------
-// This file defines the MoodEventRecyclerAdapter class, a custom RecyclerView
-// Adapter for displaying MoodEvent objects in a list within the ProjectApp.
-// It supports two tabs ("For You" and "Following") for switching between event
-// lists and provides click listeners for editing and deleting mood events.
-//
-// Design Pattern: Adapter
-// Outstanding Issues:
-// N/A
-// -----------------------------------------------------------------------------
-
 package com.example.projectapp;
-
-import static androidx.core.content.ContextCompat.startActivity;
 
 import android.content.Context;
 import android.content.Intent;
@@ -32,11 +17,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Shows a list of MoodEvent objects (public) in a RecyclerView
- */
-public class MoodEventRecyclerAdapter extends
-        RecyclerView.Adapter<MoodEventRecyclerAdapter.ViewHolder> {
+public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecyclerAdapter.ViewHolder> {
 
     private List<MoodEvent> moodEvents;
     private final Context context;
@@ -46,11 +27,7 @@ public class MoodEventRecyclerAdapter extends
         void onFollowClick(MoodEvent event);
     }
 
-    public MoodEventRecyclerAdapter(
-            Context context,
-            List<MoodEvent> moodEvents,
-            OnFollowClickListener listener
-    ) {
+    public MoodEventRecyclerAdapter(Context context, List<MoodEvent> moodEvents, OnFollowClickListener listener) {
         this.context = context;
         this.moodEvents = moodEvents;
         this.followListener = listener;
@@ -68,18 +45,13 @@ public class MoodEventRecyclerAdapter extends
 
     @NonNull
     @Override
-    public MoodEventRecyclerAdapter.ViewHolder onCreateViewHolder(
-            @NonNull ViewGroup parent, int viewType
-    ) {
-        View itemView = LayoutInflater.from(context)
-                .inflate(R.layout.public_mood_item, parent, false);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View itemView = LayoutInflater.from(context).inflate(R.layout.public_mood_item, parent, false);
         return new ViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(
-            @NonNull MoodEventRecyclerAdapter.ViewHolder holder, int position
-    ) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         MoodEvent event = moodEvents.get(position);
         holder.bind(event);
     }
@@ -90,8 +62,7 @@ public class MoodEventRecyclerAdapter extends
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        TextView usernameText, moodText, reasonText, socialText, timeText;
-        TextView locationText; // Add this for location
+        TextView usernameText, moodText, reasonText, socialText, timeText, locationText;
         ImageView photoImage;
         Button followButton;
 
@@ -102,80 +73,56 @@ public class MoodEventRecyclerAdapter extends
             reasonText = itemView.findViewById(R.id.text_reason);
             socialText = itemView.findViewById(R.id.text_social_situation);
             timeText = itemView.findViewById(R.id.text_time);
+            locationText = itemView.findViewById(R.id.text_location);
             photoImage = itemView.findViewById(R.id.image_photo);
             followButton = itemView.findViewById(R.id.button_follow);
-
-            // Make sure you have this in public_mood_item.xml
-            locationText = itemView.findViewById(R.id.text_location);
         }
 
         void bind(MoodEvent event) {
-            // Display user (if you only have userId, that'll show the UID)
-            // If event stores an actual username field, use event.getUsername() instead
+            // Set up ProfileProvider listener for username
             ProfileProvider provider = ProfileProvider.getInstance(FirebaseFirestore.getInstance());
             provider.listenForUpdates(new ProfileProvider.DataStatus() {
                 @Override
                 public void onDataUpdated() {
-                    if (provider.getProfileByUID(event.getUserId()) != null){
-                        String username = provider.getProfileByUID(event.getUserId()).getUsername();
-                        usernameText.setText("@" + username);
-
-                        usernameText.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Intent intent = new Intent(context, ProfileActivity.class);
-                                intent.putExtra("uid",event.getUserId());
-
-                                if (intent != null) {
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                                    context.startActivity(intent);
-                                }
-                            }
-                        });
-
+                    UserProfile userProfile = provider.getProfileByUID(event.getUserId());
+                    if (userProfile != null && userProfile.getUsername() != null) {
+                        usernameText.setText("@" + userProfile.getUsername());
                     } else {
-                        usernameText.setText("N/A");
+                        usernameText.setText("@N/A");
                     }
 
-
+                    // Set click listener for username to navigate to ProfileActivity
+                    usernameText.setOnClickListener(v -> {
+                        Intent intent = new Intent(context, ProfileActivity.class);
+                        intent.putExtra("uid", event.getUserId());
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        context.startActivity(intent);
+                    });
                 }
 
                 @Override
                 public void onError(String error) {
-                    Log.e("DB Error", "Error getting username");
+                    Log.e("DB Error", "Error getting username: " + error);
+                    usernameText.setText("@N/A");
                 }
             });
 
             // Display mood
-            moodText.setText("Mood: " + (event.getEmotionalState() != null
-                    ? event.getEmotionalState()
-                    : "N/A"));
+            moodText.setText("Mood: " + (event.getEmotionalState() != null ? event.getEmotionalState() : "N/A"));
 
             // Display reason
-            reasonText.setText("Reason: " + (event.getReason() != null
-                    ? event.getReason()
-                    : "N/A"));
+            reasonText.setText("Reason: " + (event.getReason() != null ? event.getReason() : "N/A"));
 
             // Display social situation
-            socialText.setText("Social: " + (event.getSocialSituation() != null
-                    ? event.getSocialSituation()
-                    : "N/A"));
+            socialText.setText("Social: " + (event.getSocialSituation() != null ? event.getSocialSituation() : "N/A"));
 
             // Display time
-            if (event.getDate() != null) {
-                timeText.setText("Time: " + getRelativeTime(event.getDate()));
-            } else {
-                timeText.setText("Time: N/A");
-            }
+            timeText.setText("Time: " + (event.getDate() != null ? getRelativeTime(event.getDate()) : "N/A"));
 
-            // Display location if lat/long != 0
+            // Display location
             double lat = event.getLatitude();
             double lng = event.getLongitude();
-            if (lat == 0.0 && lng == 0.0) {
-                locationText.setText("Location: N/A");
-            } else {
-                locationText.setText("Location: " + lat + ", " + lng);
-            }
+            locationText.setText((lat == 0.0 && lng == 0.0) ? "Location: N/A" : "Location: " + lat + ", " + lng);
 
             // Display photo
             if (event.getPhotoUri() != null) {

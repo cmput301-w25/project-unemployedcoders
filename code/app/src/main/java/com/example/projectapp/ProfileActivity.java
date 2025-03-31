@@ -18,23 +18,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProfileActivity extends AppCompatActivity implements ProfileEditFragment.EditProfileListener {
-
     UserProfile profile;
     private RecyclerView recyclerViewMoodHistory;
     private MoodEventRecyclerAdapter moodAdapter;
     private List<MoodEvent> moodEvents;
+    private Button followButton, backToSearchButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_profile);
 
-        // Enable back button
+        // Enable ActionBar back button
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Profile");
         }
 
         recyclerViewMoodHistory = findViewById(R.id.recycler_view_mood_history);
+        followButton = findViewById(R.id.follow_profile_button);
+        backToSearchButton = findViewById(R.id.back_to_search_button);
         moodEvents = new ArrayList<>();
         moodAdapter = new MoodEventRecyclerAdapter(this, moodEvents, event -> followUser(event.getUserId()));
         recyclerViewMoodHistory.setAdapter(moodAdapter);
@@ -47,12 +50,8 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                 Bundle info = getIntent().getExtras();
                 if (info != null && info.getString("uid") != null) {
                     profile = provider.getProfileByUID(info.getString("uid"));
-                    Log.d("Testing", "Option 1");
-                } else {
-                    if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-                        profile = provider.getProfileByUID(FirebaseAuth.getInstance().getCurrentUser().getUid());
-                        Log.d("Testing", "Option 2");
-                    }
+                } else if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                    profile = provider.getProfileByUID(FirebaseAuth.getInstance().getCurrentUser().getUid());
                 }
 
                 if (profile == null) {
@@ -62,77 +61,20 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                 }
 
                 showUserDetails();
+                setupFollowButton();
 
-                Button logOutButton = findViewById(R.id.logout_button);
-                Button showStatsButton = findViewById(R.id.button_show_stats);
-                Button editProfileButton = findViewById(R.id.edit_profile_button);
-                Button followButton = findViewById(R.id.follow_profile_button);
-
-                if (FirebaseAuth.getInstance().getCurrentUser() != null && profile.getUID().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-                    logOutButton.setOnClickListener(v -> {
-                        FirebaseAuth.getInstance().signOut();
-                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                // Show "Back to Search" button if coming from SearchActivity
+                boolean fromSearch = getIntent().getBooleanExtra("fromSearch", false);
+                if (fromSearch) {
+                    backToSearchButton.setVisibility(View.VISIBLE);
+                    backToSearchButton.setOnClickListener(v -> {
+                        Intent intent = new Intent(ProfileActivity.this, SearchActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
                         finish();
                     });
-
-                    showStatsButton.setOnClickListener(v -> {
-                        Intent statsIntent = new Intent(ProfileActivity.this, StatsActivity.class);
-                        startActivity(statsIntent); // Fixed: Changed 'intent' to 'statsIntent'
-                    });
-
-                    editProfileButton.setOnClickListener(v -> {
-                        ProfileEditFragment.newInstance(profile)
-                                .show(getSupportFragmentManager(), "Edit Profile");
-                    });
-
-                    followButton.setEnabled(false);
-                    followButton.setVisibility(View.GONE);
                 } else {
-                    followButton.setOnClickListener(v -> {
-                        String currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                        String targetUserUid = profile.getUID();
-
-                        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-                        // Update the current user's "following" list and count
-                        db.collection("users").document(currentUserUid)
-                                .update(
-                                        "following", FieldValue.arrayUnion(targetUserUid),
-                                        "followingCount", FieldValue.increment(1)
-                                )
-                                .addOnSuccessListener(aVoid -> {
-                                    Log.d("Firestore", "Successfully updated following list for user: " + currentUserUid);
-
-                                    // Update the target user's "followers" list and count
-                                    db.collection("users").document(targetUserUid)
-                                            .update(
-                                                    "followers", FieldValue.arrayUnion(currentUserUid),
-                                                    "followersCount", FieldValue.increment(1)
-                                            )
-                                            .addOnSuccessListener(aVoid2 -> {
-                                                Log.d("Firestore", "Successfully updated followers list for user: " + targetUserUid);
-                                                Toast.makeText(ProfileActivity.this, "Now following " + profile.getUsername(), Toast.LENGTH_SHORT).show();
-                                                followButton.setEnabled(false);
-                                                followButton.setText("Following");
-                                            })
-                                            .addOnFailureListener(e -> {
-                                                Log.e("Firestore", "Error updating followers list", e);
-                                                Toast.makeText(ProfileActivity.this, "Failed to follow user", Toast.LENGTH_SHORT).show();
-                                            });
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e("Firestore", "Error updating following list", e);
-                                    Toast.makeText(ProfileActivity.this, "Failed to follow user", Toast.LENGTH_SHORT).show();
-                                });
-                    });
-
-                    logOutButton.setEnabled(false);
-                    logOutButton.setVisibility(View.GONE);
-                    showStatsButton.setEnabled(false);
-                    showStatsButton.setVisibility(View.GONE);
-                    editProfileButton.setEnabled(false);
-                    editProfileButton.setVisibility(View.GONE);
+                    backToSearchButton.setVisibility(View.GONE);
                 }
             }
 
@@ -166,18 +108,19 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                 }
                 return true;
             });
-        } else {
-            Log.e("ProfileActivity", "BottomNavigationView not found");
         }
     }
 
     private void showUserDetails() {
         TextView usernameText = findViewById(R.id.profile_username);
         TextView nameText = findViewById(R.id.profile_name);
+        TextView followingCount = findViewById(R.id.following_count);
+        TextView followersCount = findViewById(R.id.followers_count);
         usernameText.setText("@" + profile.getUsername());
         nameText.setText("Name: " + profile.getName());
+        followingCount.setText("Following: " + profile.getFollowingCount());
+        followersCount.setText("Followers: " + profile.getFollowersCount());
 
-        // Display mood history (only public events if not the current user)
         moodEvents.clear();
         if (profile.getHistory() != null) {
             boolean isCurrentUser = FirebaseAuth.getInstance().getCurrentUser() != null &&
@@ -187,9 +130,105 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
                     moodEvents.add(event);
                 }
             }
-            moodEvents.sort((a, b) -> b.getDate().compareTo(a.getDate())); // Sort by date descending
+            moodEvents.sort((a, b) -> b.getDate().compareTo(a.getDate()));
             moodAdapter.switchTab(0, moodEvents);
         }
+    }
+
+    private void setupFollowButton() {
+        Button logOutButton = findViewById(R.id.logout_button);
+        Button showStatsButton = findViewById(R.id.button_show_stats);
+        Button editProfileButton = findViewById(R.id.edit_profile_button);
+
+        if (FirebaseAuth.getInstance().getCurrentUser() != null &&
+                profile.getUID().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+            logOutButton.setOnClickListener(v -> {
+                FirebaseAuth.getInstance().signOut();
+                startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+                finish();
+            });
+
+            showStatsButton.setOnClickListener(v -> startActivity(new Intent(this, StatsActivity.class)));
+
+            editProfileButton.setOnClickListener(v ->
+                    ProfileEditFragment.newInstance(profile).show(getSupportFragmentManager(), "Edit Profile"));
+
+            followButton.setEnabled(false);
+            followButton.setVisibility(View.GONE);
+        } else {
+            logOutButton.setEnabled(false);
+            logOutButton.setVisibility(View.GONE);
+            showStatsButton.setEnabled(false);
+            showStatsButton.setVisibility(View.GONE);
+            editProfileButton.setEnabled(false);
+            editProfileButton.setVisibility(View.GONE);
+
+            String currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            UserProfile currentUserProfile = ProfileProvider.getInstance(FirebaseFirestore.getInstance())
+                    .getProfileByUID(currentUserUid);
+
+            if (currentUserProfile != null && currentUserProfile.getFollowing().contains(profile.getUID())) {
+                followButton.setText("Unfollow");
+                followButton.setOnClickListener(v -> unfollowUser());
+            } else {
+                followButton.setText("Follow");
+                followButton.setOnClickListener(v -> followUser());
+            }
+        }
+    }
+
+    private void followUser() {
+        String currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String targetUserUid = profile.getUID();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("users").document(currentUserUid)
+                .update(
+                        "following", FieldValue.arrayUnion(targetUserUid),
+                        "followingCount", FieldValue.increment(1)
+                )
+                .addOnSuccessListener(aVoid -> {
+                    db.collection("users").document(targetUserUid)
+                            .update(
+                                    "followers", FieldValue.arrayUnion(currentUserUid),
+                                    "followersCount", FieldValue.increment(1)
+                            )
+                            .addOnSuccessListener(aVoid2 -> {
+                                Toast.makeText(this, "Now following " + profile.getUsername(), Toast.LENGTH_SHORT).show();
+                                followButton.setText("Unfollow");
+                                followButton.setOnClickListener(v -> unfollowUser());
+                                showUserDetails();
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(this, "Failed to follow: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to follow: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    private void unfollowUser() {
+        String currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String targetUserUid = profile.getUID();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("users").document(currentUserUid)
+                .update(
+                        "following", FieldValue.arrayRemove(targetUserUid),
+                        "followingCount", FieldValue.increment(-1)
+                )
+                .addOnSuccessListener(aVoid -> {
+                    db.collection("users").document(targetUserUid)
+                            .update(
+                                    "followers", FieldValue.arrayRemove(currentUserUid),
+                                    "followersCount", FieldValue.increment(-1)
+                            )
+                            .addOnSuccessListener(aVoid2 -> {
+                                Toast.makeText(this, "Unfollowed " + profile.getUsername(), Toast.LENGTH_SHORT).show();
+                                followButton.setText("Follow");
+                                followButton.setOnClickListener(v -> followUser());
+                                showUserDetails();
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(this, "Failed to unfollow: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to unfollow: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void followUser(String userId) {
@@ -198,21 +237,23 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
 
     @Override
     public void onProfileEdited(UserProfile profile) {
-        String uid = profile.getUID();
         FirebaseFirestore.getInstance().collection("users")
-                .document(uid)
+                .document(profile.getUID())
                 .set(profile)
-                .addOnSuccessListener(aVoid ->
-                        Log.d("Firestore", "User profile saved! events=" + profile.getHistory().getEvents().size()))
-                .addOnFailureListener(e ->
-                        Log.e("Firestore", "Error saving user profile", e));
-        this.profile = profile; // Update local profile
-        showUserDetails(); // Refresh UI
+                .addOnSuccessListener(aVoid -> Log.d("Firestore", "User profile saved!"))
+                .addOnFailureListener(e -> Log.e("Firestore", "Error saving user profile", e));
+        this.profile = profile;
+        showUserDetails();
     }
 
     @Override
     public boolean onSupportNavigateUp() {
-        Intent intent = new Intent(this, HomeActivity.class);
+        Intent intent;
+        if (getIntent().getBooleanExtra("fromSearch", false)) {
+            intent = new Intent(this, SearchActivity.class);
+        } else {
+            intent = new Intent(this, HomeActivity.class);
+        }
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
         finish();
