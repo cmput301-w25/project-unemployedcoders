@@ -98,28 +98,11 @@
                 android:text="Follow" />
 
 
-
             <Button
                 android:id="@+id/add_comment_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add Comment" />
-
-            <ScrollView
-                android:id="@+id/comment_scroll_container"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:visibility="gone"
-                android:fadeScrollbars="true"
-                android:layout_marginTop="8dp">
-
-            <ListView
-                android:id="@+id/comment_list_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:dividerHeight="8dp"
-                android:scrollbars="vertical"/>
-        </ScrollView>
+                android:text="View/Add Comments" />
 
         </LinearLayout>
     </RelativeLayout>

@@ -24,15 +24,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 
+import com.example.projectapp.models.Comment;
+import com.example.projectapp.views.adapters.CommentAdapter;
+import com.example.projectapp.views.fragments.CommentDialogFragment;
 import com.example.projectapp.views.fragments.ProfileEditFragment;
 import com.example.projectapp.database_util.ProfileProvider;
 import com.example.projectapp.R;
 import com.example.projectapp.models.FollowRequest;
 import com.example.projectapp.models.MoodEvent;
 import com.example.projectapp.models.UserProfile;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
@@ -41,10 +48,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class ProfileActivity extends AppCompatActivity implements ProfileEditFragment.EditProfileListener {
+public class ProfileActivity extends AppCompatActivity implements ProfileEditFragment.EditProfileListener, CommentDialogFragment.CommentDialogListener {
 
     UserProfile profile;
     private Button followButton;
+    private List<MoodEvent> recentEvents = new ArrayList<>();
 
     @Override
     protected void onResume() {
@@ -232,7 +240,7 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
         moodHistoryContainer.removeAllViews();
 
         // Get the 3 most recent events
-        List<MoodEvent> recentEvents = profile.getRecentEvents();
+        recentEvents = profile.getRecentEvents();
         boolean isOwnProfile = FirebaseAuth.getInstance().getCurrentUser() != null &&
                 profile.getUID().equals(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
@@ -242,7 +250,7 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
             // Determine which layout to use based on whether the event has a photo
             boolean hasPhoto = event.getPhotoUriRaw() != null && !event.getPhotoUriRaw().isEmpty();
             View itemView = inflater.inflate(
-                    hasPhoto ? R.layout.public_mood_item : R.layout.public_mood_item_no_img,
+                    R.layout.public_mood_item,
                     moodHistoryContainer,
                     false
             );
@@ -252,16 +260,28 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
             TextView moodText = itemView.findViewById(R.id.text_mood);
             TextView reasonText = itemView.findViewById(R.id.text_reason);
             TextView socialSituationText = itemView.findViewById(R.id.text_social_situation);
-            ImageView photoImage = hasPhoto ? itemView.findViewById(R.id.image_photo) : null;
+            ImageView photoImage = itemView.findViewById(R.id.image_photo);
+
             TextView timeText = itemView.findViewById(R.id.text_time);
             TextView locationText = itemView.findViewById(R.id.text_location);
             Button followButton = itemView.findViewById(R.id.button_follow);
+            Button addCommentButton = itemView.findViewById(R.id.add_comment_button);
 
             usernameText.setText(profile.getUsername() != null ? profile.getUsername() : "N/A");
             moodText.setText("Mood: " + event.getEmotionalState());
             reasonText.setText("Reason: " + (event.getReason() != null ? event.getReason() : "N/A"));
             socialSituationText.setText("Social: " + (event.getSocialSituation() != null ? event.getSocialSituation() : "N/A"));
             timeText.setText("Time: " + new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()).format(event.getDate()));
+
+
+            addCommentButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    FragmentActivity activity = (FragmentActivity) itemView.getContext();
+                    CommentDialogFragment dialog = CommentDialogFragment.newInstance(event);
+                    dialog.show(activity.getSupportFragmentManager(), "Add Comment");
+                }
+            });
 
             if (event.getLatitude() != 0.0 || event.getLongitude() != 0.0) {
                 locationText.setText(String.format(Locale.getDefault(), "Location: (%.4f, %.4f)", event.getLatitude(), event.getLongitude()));
@@ -272,6 +292,8 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
             // Load the photo if the layout includes an ImageView
             if (hasPhoto && photoImage != null) {
                 Picasso.get().load(event.getPhotoUriRaw()).into(photoImage);
+            } else {
+                photoImage.setVisibility(View.GONE);
             }
 
             // Handle the follow button visibility
@@ -367,5 +389,42 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
         startActivity(intent);
         finish();
         return true;
+    }
+
+    @Override
+    public void onCommentAdded(Comment comment, MoodEvent moodEvent) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference ref = db.collection("users").document(moodEvent.getUserId());
+        ref.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                UserProfile profile = documentSnapshot.toObject(UserProfile.class);
+
+                if (profile != null && profile.getHistory() != null){
+
+                    int index = profile.getHistory().getEvents().indexOf(moodEvent);
+                    if (index >= 0){
+                        MoodEvent oldEvent = profile.getHistory().getEvents().get(index);
+                        if (oldEvent.getComments() == null){
+                            oldEvent.setComments(new ArrayList<>());
+                        }
+                        oldEvent.addComment(comment);
+
+                        ref.set(profile).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+
+                            }
+                        });
+
+                    } else {
+                        Log.d("ATest", "Index is -1");
+                    }
+                } else {
+                    Log.d("ATest", "Profile or history is null");
+                }
+            }
+        });
+
     }
 }

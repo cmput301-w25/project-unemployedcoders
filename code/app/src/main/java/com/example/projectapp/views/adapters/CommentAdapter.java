@@ -1,6 +1,7 @@
 package com.example.projectapp.views.adapters;
 
 import android.content.Context;
+import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,10 +11,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.projectapp.R;
+import com.example.projectapp.database_util.ProfileProvider;
 import com.example.projectapp.models.Comment;
+import com.example.projectapp.models.UserProfile;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.prefs.PreferencesFactory;
 
 public class CommentAdapter extends ArrayAdapter<Comment> {
 
@@ -58,6 +64,20 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
         holder.usernameText.setText("@" + comment.getCommenterUsername());
         holder.commentText.setText(comment.getText());
         holder.timestampText.setText(sdf.format(comment.getTimestamp()));
+
+        ProfileProvider provider = ProfileProvider.getInstance(FirebaseFirestore.getInstance());
+        provider.listenForUpdates(new ProfileProvider.DataStatus() {
+            @Override
+            public void onDataUpdated() {
+                UserProfile prof = provider.getProfileByUID(comment.getCommenterUid());
+                holder.usernameText.setText(prof == null? "Username": prof.getUsername());
+            }
+
+            @Override
+            public void onError(String error) {
+
+            }
+        });
 
         return convertView;
     }

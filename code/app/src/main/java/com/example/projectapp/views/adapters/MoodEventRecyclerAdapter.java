@@ -158,8 +158,6 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             locationText = itemView.findViewById(R.id.text_location);
             followButton = itemView.findViewById(R.id.button_follow);
             photoImage = itemView.findViewById(R.id.image_photo);
-            commentList = itemView.findViewById(R.id.comment_list_view);
-
             addCommentButton = itemView.findViewById(R.id.add_comment_button);
         }
 
@@ -218,14 +216,6 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             }
 
 
-            if (event.getComments() != null && !event.getComments().isEmpty()) {
-                commentList.setVisibility(View.VISIBLE);
-                CommentAdapter commentAdapter = new CommentAdapter(itemView.getContext(), event.getComments());
-                commentList.setAdapter(commentAdapter);
-
-            } else {
-                commentList.setVisibility(View.GONE);
-            }
             addCommentButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

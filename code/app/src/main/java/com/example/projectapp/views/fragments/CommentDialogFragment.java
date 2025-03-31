@@ -26,10 +26,13 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.example.projectapp.R;
+import com.example.projectapp.database_util.ProfileProvider;
 import com.example.projectapp.models.Comment;
 import com.example.projectapp.models.MoodEvent;
+import com.example.projectapp.models.UserProfile;
 import com.example.projectapp.views.adapters.CommentAdapter;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Date;
 
@@ -100,7 +103,8 @@ public class CommentDialogFragment extends DialogFragment {
                 }
                 // Create a Comment using the current user's info
                 String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                Comment comment = new Comment(uid, uid, commentText, new Date());
+                UserProfile curr = ProfileProvider.getInstance(FirebaseFirestore.getInstance()).getProfileByUID(uid);
+                Comment comment = new Comment(uid, curr == null? "Username" : curr.getUsername(), commentText, new Date());
                 if (listener != null && moodEvent != null) {
                     listener.onCommentAdded(comment, moodEvent);
                 }
