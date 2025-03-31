@@ -12,6 +12,9 @@
 
 package com.example.projectapp.views.activities;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
 
 import android.app.AlertDialog;
@@ -20,6 +23,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -52,12 +57,17 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class MoodEventActivity extends AppCompatActivity {
@@ -84,6 +94,10 @@ public class MoodEventActivity extends AppCompatActivity {
     private FirebaseStorage storage;
     private StorageReference storageRef;
 
+    //offline sync resources
+    private static final String PENDING_EVENTS_PREFS = "PendingMoodEvents";
+    private static final String KEY_PENDING_EVENTS = "pendingMoodEvents";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,13 +113,22 @@ public class MoodEventActivity extends AppCompatActivity {
         // Hide the ImageView by default so there's no empty space if no photo is selected.
         imageView.setVisibility(View.GONE);
         configureVisibilityToggle();
+        disableOrEnableLocationUpload(isNetworkAvailable());
         configureLocationButton();
         configureViewMapButton();
         configureAddEventButton();
         configurePhotoLaunchers();
         configureSpinnerAdapters();
+        disableOrEnablePhotoUpload(isNetworkAvailable());
         configureUploadPhotoButton();
         configureBottomNav();
+    }
+
+    /*helper to detect if user is connected to the internet*/
+    private boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnected();
     }
 
     private void bindUIElements() {
@@ -248,11 +271,64 @@ public class MoodEventActivity extends AppCompatActivity {
         });
     }
 
+    /*finished activity and goes to home screen*/
+    private void goToHome() {
+        Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    //helper that saves added mood event to sharedpreferences if the user is offline
+    private void savePendingMoodEvent(MoodEvent event) {
+        SharedPreferences prefs = getSharedPreferences(PENDING_EVENTS_PREFS, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        Gson gson = new Gson();
+
+        //load the current mood events to be synced
+        String json = prefs.getString(KEY_PENDING_EVENTS, null);
+        Type type = new TypeToken<List<MoodEvent>>(){}.getType();
+        List<MoodEvent> pendingList = json != null ? gson.fromJson(json, type) : new ArrayList<>();
+
+        pendingList.add(event);
+        editor.putString(KEY_PENDING_EVENTS, gson.toJson(pendingList));
+        editor.apply();
+    }
+
+
+    //function that disa
+    private void disableOrEnablePhotoUpload(boolean online) {
+        if (online) {
+            buttonUploadPhoto.setEnabled(true);
+            buttonUploadPhoto.setAlpha(1.0f);
+        } else {
+            buttonUploadPhoto.setEnabled(false);
+            buttonUploadPhoto.setAlpha(0.5f);
+        }
+    }
+
+    private void disableOrEnableLocationUpload(boolean online) {
+        if (online) {
+            buttonAddLocation.setEnabled(true);
+            buttonAddLocation.setAlpha(1.0f);
+        } else {
+            buttonAddLocation.setEnabled(false);
+            buttonAddLocation.setAlpha(0.5f);
+        }
+    }
+
     /**
      * Helper method that adds the event to the user's profile via FirebaseSync
      * and then navigates back to HomeActivity.
      */
     private void addEventAndFinish(MoodEvent event) {
+
+        if (!isNetworkAvailable()) {
+            savePendingMoodEvent(event);
+            Toast.makeText(this, "No internet. Event will sync when reconnected.", Toast.LENGTH_SHORT).show();
+            goToHome();
+            return;
+        }
+
         FirebaseSync fb = FirebaseSync.getInstance();
         fb.fetchUserProfileObject(new UserProfileCallback() {
             @Override
@@ -261,9 +337,7 @@ public class MoodEventActivity extends AppCompatActivity {
                 Toast.makeText(MoodEventActivity.this,
                         "Mood Event Added!",
                         Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
-                startActivity(intent);
-                finish();
+                goToHome();
             }
 
             @Override
@@ -489,5 +563,12 @@ public class MoodEventActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
             return null;
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        disableOrEnableLocationUpload(isNetworkAvailable());
+        disableOrEnablePhotoUpload(isNetworkAvailable());
     }
 }

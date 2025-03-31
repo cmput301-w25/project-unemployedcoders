@@ -17,7 +17,11 @@ package com.example.projectapp.views.activities;
 
 import static androidx.test.InstrumentationRegistry.getContext;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -37,10 +41,17 @@ import com.example.projectapp.models.FollowRequest;
 import com.example.projectapp.models.MoodEvent;
 import com.example.projectapp.models.UserProfile;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
@@ -51,11 +62,9 @@ public class HomeActivity extends AppCompatActivity {
     private List<MoodEvent> forYouEvents = new ArrayList<>();
     private List<MoodEvent> followingEvents = new ArrayList<>();
     private Button addEventButton;
-    private Button searchButton;
     private FirebaseFirestore db;
     private TextView usernameDisplay;
     private ImageButton mapToggleButton;
-    private static final String TAG = "HomeActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,32 +72,14 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.fragment_home);
 
         String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        Log.d(TAG, "Currently signed-in user UID: " + currentUid);
+        Log.d("UID_DEBUG", "Currently signed-in user UID: " + currentUid);
 
         recyclerViewMoodEvents = findViewById(R.id.recycler_view_mood_events);
         tabForYou = findViewById(R.id.tab_for_you);
         tabFollowing = findViewById(R.id.tab_following);
         addEventButton = findViewById(R.id.add_event_button);
-        searchButton = findViewById(R.id.search_button);
         usernameDisplay = findViewById(R.id.username_display);
         mapToggleButton = findViewById(R.id.map_toggle_button);
-
-        // Log if searchButton is null
-        if (searchButton == null) {
-            Log.e(TAG, "Search button not found in layout");
-        } else {
-            Log.d(TAG, "Search button found, setting click listener");
-            searchButton.setOnClickListener(v -> {
-                Log.d(TAG, "Search button clicked, launching SearchActivity");
-                Intent intent = new Intent(HomeActivity.this, SearchActivity.class);
-                try {
-                    startActivity(intent);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error launching SearchActivity", e);
-                    Toast.makeText(HomeActivity.this, "Failed to launch SearchActivity: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            });
-        }
 
         // Fetch the current user's profile and set the username.
         FirebaseSync fb = FirebaseSync.getInstance();
@@ -165,6 +156,26 @@ public class HomeActivity extends AppCompatActivity {
             }
             return true;
         });
+    }
+
+    /*helper to detect if user is connected to the internet*/
+    private boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnected();
+    }
+    private void syncPendingMoodEventsIfOnline() {
+        if (!isNetworkAvailable()) return;
+
+        SharedPreferences prefs = getSharedPreferences("PendingMoodEvents", MODE_PRIVATE);
+        String json = prefs.getString("pendingMoodEvents", null);
+        if (json == null) return;
+
+        // Just flag that these need syncing — HistoryActivity will handle upload
+        SharedPreferences state = getSharedPreferences("OfflineSyncPrefs", MODE_PRIVATE);
+        state.edit().putBoolean("offlineEventsSynced", true).apply();
+
+        Toast.makeText(HomeActivity.this, "Offline additions ready to sync", Toast.LENGTH_SHORT).show();
     }
 
     private void setUpdateListener(){
@@ -288,4 +299,11 @@ public class HomeActivity extends AppCompatActivity {
                     Toast.makeText(HomeActivity.this, "Failed to send follow request: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        syncPendingMoodEventsIfOnline(); //syncs offline-added mood events when coming back to HomeActivity
+    }
+
 }
