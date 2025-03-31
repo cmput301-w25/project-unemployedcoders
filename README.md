@@ -13,7 +13,7 @@
 
 ## Project Description
 
-[Brief description of the project in your own words]
+A mobile application designed to help users monitor and share their emotional states. The app allows users to log, view, edit, and delete mood events, which can include emotional states, triggers, and social situations. Users can track their moods over time, with the ability to filter events based on specific criteria, such as emotional state or time frame. The app also supports social features, allowing users to follow others, share mood events, and comment on posts. It includes optional geolocation features to attach location data to mood events and displays mood events on a map. Furthermore, the app supports offline functionality, enabling users to add, edit, and delete mood events even without internet connectivity. Changes are synchronized once the device is online again.
 
 ## Key Features
 
