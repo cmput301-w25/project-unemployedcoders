@@ -206,6 +206,11 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
                 locationText.setText("Location: " + lat + ", " + lng);
             }
 
+            /*
+            https://bumptech.github.io/glide/
+            https://www.geeksforgeeks.org/image-loading-caching-library-android-set-2/ (Shubham)
+             */
+
             // Load the image only if the view type includes an ImageView
             if (viewType == VIEW_TYPE_WITH_IMAGE && photoImage != null) {
                 Glide.with(itemView.getContext())
