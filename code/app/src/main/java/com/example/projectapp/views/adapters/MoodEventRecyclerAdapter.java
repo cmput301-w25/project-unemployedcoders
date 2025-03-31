@@ -159,7 +159,7 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             followButton = itemView.findViewById(R.id.button_follow);
             photoImage = itemView.findViewById(R.id.image_photo);
             commentList = itemView.findViewById(R.id.comment_list_view);
-            viewCommentButton = itemView.findViewById(R.id.view_comment_button);
+
             addCommentButton = itemView.findViewById(R.id.add_comment_button);
         }
 
@@ -218,7 +218,14 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             }
 
 
-            commentList.setVisibility(View.GONE);
+            if (event.getComments() != null && !event.getComments().isEmpty()) {
+                commentList.setVisibility(View.VISIBLE);
+                CommentAdapter commentAdapter = new CommentAdapter(itemView.getContext(), event.getComments());
+                commentList.setAdapter(commentAdapter);
+
+            } else {
+                commentList.setVisibility(View.GONE);
+            }
             addCommentButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -228,29 +235,7 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
                 }
             });
 
-            if (event.getComments() != null && !event.getComments().isEmpty()){
-                viewCommentButton.setVisibility(View.VISIBLE);
 
-                if (commentList != null){
-                    CommentAdapter commentAdapter = new CommentAdapter(itemView.getContext(), event.getComments());
-                    commentList.setAdapter(commentAdapter);
-                    setListViewHeightBasedOnChildren(commentList);
-
-                }
-
-
-
-                viewCommentButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        commentList.setVisibility(View.VISIBLE);
-                    }
-                });
-
-            } else {
-                viewCommentButton.setVisibility(View.GONE);
-                commentList.setVisibility(View.GONE);
-            }
 
             // Manage follow button behavior
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -290,27 +275,5 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             else if (diffMinutes < 60) return diffMinutes + " minutes ago";
             else return date.toString();
         }
-    }
+    }}
 
-    public static void setListViewHeightBasedOnChildren(ListView listView) {
-        ListAdapter listAdapter = listView.getAdapter();
-        if (listAdapter == null) {
-            return;
-        }
-
-        int totalHeight = 0;
-        for (int i = 0; i < listAdapter.getCount(); i++) {
-            View listItem = listAdapter.getView(i, null, listView);
-            listItem.measure(
-                    View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.AT_MOST),
-                    View.MeasureSpec.UNSPECIFIED
-            );
-            totalHeight += listItem.getMeasuredHeight();
-        }
-
-        ViewGroup.LayoutParams params = listView.getLayoutParams();
-        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
-        listView.setLayoutParams(params);
-        listView.requestLayout();
-    }
-}
