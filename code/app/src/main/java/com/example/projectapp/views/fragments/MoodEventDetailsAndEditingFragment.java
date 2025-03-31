@@ -9,7 +9,7 @@
 //
 // Design Pattern: Listener (for callback communication)
 // Outstanding Issues:
-// N/A
+//  N/A
 // -----------------------------------------------------------------------------
 package com.example.projectapp.views.fragments;
 
@@ -33,10 +33,11 @@ import com.example.projectapp.models.MoodEvent;
 
 public class MoodEventDetailsAndEditingFragment extends DialogFragment {
 
-
     private Spinner editEmotionalStateSpinner;
     private Spinner editSocialSituationSpinner;
     private EditText editReason;
+    // New: Button to toggle the public/private status
+    private Button togglePublicButton;
 
     public interface EditMoodEventListener {
         void onMoodEventEdited(MoodEvent moodEvent);
@@ -69,6 +70,8 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
         editEmotionalStateSpinner = (Spinner) view.findViewById(R.id.details_fragment_edit_spinner_emotional_state);
         editSocialSituationSpinner = (Spinner) view.findViewById(R.id.details_fragment_edit_spinner_situation);
         editReason = view.findViewById(R.id.details_fragment_edit_reason);
+        // Bind the new toggle button for public/private status
+        togglePublicButton = view.findViewById(R.id.button_toggle_public);
 
         ArrayAdapter<CharSequence> stateAdapter = ArrayAdapter.createFromResource(
                 requireContext(),
@@ -94,8 +97,14 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
             if (moodEvent.getSocialSituation() != null && !moodEvent.getSocialSituation().isEmpty()) {
                 editSocialSituationSpinner.setSelection(situationAdapter.getPosition(moodEvent.getSocialSituation()));
             }
-
             editReason.setText(moodEvent.getReason());
+            // Set initial text for the toggle button based on current public status
+            togglePublicButton.setText(moodEvent.isPublic() ? "Make Private" : "Make Public");
+            // Toggle public status when the button is clicked
+            togglePublicButton.setOnClickListener(v -> {
+                moodEvent.setPublic(!moodEvent.isPublic());
+                togglePublicButton.setText(moodEvent.isPublic() ? "Make Private" : "Make Public");
+            });
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -114,7 +123,6 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
                 if (!validInput()){
                     return;
                 }
-
                 String newEmotionalState = editEmotionalStateSpinner.getSelectedItem().toString();
                 String newSituation = editSocialSituationSpinner.getSelectedItem().toString();
                 String newReason = editReason.getText().toString().trim();
@@ -124,6 +132,7 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
                     moodEvent.setEmotionalState(newEmotionalState);
                     moodEvent.setSocialSituation(newSituation);
                     moodEvent.setReason(newReason.trim());
+                    // The isPublic status is already updated via the toggle button
                     if (listener != null) {
                         listener.onMoodEventEdited(moodEvent); // Notify the activity to update the UI
                     }
@@ -137,7 +146,6 @@ public class MoodEventDetailsAndEditingFragment extends DialogFragment {
 
     private boolean validInput() {
         String reason = editReason.getText().toString().trim();
-
         if (!MoodEvent.validReason(reason)) {
             editReason.setError("Invalid Reason");
             return false;
