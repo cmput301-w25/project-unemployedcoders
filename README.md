@@ -31,5 +31,5 @@
 
 - Wiki Link: https://github.com/cmput301-w25/project-unemployedcoders/wiki
 - Scrum Board: https://github.com/orgs/cmput301-w25/projects/26/views/1
-- [UI Mockups]
-- [UML]
+- [UI Mockups] https://github.com/cmput301-w25/project-unemployedcoders/wiki/User-Interface-Mockups-and-Storyboard-Sequences
+- [UML] https://github.com/cmput301-w25/project-unemployedcoders/wiki/Object-Oriented-Diagram
