@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- A vertical gradient reminiscent of modern chat bubbles -->
+    <gradient
+        android:startColor="#FFE2BC"
+        android:centerColor="#FFD19A"
+        android:endColor="#FFC178"
+        android:angle="90"/>
+
+    <!-- Soft corners for the bubble shape -->
+    <corners android:radius="16dp"/>
+
+    <!-- A little padding so text isn't flush against edges -->
+    <padding
+        android:left="12dp"
+        android:top="8dp"
+        android:right="12dp"
+        android:bottom="8dp" />
+
+</shape>

@@ -1,5 +1,6 @@
 package com.example.projectapp.views.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -8,29 +9,39 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.projectapp.database_util.ProfileProvider;
 import com.example.projectapp.R;
+import com.example.projectapp.models.Comment;
 import com.example.projectapp.models.MoodEvent;
 import com.example.projectapp.models.UserProfile;
 import com.example.projectapp.views.activities.ProfileActivity;
+import com.example.projectapp.views.fragments.CommentDialogFragment;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 /**
  * Shows a list of MoodEvent objects (public) in a RecyclerView
  */
-public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecyclerAdapter.ViewHolder> {
+public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecyclerAdapter.ViewHolder> implements CommentDialogFragment.CommentDialogListener {
 
     private List<MoodEvent> moodEvents;
     private final Context context;
@@ -39,6 +50,46 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
     // Define view types
     private static final int VIEW_TYPE_WITH_IMAGE = 1;
     private static final int VIEW_TYPE_NO_IMAGE = 2;
+
+    @Override
+    public void onCommentAdded(Comment comment, MoodEvent moodEvent) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference ref = db.collection("users").document(moodEvent.getUserId());
+        ref.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                UserProfile profile = documentSnapshot.toObject(UserProfile.class);
+
+                if (profile != null && profile.getHistory() != null){
+
+                    int index = profile.getHistory().getEvents().indexOf(moodEvent);
+                    if (index >= 0){
+                        MoodEvent oldEvent = profile.getHistory().getEvents().get(index);
+                        if (oldEvent.getComments() == null){
+                            oldEvent.setComments(new ArrayList<>());
+                        }
+                        oldEvent.addComment(comment);
+
+                        ref.set(profile).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                int index = moodEvents.indexOf(moodEvent);
+                                if (index != -1) {
+                                    notifyItemChanged(index);
+                                }
+                            }
+                        });
+
+                    } else {
+                        Log.d("ATest", "Index is -1");
+                    }
+                } else {
+                    Log.d("ATest", "Profile or history is null");
+                }
+            }
+        });
+
+    }
 
     public interface OnFollowClickListener {
         void onFollowClick(MoodEvent event);
@@ -74,11 +125,7 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
     public MoodEventRecyclerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // Inflate the appropriate layout based on the view type
         View itemView;
-        if (viewType == VIEW_TYPE_WITH_IMAGE) {
-            itemView = LayoutInflater.from(context).inflate(R.layout.public_mood_item, parent, false);
-        } else {
-            itemView = LayoutInflater.from(context).inflate(R.layout.public_mood_item_no_img, parent, false);
-        }
+        itemView = LayoutInflater.from(context).inflate(R.layout.public_mood_item, parent, false);
         return new ViewHolder(itemView, viewType);
     }
 
@@ -96,7 +143,8 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView usernameText, moodText, reasonText, socialText, timeText, locationText;
         ImageView photoImage; // Will be null for VIEW_TYPE_NO_IMAGE
-        Button followButton;
+        Button followButton, viewCommentButton, addCommentButton;
+        ListView commentList;
         int viewType;
 
         ViewHolder(@NonNull View itemView, int viewType) {
@@ -109,10 +157,8 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             timeText = itemView.findViewById(R.id.text_time);
             locationText = itemView.findViewById(R.id.text_location);
             followButton = itemView.findViewById(R.id.button_follow);
-            // Only initialize photoImage if the layout has it
-            if (viewType == VIEW_TYPE_WITH_IMAGE) {
-                photoImage = itemView.findViewById(R.id.image_photo);
-            }
+            photoImage = itemView.findViewById(R.id.image_photo);
+            addCommentButton = itemView.findViewById(R.id.add_comment_button);
         }
 
         void bind(MoodEvent event) {
@@ -166,7 +212,21 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
                         .load(event.getPhotoUri())
                         .placeholder(android.R.color.darker_gray)
                         .into(photoImage);
+            } else {
+                photoImage.setVisibility(View.GONE);
             }
+
+
+            addCommentButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    FragmentActivity activity = (FragmentActivity) itemView.getContext();
+                    CommentDialogFragment dialog = CommentDialogFragment.newInstance(event);
+                    dialog.show(activity.getSupportFragmentManager(), "Add Comment");
+                }
+            });
+
+
 
             // Manage follow button behavior
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -206,5 +266,5 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             else if (diffMinutes < 60) return diffMinutes + " minutes ago";
             else return date.toString();
         }
-    }
-}
+    }}
+

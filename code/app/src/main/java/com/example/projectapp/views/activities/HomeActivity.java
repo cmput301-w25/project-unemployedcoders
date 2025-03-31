@@ -33,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.projectapp.database_util.FirebaseSync;
+import com.example.projectapp.models.Comment;
 import com.example.projectapp.views.adapters.MoodEventRecyclerAdapter;
 import com.example.projectapp.database_util.ProfileProvider;
 import com.example.projectapp.R;
@@ -40,10 +41,14 @@ import com.example.projectapp.database_util.UserProfileCallback;
 import com.example.projectapp.models.FollowRequest;
 import com.example.projectapp.models.MoodEvent;
 import com.example.projectapp.models.UserProfile;
+import com.example.projectapp.views.fragments.CommentDialogFragment;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
@@ -54,13 +59,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity implements CommentDialogFragment.CommentDialogListener {
 
     private RecyclerView recyclerViewMoodEvents;
     private TextView tabForYou, tabFollowing;
     private MoodEventRecyclerAdapter adapter;
     private List<MoodEvent> forYouEvents = new ArrayList<>();
     private List<MoodEvent> followingEvents = new ArrayList<>();
+    private List<MoodEvent> displayEvents = new ArrayList<>();
     private Button addEventButton;
     private Button searchButton;
     private FirebaseFirestore db;
@@ -136,13 +142,15 @@ public class HomeActivity extends AppCompatActivity {
             Log.d("HomeActivity", "For You tab clicked. Number of events: " + forYouEvents.size());
             tabForYou.setTextColor(getResources().getColor(android.R.color.white));
             tabFollowing.setTextColor(getResources().getColor(android.R.color.darker_gray));
-            adapter.switchTab(0, forYouEvents);
+            displayEvents = forYouEvents;
+            adapter.switchTab(0, displayEvents);
         });
 
         tabFollowing.setOnClickListener(v -> {
             tabFollowing.setTextColor(getResources().getColor(android.R.color.white));
             tabForYou.setTextColor(getResources().getColor(android.R.color.darker_gray));
-            adapter.switchTab(1, followingEvents);
+            displayEvents = followingEvents;
+            adapter.switchTab(1, displayEvents);
         });
 
         addEventButton.setOnClickListener(v -> {
@@ -152,6 +160,7 @@ public class HomeActivity extends AppCompatActivity {
 
         // Default to "For You" tab.
         tabForYou.performClick();
+        displayEvents = forYouEvents;
 
         // Bottom Navigation Setup.
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
@@ -326,5 +335,46 @@ public class HomeActivity extends AppCompatActivity {
         super.onResume();
         syncPendingMoodEventsIfOnline(); //syncs offline-added mood events when coming back to HomeActivity
     }
+
+    @Override
+    public void onCommentAdded(Comment comment, MoodEvent moodEvent) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference ref = db.collection("users").document(moodEvent.getUserId());
+        ref.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                UserProfile profile = documentSnapshot.toObject(UserProfile.class);
+
+                if (profile != null && profile.getHistory() != null){
+
+                    int index = profile.getHistory().getEvents().indexOf(moodEvent);
+                    if (index >= 0){
+                        MoodEvent oldEvent = profile.getHistory().getEvents().get(index);
+                        if (oldEvent.getComments() == null){
+                            oldEvent.setComments(new ArrayList<>());
+                        }
+                        oldEvent.addComment(comment);
+
+                        ref.set(profile).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                int index = displayEvents.indexOf(moodEvent);
+                                if (index != -1) {
+                                    adapter.notifyItemChanged(index);
+                                }
+                            }
+                        });
+
+                    } else {
+                        Log.d("ATest", "Index is -1");
+                    }
+                } else {
+                    Log.d("ATest", "Profile or history is null");
+                }
+            }
+        });
+
+    }
+}
 
 }

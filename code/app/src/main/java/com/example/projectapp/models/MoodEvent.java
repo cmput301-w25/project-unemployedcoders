@@ -20,6 +20,7 @@ import com.example.projectapp.R;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.PropertyName;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -44,6 +45,7 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
     private boolean isPublic;
     private String photoUri;
     private String username;
+    private ArrayList<Comment> comments;
 
     // Public no-argument constructor required for Firestore deserialization
     public MoodEvent() {
@@ -80,6 +82,19 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         this.moodType = MoodType.fromString(emotionalState);
         this.photoUri = (photoUri != null) ? photoUri.toString() : null;
         this.userId = userId;
+        this.comments = new ArrayList<>();
+    }
+
+    public void setComments(ArrayList<Comment> comments) {
+        this.comments = comments;
+    }
+
+    public ArrayList<Comment> getComments() {
+        return comments;
+    }
+
+    public void addComment(Comment c){
+        comments.add(c);
     }
 
     /**
