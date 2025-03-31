@@ -1,15 +1,3 @@
-// -----------------------------------------------------------------------------
-// File: MoodHistory.java
-// -----------------------------------------------------------------------------
-// This file defines the MoodHistory class, which serves as a model to manage a
-// collection of MoodEvent objects in the ProjectApp. It handles storage,
-// retrieval, and filtering of mood events.
-//
-// Design Pattern: MVC (Model)
-// Outstanding Issues:
-//  N/A
-// -----------------------------------------------------------------------------
-
 package com.example.projectapp.models;
 
 import java.util.ArrayList;
@@ -103,7 +91,6 @@ public class MoodHistory {
         this.userId = userId;
     }
 
-
     public static Boolean isWithinPastWeek(Date eventDate) {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_YEAR, -7);
@@ -121,13 +108,10 @@ public class MoodHistory {
                 return true;
             case "Past Week":
                 return isWithinPastWeek(event.getDate());
-
             case "Emotional State":
-                return event.getEmotionalState().toLowerCase().contains(keyword.toLowerCase());
-
+                return event.getEmotionalState() != null && event.getEmotionalState().toLowerCase().contains(keyword.toLowerCase());
             case "Reason Contains":
                 return event.getReason() != null && event.getReason().toLowerCase().contains(keyword.toLowerCase());
-
             default:
                 return false;
         }
@@ -138,22 +122,21 @@ public class MoodHistory {
         for (MoodEvent moodEvent: events){
             boolean shouldBeIncluded = true;
             for (String filter: filters){
-                 if (filter.startsWith("Emotional State") || filter.startsWith("Reason Contains")){
-                     String[] split = filter.split(":");
-                     String filterCategory = split[0];
-                     String filterKeyword = split[1];
-                     shouldBeIncluded = shouldBeIncluded && matchesFilter(moodEvent, filterCategory, filterKeyword);
-                 }
-
+                if (filter.startsWith("Emotional State") || filter.startsWith("Reason Contains")){
+                    String[] split = filter.split(":");
+                    String filterCategory = split[0];
+                    String filterKeyword = split[1];
+                    shouldBeIncluded = shouldBeIncluded && matchesFilter(moodEvent, filterCategory, filterKeyword);
+                } else {
+                    shouldBeIncluded = shouldBeIncluded && matchesFilter(moodEvent, filter, "");
+                }
             }
 
             if (shouldBeIncluded){
                 filteredHistory.addEvent(moodEvent);
             }
-
         }
 
         return filteredHistory;
     }
-
 }

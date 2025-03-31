@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string-array name="emotional_states">
         <item>Sadness</item>
         <item>Anger</item>
@@ -10,8 +9,6 @@
         <item>Disgust</item>
         <item>Fear</item>
         <item>Surprise</item>
-
-        <!-- ... add others as needed -->
     </string-array>
 
     <string-array name="social_situations">
@@ -60,4 +57,26 @@
         <item>Surprise</item>
     </string-array>
 
+    <string-array name="filter_options">
+        <item>No Filter</item>
+        <item>Past Week</item>
+        <item>Emotional State:Sadness</item>
+        <item>Emotional State:Anger</item>
+        <item>Emotional State:Happiness</item>
+        <item>Emotional State:Shame</item>
+        <item>Emotional State:Confusion</item>
+        <item>Emotional State:Disgust</item>
+        <item>Emotional State:Fear</item>
+        <item>Emotional State:Surprise</item>
+        <item>Reason Contains:Work/School Stress</item>
+        <item>Reason Contains:Relationship Issues</item>
+        <item>Reason Contains:Health Concerns</item>
+        <item>Reason Contains:Financial Worries</item>
+        <item>Reason Contains:Social Interactions</item>
+        <item>Reason Contains:Unexpected Events</item>
+        <item>Reason Contains:Achievements/Milestones</item>
+        <item>Reason Contains:Loneliness/Isolation</item>
+        <item>Reason Contains:Hobbies/Interests</item>
+        <item>Reason Contains:Environment</item>
+    </string-array>
 </resources>

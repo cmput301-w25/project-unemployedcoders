@@ -1,14 +1,3 @@
-// -----------------------------------------------------------------------------
-// File: MoodEventArrayAdapter.java
-// -----------------------------------------------------------------------------
-// This file defines the MoodEventArrayAdapter class, a custom ArrayAdapter for
-// displaying MoodEvent objects in a ListView within the ProjectApp. It binds
-// mood event data to list item views for presentation.
-//
-// Design Pattern: Adapter
-// Outstanding Issues:
-//  N/A
-// -----------------------------------------------------------------------------
 package com.example.projectapp.views.adapters;
 
 import android.content.Context;
@@ -16,9 +5,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -29,7 +18,9 @@ import com.example.projectapp.R;
 import com.example.projectapp.models.MoodEvent;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
 
@@ -53,87 +44,92 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
     }
 
     static class ViewHolder {
-        ImageButton profilePic;
-        TextView usernameText;
-        TextView timeText;
-        TextView emotionalStateText;
-        TextView socialSituationText;
-        TextView reasonText;
-        ConstraintLayout background;
+        TextView usernameText, moodText, reasonText, socialText, timeText, locationText;
         ImageView photo;
+        ConstraintLayout background; // Not used in the new layout, but kept for compatibility
     }
 
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         ViewHolder holder;
+        MoodEvent moodEvent = events.get(position);
+        boolean hasImage = moodEvent.getPhotoUri() != null && !moodEvent.getPhotoUri().toString().isEmpty();
 
-        if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.mood_event_layout, parent, false);
+        // Choose the layout based on whether the event has an image
+        if (convertView == null || (hasImage && convertView.getTag() == null) || (!hasImage && convertView.getTag() != null)) {
+            LayoutInflater inflater = LayoutInflater.from(context);
+            if (hasImage) {
+                convertView = inflater.inflate(R.layout.history_mood_item_with_image, parent, false);
+            } else {
+                convertView = inflater.inflate(R.layout.history_mood_item_without_image, parent, false);
+            }
             holder = new ViewHolder();
 
-            // getting all the views
-            holder.profilePic = convertView.findViewById(R.id.profile_pic);
-            holder.usernameText = convertView.findViewById(R.id.username_text);
-            holder.timeText = convertView.findViewById(R.id.time_text);
-            holder.emotionalStateText = convertView.findViewById(R.id.emotional_state_text);
-            holder.socialSituationText = convertView.findViewById(R.id.social_situation_text);
-            holder.background = convertView.findViewById(R.id.mood_event_background);
-            holder.reasonText = convertView.findViewById(R.id.reason_text);
-            holder.photo = convertView.findViewById(R.id.mood_event_photo);
+            // Initialize views
+            holder.usernameText = convertView.findViewById(R.id.text_username);
+            holder.moodText = convertView.findViewById(R.id.text_mood);
+            holder.reasonText = convertView.findViewById(R.id.text_reason);
+            holder.socialText = convertView.findViewById(R.id.text_social_situation);
+            holder.timeText = convertView.findViewById(R.id.text_time);
+            holder.locationText = convertView.findViewById(R.id.text_location);
+            if (hasImage) {
+                holder.photo = convertView.findViewById(R.id.image_photo);
+            }
 
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        MoodEvent moodEvent = events.get(position);
-
+        // Fetch username using ProfileProvider
         ProfileProvider provider = ProfileProvider.getInstance(FirebaseFirestore.getInstance());
         provider.listenForUpdates(new ProfileProvider.DataStatus() {
             @Override
             public void onDataUpdated() {
-                if (moodEvent.getUserId() != null){
-                    if (provider.getProfileByUID(moodEvent.getUserId()) != null){
+                if (moodEvent.getUserId() != null) {
+                    if (provider.getProfileByUID(moodEvent.getUserId()) != null) {
                         holder.usernameText.setText("@" + provider.getProfileByUID(moodEvent.getUserId()).getUsername());
-
+                    } else {
+                        holder.usernameText.setText("@" + moodEvent.getUserId());
                     }
                 }
             }
 
             @Override
             public void onError(String error) {
-                // nothing for now
+                holder.usernameText.setText("N/A");
             }
         });
 
-        String[] tokens = moodEvent.getDate().toString().split(" ");
-        String dateStr = tokens[1] + " " + tokens[2] + ", " + tokens[5];
+        // Mood with emoji
+        String moodWithEmoji = (moodEvent.getEmotionalState());
+        holder.moodText.setText("Mood: " + moodWithEmoji);
 
-        holder.timeText.setText(dateStr);
+        // Reason
+        holder.reasonText.setText("Reason: " + (moodEvent.getReason() != null ? moodEvent.getReason() : "N/A"));
 
-        String moodText = moodEvent.getEmotionalState();
-        int emoticonResId = moodEvent.getEmoticonResource();
-        if (moodText != null && emoticonResId != 0) {
-            String emoticon = context.getResources().getString(emoticonResId);
-            holder.emotionalStateText.setText(emoticon + " " + moodText);
+        // Social Situation
+        holder.socialText.setText("Social: " + (moodEvent.getSocialSituation() != null ? moodEvent.getSocialSituation() : "N/A"));
+
+        // Time
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+        holder.timeText.setText("Time: " + sdf.format(moodEvent.getDate()));
+
+        // Location
+        double lat = moodEvent.getLatitude();
+        double lng = moodEvent.getLongitude();
+        if (lat == 0.0 && lng == 0.0) {
+            holder.locationText.setText("Location: N/A");
         } else {
-            holder.emotionalStateText.setText("Unknown Mood");
+            holder.locationText.setText("Location: " + lat + ", " + lng);
         }
 
-        holder.reasonText.setText(moodEvent.getReason() != null ? moodEvent.getReason() : "No Reason");
-        holder.socialSituationText.setText(moodEvent.getSocialSituation() != null ? moodEvent.getSocialSituation() : "No Social Situation");
-
-        int color = moodEvent.getColorResource();
-        holder.background.setBackgroundColor(context.getResources().getColor(color, context.getTheme()));
-
-        // Display photo
-        if (moodEvent.getPhotoUri() != null) {
+        // Display photo if available
+        if (hasImage && holder.photo != null) {
             Glide.with(context)
                     .load(moodEvent.getPhotoUri())
                     .placeholder(android.R.color.darker_gray)
                     .into(holder.photo);
-        } else {
-            holder.photo.setVisibility(View.GONE);
         }
 
         // Click listener for editing a mood event
@@ -153,4 +149,5 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
 
         return convertView;
     }
+
 }
