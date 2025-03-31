@@ -82,5 +82,6 @@ dependencies {
     annotationProcessor("androidx.room:room-compiler:2.6.1")
 
     //google JSON
-    implementation(libs.gson);
+
+    implementation ("com.google.code.gson:gson:2.10.1")
 }

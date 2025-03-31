@@ -25,6 +25,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.example.projectapp.views.fragments.FollowListDialogFragment;
 import com.example.projectapp.views.fragments.ProfileEditFragment;
 import com.example.projectapp.database_util.ProfileProvider;
 import com.example.projectapp.R;
@@ -103,6 +104,23 @@ public class ProfileActivity extends AppCompatActivity implements ProfileEditFra
 
                 followerText.setText("Followers: " + followerCount);
                 followingText.setText("Following: " + followingCount);
+
+
+                followerText.setOnClickListener(v -> {
+                    FollowListDialogFragment.newInstance("followers", followers)
+                            .show(getSupportFragmentManager(), "FollowListDialog");
+                });
+
+                followingText.setOnClickListener(v -> {
+                    ArrayList<UserProfile> followingList = new ArrayList<>();
+                    for (UserProfile p : provider.getProfiles()) {
+                        if (profile.getFollowing().contains(p.getUID())) {
+                            followingList.add(p);
+                        }
+                    }
+                    FollowListDialogFragment.newInstance("following", followingList)
+                            .show(getSupportFragmentManager(), "FollowListDialog");
+                });
 
                 showUsername();
                 showRecentEvents();
