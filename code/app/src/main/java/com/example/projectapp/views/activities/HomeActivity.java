@@ -27,8 +27,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,6 +46,7 @@ import com.example.projectapp.database_util.UserProfileCallback;
 import com.example.projectapp.models.FollowRequest;
 import com.example.projectapp.models.MoodEvent;
 import com.example.projectapp.models.UserProfile;
+import com.example.projectapp.models.MoodHistory;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -66,6 +73,13 @@ public class HomeActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private TextView usernameDisplay;
     private ImageButton mapToggleButton;
+    private Spinner filterSpinner;
+    private EditText filterKeywordInput;
+    private Button filterApplyButton;
+    private LinearLayout filterControls;
+    private int activeTab = 0; //0 = fyp, 1 = following
+    private List<MoodEvent> currentFilteredList = new ArrayList<>();
+
 
     private static final String TAG = "HomeActivity";
 
@@ -84,6 +98,10 @@ public class HomeActivity extends AppCompatActivity {
         usernameDisplay = findViewById(R.id.username_display);
         mapToggleButton = findViewById(R.id.map_toggle_button);
         searchButton = findViewById(R.id.search_button);
+        filterControls = findViewById(R.id.filter_controls);
+        filterSpinner = findViewById(R.id.home_filter_spinner);
+        filterKeywordInput = findViewById(R.id.home_filter_keyword);
+        filterApplyButton = findViewById(R.id.home_filter_apply);
 
         // Log if searchButton is null
         if (searchButton == null) {
@@ -126,6 +144,71 @@ public class HomeActivity extends AppCompatActivity {
         recyclerViewMoodEvents.setAdapter(adapter);
         recyclerViewMoodEvents.setLayoutManager(new LinearLayoutManager(this));
 
+        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.history_activity_filter_choices,
+                android.R.layout.simple_spinner_item);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        filterSpinner.setAdapter(spinnerAdapter);
+
+        filterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, android.view.View view, int position, long id) {
+                String selected = parent.getItemAtPosition(position).toString();
+                filterKeywordInput.setVisibility(
+                        (selected.equals("Emotional State") || selected.equals("Reason Contains")) ?
+                                android.view.View.VISIBLE : android.view.View.GONE);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                filterKeywordInput.setVisibility(android.view.View.GONE);
+            }
+        });
+
+        findViewById(R.id.filter_button).setOnClickListener(v -> {
+            filterControls.setVisibility(
+                    filterControls.getVisibility() == android.view.View.VISIBLE ?
+                            android.view.View.GONE : android.view.View.VISIBLE);
+        });
+
+        filterApplyButton.setOnClickListener(view -> {
+            String filterType = filterSpinner.getSelectedItem().toString();
+            String keyword = filterKeywordInput.getText().toString().trim();
+
+            List<MoodEvent> baseList = (currentFilteredList.isEmpty())
+                    ? (activeTab == 0 ? forYouEvents : followingEvents)
+                    : currentFilteredList;
+
+            // Reset all filters if "No Filter" is selected
+            if (filterType.equals("No Filter")) {
+                currentFilteredList.clear();
+                adapter.switchTab(activeTab, activeTab == 0 ? forYouEvents : followingEvents);
+                Snackbar.make(view, "Filters cleared", Snackbar.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Guard against empty keyword for relevant filters
+            if ((filterType.equals("Emotional State") || filterType.equals("Reason Contains")) && keyword.isEmpty()) {
+                Snackbar.make(view, "Please enter a keyword for this filter", Snackbar.LENGTH_SHORT).show();
+                return;
+            }
+
+            List<MoodEvent> nextFiltered = new ArrayList<>();
+
+            for (MoodEvent event : baseList) {
+                if (MoodHistory.matchesFilter(event, filterType, keyword)) {
+                    nextFiltered.add(event);
+                }
+            }
+
+            currentFilteredList = nextFiltered;
+            adapter.switchTab(activeTab, currentFilteredList);
+
+            Snackbar.make(view, "Filter applied: " + filterType +
+                    (keyword.isEmpty() ? "" : " " + keyword), Snackbar.LENGTH_SHORT).show();
+        });
+
         db = FirebaseFirestore.getInstance();
 
         // Load public events for the "For You" tab from the users collection,
@@ -133,6 +216,8 @@ public class HomeActivity extends AppCompatActivity {
         setUpdateListener();
 
         tabForYou.setOnClickListener(v -> {
+            activeTab = 0;
+            clearFilterChoicesAndList();
             Log.d("HomeActivity", "For You tab clicked. Number of events: " + forYouEvents.size());
             tabForYou.setTextColor(getResources().getColor(android.R.color.white));
             tabFollowing.setTextColor(getResources().getColor(android.R.color.darker_gray));
@@ -140,6 +225,8 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         tabFollowing.setOnClickListener(v -> {
+            activeTab = 1;
+            clearFilterChoicesAndList();
             tabFollowing.setTextColor(getResources().getColor(android.R.color.white));
             tabForYou.setTextColor(getResources().getColor(android.R.color.darker_gray));
             adapter.switchTab(1, followingEvents);
@@ -215,6 +302,13 @@ public class HomeActivity extends AppCompatActivity {
                 Log.e("Error", "Error in Home Page: " + error);
             }
         });
+    }
+
+    private void clearFilterChoicesAndList() {
+        currentFilteredList.clear();
+        filterSpinner.setSelection(0);
+        filterKeywordInput.setText("");
+        filterKeywordInput.setVisibility(View.GONE);
     }
 
     /**
