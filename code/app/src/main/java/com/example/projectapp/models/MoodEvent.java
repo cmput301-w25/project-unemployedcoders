@@ -185,6 +185,8 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
             this.socialSituation = null;
         } else if (socialSituation.equals("Choose not to answer")) {
             this.socialSituation = null;
+        } else if (!Arrays.asList(ALL_SITUATIONS).contains(socialSituation)) {
+            throw new IllegalArgumentException("Not a valid Social Situation.");
         } else {
             this.socialSituation = socialSituation;
         }
