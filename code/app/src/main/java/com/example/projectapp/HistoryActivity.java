@@ -429,6 +429,8 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
                     moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), displayedMoodEvents, HistoryActivity.this);
                     moodEventList.setAdapter(moodEventAdapter);
                     moodEventAdapter.notifyDataSetChanged();
+                    filter_spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    filter_spinner.setAdapter(filter_spinner_adapter);
                 }
 
                 @Override
