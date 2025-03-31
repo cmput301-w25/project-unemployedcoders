@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -74,11 +75,7 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
     public MoodEventRecyclerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // Inflate the appropriate layout based on the view type
         View itemView;
-        if (viewType == VIEW_TYPE_WITH_IMAGE) {
-            itemView = LayoutInflater.from(context).inflate(R.layout.public_mood_item, parent, false);
-        } else {
-            itemView = LayoutInflater.from(context).inflate(R.layout.public_mood_item_no_img, parent, false);
-        }
+        itemView = LayoutInflater.from(context).inflate(R.layout.public_mood_item, parent, false);
         return new ViewHolder(itemView, viewType);
     }
 
@@ -96,7 +93,8 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView usernameText, moodText, reasonText, socialText, timeText, locationText;
         ImageView photoImage; // Will be null for VIEW_TYPE_NO_IMAGE
-        Button followButton;
+        Button followButton, viewCommentButton;
+        ListView commentList;
         int viewType;
 
         ViewHolder(@NonNull View itemView, int viewType) {
@@ -109,10 +107,9 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
             timeText = itemView.findViewById(R.id.text_time);
             locationText = itemView.findViewById(R.id.text_location);
             followButton = itemView.findViewById(R.id.button_follow);
-            // Only initialize photoImage if the layout has it
-            if (viewType == VIEW_TYPE_WITH_IMAGE) {
-                photoImage = itemView.findViewById(R.id.image_photo);
-            }
+            photoImage = itemView.findViewById(R.id.image_photo);
+            commentList = itemView.findViewById(R.id.comment_list_view);
+            viewCommentButton = itemView.findViewById(R.id.view_comment_button);
         }
 
         void bind(MoodEvent event) {
@@ -165,6 +162,24 @@ public class MoodEventRecyclerAdapter extends RecyclerView.Adapter<MoodEventRecy
                         .load(event.getPhotoUri())
                         .placeholder(android.R.color.darker_gray)
                         .into(photoImage);
+            } else {
+                photoImage.setVisibility(View.GONE);
+            }
+
+            if (event.getComments() != null && !event.getComments().isEmpty()){
+                viewCommentButton.setVisibility(View.VISIBLE);
+
+                // Code for adapter goes here
+
+                viewCommentButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        commentList.setVisibility(View.VISIBLE);
+                    }
+                });
+            } else {
+                viewCommentButton.setVisibility(View.GONE);
+                commentList.setVisibility(View.GONE);
             }
 
             // Manage follow button behavior
