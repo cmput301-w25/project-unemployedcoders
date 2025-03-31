@@ -32,6 +32,14 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;  // Added import for Random
 
+/*
+https://developer.android.com/reference/android/animation/ObjectAnimator
+https://developer.android.com/reference/android/app/DatePickerDialog
+https://developer.android.com/reference/java/util/Calendar
+https://medium.com/@clyeung0714/using-mpandroidchart-for-android-application-piechart-123d62d4ddc0
+ChaGPT for any errors or bugs and more information on the topic
+ */
+
 public class StatsActivity extends AppCompatActivity {
 
     private PieChart pieChart;

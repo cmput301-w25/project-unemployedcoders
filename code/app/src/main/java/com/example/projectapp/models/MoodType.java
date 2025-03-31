@@ -13,6 +13,10 @@ package com.example.projectapp.models;
 
 import com.example.projectapp.R;
 
+/*
+I asked ChatGpt what would be the best way to serialize MoodType, it gave me a HashMap option and an Enum option, I chose Enum (Shubham)
+ */
+
 /**
  * An enumeration to keep the information for emotional states together
  */

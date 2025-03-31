@@ -45,6 +45,12 @@ import java.util.List;
 /**
  * Displays public MoodEvents and allows sending follow requests.
  */
+
+
+/*
+https://developer.android.com/reference/android/os/Handler (Shubham)
+ChatGPT helped me design this and gave me partial code as well at times to show me where i went wrong (Shubham)
+ */
 public class ForYouFragment extends Fragment {
 
     private RecyclerView recyclerView;

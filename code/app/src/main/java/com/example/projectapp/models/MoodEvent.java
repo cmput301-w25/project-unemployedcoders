@@ -263,7 +263,11 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
      * Returns the photo URI associated with the event.
      * @return The photo URI.
      */
-    
+
+    /*
+    https://firebase.google.com/docs/reference/android/com/google/firebase/firestore/PropertyName
+    https://firebase.google.com/docs/reference/android/com/google/firebase/firestore/Exclude
+     */
     @PropertyName("photoUri")
     public String getPhotoUriRaw() {
         return photoUri;

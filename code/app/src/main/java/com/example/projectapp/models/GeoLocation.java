@@ -27,6 +27,11 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
+/* https://developer.android.com/develop/sensors-and-location/location/request-updates
+https://notificare.com/blog/2024/01/26/android-location-permission-guide/
+Also help from ChatGPT while building it.
+
+ */
 public class GeoLocation {
     private Context context;
     private FusedLocationProviderClient fusedLocationClient;
