@@ -62,9 +62,12 @@ public class HomeActivity extends AppCompatActivity {
     private List<MoodEvent> forYouEvents = new ArrayList<>();
     private List<MoodEvent> followingEvents = new ArrayList<>();
     private Button addEventButton;
+    private Button searchButton;
     private FirebaseFirestore db;
     private TextView usernameDisplay;
     private ImageButton mapToggleButton;
+
+    private static final String TAG = "HomeActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +83,24 @@ public class HomeActivity extends AppCompatActivity {
         addEventButton = findViewById(R.id.add_event_button);
         usernameDisplay = findViewById(R.id.username_display);
         mapToggleButton = findViewById(R.id.map_toggle_button);
+        searchButton = findViewById(R.id.search_button);
+
+        // Log if searchButton is null
+        if (searchButton == null) {
+            Log.e(TAG, "Search button not found in layout");
+        } else {
+            Log.d(TAG, "Search button found, setting click listener");
+            searchButton.setOnClickListener(v -> {
+                Log.d(TAG, "Search button clicked, launching SearchActivity");
+                Intent intent = new Intent(HomeActivity.this, SearchActivity.class);
+                try {
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error launching SearchActivity", e);
+                    Toast.makeText(HomeActivity.this, "Failed to launch SearchActivity: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
 
         // Fetch the current user's profile and set the username.
         FirebaseSync fb = FirebaseSync.getInstance();

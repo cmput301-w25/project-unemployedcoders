@@ -12,10 +12,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.projectapp.database_util.ProfileProvider;
 import com.example.projectapp.R;
-import com.example.projectapp.views.adapters.UserAdapter;
+import com.example.projectapp.database_util.ProfileProvider;
 import com.example.projectapp.models.UserProfile;
+import com.example.projectapp.views.activities.HomeActivity;
+import com.example.projectapp.views.activities.ProfileActivity;
+import com.example.projectapp.views.adapters.UserAdapter;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;

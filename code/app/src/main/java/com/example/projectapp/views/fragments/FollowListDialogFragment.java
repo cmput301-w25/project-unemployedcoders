@@ -46,7 +46,7 @@ public class FollowListDialogFragment extends DialogFragment {
             followType = getArguments().getString(ARG_FOLLOW_TYPE);
             profiles = (ArrayList<UserProfile>) getArguments().getSerializable(ARG_PROFILES_LIST);
         }
-        adapter = new UserAdapter(getContext(), profiles);
+        adapter = new UserAdapter(getContext(), profiles, (UserAdapter.OnUserClickListener) getContext());
         recyclerView.setAdapter(adapter);
         builder.setView(view)
                 .setTitle(followType.equals("followers") ? "Followers" : "Following")
