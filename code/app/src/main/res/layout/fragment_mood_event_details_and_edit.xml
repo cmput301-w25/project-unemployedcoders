@@ -35,5 +35,12 @@
         android:prompt="@string/edit_fragment_emo_state_spinner_prompt"
         android:textColor="@color/black" />
 
+    <Button
+        android:id="@+id/button_toggle_public"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Make Public"
+        android:layout_marginTop="16dp" />
+
 
 </LinearLayout>

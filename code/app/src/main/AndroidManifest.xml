@@ -64,7 +64,7 @@
 
         <!-- Launcher Activity: LoginActivity (from Login/Signin branch) -->
         <activity
-            android:name=".LoginActivity"
+            android:name=".views.activities.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -74,16 +74,16 @@
 
 
         <!-- Other Activities (merged from both branches) -->
-        <activity android:name=".MainActivity" android:exported="false" />
-        <activity android:name=".HomeActivity" android:exported="false" />
-        <activity android:name=".MapActivity" android:exported="false" />
-        <activity android:name=".HistoryActivity" android:exported="false" />
-        <activity android:name=".InboxActivity" android:exported="false" />
-        <activity android:name=".ProfileActivity" android:exported="false" />
-        <activity android:name=".SignupActivity" android:exported="false" />
-        <activity android:name=".MoodEventActivity" android:exported="false" />
-        <activity android:name=".StatsActivity" android:exported="false" />
-        <activity android:name=".MapViewActivity"/>
+        <activity android:name=".views.activities.MainActivity" android:exported="false" />
+        <activity android:name=".views.activities.HomeActivity" android:exported="false" />
+        <activity android:name=".views.activities.MapActivity" android:exported="false" />
+        <activity android:name=".views.activities.HistoryActivity" android:exported="false" />
+        <activity android:name=".views.activities.InboxActivity" android:exported="false" />
+        <activity android:name=".views.activities.ProfileActivity" android:exported="false" />
+        <activity android:name=".views.activities.SignupActivity" android:exported="false" />
+        <activity android:name=".views.activities.MoodEventActivity" android:exported="false" />
+        <activity android:name=".views.activities.StatsActivity" android:exported="false" />
+        <activity android:name=".views.activities.SearchActivity" />
 
     </application>
 </manifest>

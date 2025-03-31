@@ -5,7 +5,7 @@
     android:id="@+id/reset"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LoginActivity">
+    tools:context=".views.activities.LoginActivity">
 
     <!-- Background Image -->
     <ImageView
@@ -93,7 +93,7 @@
         android:layout_marginTop="52dp"
         android:layout_marginEnd="32dp"
         android:background="@drawable/bold_border"
-        android:hint="Username"
+        android:hint="Email"
         android:padding="10dp"
         android:textColor="@android:color/black"
         android:textStyle="bold"
