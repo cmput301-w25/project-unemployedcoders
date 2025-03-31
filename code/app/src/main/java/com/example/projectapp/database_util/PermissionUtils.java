@@ -1,3 +1,13 @@
+// -----------------------------------------------------------------------------
+// File: PermissionUtils.java
+// -----------------------------------------------------------------------------
+//  File contains logic to get location permission
+//
+// Design Pattern: Data Access Object
+// Outstanding Issues:
+//  N/A
+// -----------------------------------------------------------------------------
+
 package com.example.projectapp.database_util;
 
 import android.content.pm.PackageManager;

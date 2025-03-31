@@ -12,7 +12,6 @@ gridlayout = "1.0.0"
 gms-maps = "18.2.0"
 gms-location = "21.0.1"
 espressoIntents = "3.6.1"
-
 [libraries]
 firebase-auth = { module = "com.google.firebase:firebase-auth", version = "23.2.0" }
 firebase-storage = { module = "com.google.firebase:firebase-storage", version = "21.0.1" }
@@ -28,6 +27,5 @@ gridlayout = { group = "androidx.gridlayout", name = "gridlayout", version.ref =
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "gms-maps" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "gms-location" }
 espresso-intents = { group = "androidx.test.espresso", name = "espresso-intents", version.ref = "espressoIntents" }
-
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
