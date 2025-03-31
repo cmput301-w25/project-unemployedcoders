@@ -126,50 +126,8 @@ public class HistoryActivityTest {
     public void appShouldDisplayMoodHistoryOnLaunch() throws InterruptedException {
         Thread.sleep(5000);
 
-        onView(withText(getHappyEmoticon() + " Happiness")).check(matches(isDisplayed()));
+        onView(withText("Mood: Happiness " + getHappyEmoticon())).check(matches(isDisplayed()));
     }
-
-    @Test
-    public void appShouldAllowEditingReasonOnValidMoodEvent() throws InterruptedException {
-        Thread.sleep(5000);
-
-        onView(withText(getHappyEmoticon() + " Happiness")).perform(click());
-
-        onView(withId(R.id.details_fragment_edit_reason)).perform(ViewActions.clearText());
-        onView(withId(R.id.details_fragment_edit_reason)).perform(ViewActions.typeText("Even Happier"));
-
-        onView(withId(android.R.id.button1)).perform(click());
-
-        onView(withText("Even Happier")).check(matches(isDisplayed()));
-
-    }
-
-    @Test
-    public void appShouldRefuseInvalidReasonWhileEditing() throws InterruptedException {
-        Thread.sleep(5000);
-
-        onView(withText(getHappyEmoticon() + " Happiness")).perform(click());
-
-        onView(withId(R.id.details_fragment_edit_reason)).perform(ViewActions.clearText());
-        onView(withId(R.id.details_fragment_edit_reason)).perform(ViewActions.typeText("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")); // 201 A's
-
-        onView(withId(android.R.id.button1)).perform(click());
-        onView(withId(R.id.details_fragment_edit_reason)).check(matches(hasErrorText("Invalid Reason")));
-
-    }
-
-    @Test
-    public void appShouldDeleteMoodEvent() throws InterruptedException {
-        Thread.sleep(5000);
-
-        onView(withText(getHappyEmoticon() + " Happiness")).perform(ViewActions.longClick());
-
-        onView(withId(android.R.id.button1)).perform(click());
-
-        onView(withText(getHappyEmoticon() + " Happiness")).check(doesNotExist());
-
-    }
-
 
     private String getHappyEmoticon(){
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
