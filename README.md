@@ -17,7 +17,7 @@
 
 ## Key Features
 
-- [Feature 1]: Ability to keep track of your own mood events and adding specific fields such as reasons and social settings
+- [Feature 1]: Ability to keep track of your own mood events and adding specific fields such as reasons and social settings. Aditionally you'll have the ability to edit/delete events if needed
 - [Feature 2]: Get reccommeneded Mood Events on the home for you page with the ability to follow the user who posted them, with a seperate following page for a more curated feed
 - [Feature 3]: Search for specific users to follow them and see their specific profiles
 
