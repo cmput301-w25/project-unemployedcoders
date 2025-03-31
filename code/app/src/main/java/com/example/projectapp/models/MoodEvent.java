@@ -85,6 +85,10 @@ public class MoodEvent implements Comparable<MoodEvent>, Serializable {
         this.comments = new ArrayList<>();
     }
 
+    public void setComments(ArrayList<Comment> comments) {
+        this.comments = comments;
+    }
+
     public ArrayList<Comment> getComments() {
         return comments;
     }
