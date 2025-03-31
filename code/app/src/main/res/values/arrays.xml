@@ -39,6 +39,7 @@
     <string-array name="people_filters">
         <item>Just Me</item>
         <item>Just People I\'m Following</item>
+        <item>People I\'m Following Within 5km</item>
         <item>Both</item>
     </string-array>
 

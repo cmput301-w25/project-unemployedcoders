@@ -272,15 +272,21 @@ public class MapActivity extends AppCompatActivity implements
                     }
 
 
-                    if (filters.contains("Just People I'm Following") || filters.contains("Both")) {
+                    if (filters.contains("Just People I'm Following") || filters.contains("Both") || filters.contains("People I'm Following Within 5km")) {
                         ArrayList<UserProfile> profiles = provider.getProfiles();
                         for (UserProfile other : profiles) {
                             if (!currentUser.getUID().equals(other.getUID()) && currentUser.getFollowing().contains(other.getUID())) {  // other is followed by current
                                 ArrayList<MoodEvent> otherHistory = other.getHistory().getFilteredVersion(filters).getEvents();
                                 for (MoodEvent event : otherHistory) {
                                     LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude()); // user's location
-                                    if (event.isPublic() && withinFiveKM(event, currentLocation)) {
-                                        displayHistory.addEvent(event);
+                                    if (filters.contains("People I'm Following Within 5km")){
+                                        if (event.isPublic() && withinFiveKM(event, currentLocation)) {
+                                            displayHistory.addEvent(event);
+                                        }
+                                    } else {
+                                        if (event.isPublic()) {
+                                            displayHistory.addEvent(event);
+                                        }
                                     }
                                 }
                             }

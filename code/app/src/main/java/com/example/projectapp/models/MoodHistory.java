@@ -116,6 +116,7 @@ public class MoodHistory {
             case "Just Me":
             case "Both":
             case "Just People I'm Following":
+            case "People I'm Following Within 5km":
             case "No Filter":
                 return true;
             case "Past Week":
