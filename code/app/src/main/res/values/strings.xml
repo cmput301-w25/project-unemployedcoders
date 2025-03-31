@@ -18,5 +18,13 @@
     <string name="disgust_emoticon">&#x1F922;</string>
     <string name="image_description">Selected image</string>
     <string name="edit_fragment_emo_state_spinner_prompt">Emotional State</string>
+
+    <!-- String Array For HistoryActivity Filters-->
+    <string-array name="history_activity_filter_choices">
+        <item>No Filter</item>
+        <item>Past Week</item>
+        <item>Emotional State</item>
+        <item>Reason Contains</item>
+    </string-array>
 </resources>
 

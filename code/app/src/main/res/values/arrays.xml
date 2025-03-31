@@ -36,4 +36,27 @@
         <item>Environment (Weather, Noise, etc.)</item>
     </string-array>
 
+    <string-array name="people_filters">
+        <item>Just Me</item>
+        <item>Just People I\'m Following</item>
+        <item>Both</item>
+    </string-array>
+
+    <string-array name="recency_filters">
+        <item>No Filter</item>
+        <item>Past Week</item>
+    </string-array>
+
+    <string-array name="emotional_state_filters">
+        <item>No Filter</item>
+        <item>Sadness</item>
+        <item>Anger</item>
+        <item>Happiness</item>
+        <item>Shame</item>
+        <item>Confusion</item>
+        <item>Disgust</item>
+        <item>Fear</item>
+        <item>Surprise</item>
+    </string-array>
+
 </resources>
