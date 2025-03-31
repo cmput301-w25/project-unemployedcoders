@@ -58,13 +58,12 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
     private ArrayList<MoodEvent> displayedMoodEvents;
 
     private List<MoodEvent> pendingEdits = new ArrayList<>();
-    private List<MoodEvent> pendingDeletes = new ArrayList<>();
-    private int lastSelectedPosition = -1;
-    private boolean unsyncedEdits = false;
+
     private static final String PREFS_NAME = "OfflineSyncPrefs";
     private static final String KEY_UNSYNCED_EDITS = "unsyncedEdits";
     private static final String KEY_UNSYNCED_HISTORY = "unsyncedMoodHistory";
     private boolean suppressNextFirebaseUpdate = false;
+    private int filterCount = 0;
 
 
 
@@ -117,7 +116,7 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
     @Override
     public void onMoodEventEdited(MoodEvent moodEvent) {
         if (isNetworkAvailable()) {
-            syncMoodHistory();
+            syncEditedEvent(moodEvent);
         } else {
             Toast.makeText(this, "No Internet, changes will sync when reconnected", Toast.LENGTH_SHORT).show();
             setUnsyncedEdits(true);
@@ -126,6 +125,15 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
 
         if (moodEventAdapter != null) {
             moodEventAdapter.notifyDataSetChanged();
+        }
+
+        if (filterCount > 0) {
+            Spinner filterSpinner = findViewById(R.id.history_viewing_filter_spinner);
+            EditText filterKeywordInput = findViewById(R.id.history_viewing_filter_keyword_input);
+            filterSpinner.setSelection(0); // Reset to "No Filter"
+            filterKeywordInput.setText(""); // Clear any typed keyword
+            filterCount = 0;
+            Toast.makeText(this, "Any filters cleared due to edit", Toast.LENGTH_SHORT).show();
         }
     }
     private void syncEditedEvent(MoodEvent moodEvent) {
@@ -268,7 +276,7 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
         }
 
         if (isNetworkAvailable()) {
-            syncMoodHistory();
+            syncDeletedEvent(moodEvent);
         } else {
             setUnsyncedEdits(true);
             saveLocalMoodHistory();
@@ -278,6 +286,15 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
         if (moodEventAdapter != null) {
             moodEventAdapter.notifyDataSetChanged();
         }
+
+        if (filterCount > 0) {
+            Spinner filterSpinner = findViewById(R.id.history_viewing_filter_spinner);
+            EditText filterKeywordInput = findViewById(R.id.history_viewing_filter_keyword_input);
+            filterSpinner.setSelection(0); // Reset to "No Filter"
+            filterKeywordInput.setText(""); // Clear any typed keyword
+            filterCount = 0;
+            Toast.makeText(this, "Any filters cleared due to edit", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void syncDeletedEvent(MoodEvent moodEvent) {
@@ -285,7 +302,11 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
         fb.fetchUserProfileObject(new UserProfileCallback() {
             @Override
             public void onUserProfileLoaded(UserProfile userProfile) {
-                moodHistory.deleteEvent(moodEvent);
+                try {
+                    moodHistory.deleteEvent(moodEvent);
+                } catch (IllegalArgumentException e) {
+                    Log.d("syncDel", "event was already deleted");
+                }
                 userProfile.setHistory(moodHistory);
                 //moodEventAdapter.notifyDataSetChanged();
                 fb.storeUserData(userProfile);
@@ -301,30 +322,6 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
     @Override
     public void onDeleteMoodEvent(MoodEvent moodEvent, int position) {
         MoodEventDeleteFragment.newInstance(moodEvent).show(getSupportFragmentManager(), "DeleteMoodEvent");
-    }
-
-    private void savePendingEdits() {
-        SharedPreferences prefs = getSharedPreferences("PendingChanges", MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-
-        Gson gson = new Gson();
-        String json = gson.toJson(pendingEdits);
-
-        editor.putString("pendingEdits", json);
-        editor.apply();
-    }
-
-    private void loadPendingEdits() {
-        SharedPreferences prefs = getSharedPreferences("PendingChanges", MODE_PRIVATE);
-        String json = prefs.getString("pendingEdits", null);
-
-        if (json != null) {
-            Gson gson = new Gson();
-            Type type = new TypeToken<List<MoodEvent>>() {}.getType();
-            pendingEdits = gson.fromJson(json, type);
-        } else {
-            pendingEdits = new ArrayList<>();
-        }
     }
 
     @Override
@@ -408,6 +405,8 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
                 filterKeywordInput.setVisibility(android.view.View.GONE);
             }
         });
+        filter_spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        filter_spinner.setAdapter(filter_spinner_adapter);
 
         ArrayList<MoodEvent> localEvents = loadLocalMoodEvents();
 
@@ -429,8 +428,6 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
                     moodEventAdapter = new MoodEventArrayAdapter(getApplicationContext(), displayedMoodEvents, HistoryActivity.this);
                     moodEventList.setAdapter(moodEventAdapter);
                     moodEventAdapter.notifyDataSetChanged();
-                    filter_spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    filter_spinner.setAdapter(filter_spinner_adapter);
                 }
 
                 @Override
@@ -442,6 +439,7 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
 
 
         filterApplyButton.setOnClickListener(view -> {
+            filterCount += 1;
             String selected_filter = filter_spinner.getSelectedItem().toString();
             String keyword = filterKeywordInput.getText().toString().trim();
 
@@ -466,6 +464,7 @@ MoodEventDetailsAndEditingFragment.EditMoodEventListener, MoodEventDeleteFragmen
                 moodEventAdapter.notifyDataSetChanged();
                 String message;
                 if (selected_filter.equals("No Filter")) {
+                    filterCount = 0;
                     message = "All events shown.";
                 } else if (selected_filter.equals("Emotional State")) {
                     message = "Filter applied: " + selected_filter + " is " + keyword;
