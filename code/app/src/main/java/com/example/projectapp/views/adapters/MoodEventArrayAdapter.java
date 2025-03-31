@@ -102,7 +102,7 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
         });
 
         // Mood with emoji
-        String moodWithEmoji = (moodEvent.getEmotionalState());
+        String moodWithEmoji = getMoodWithEmoji(moodEvent.getEmotionalState());
         holder.moodText.setText("Mood: " + moodWithEmoji);
 
         // Reason
@@ -150,4 +150,27 @@ public class MoodEventArrayAdapter extends ArrayAdapter<MoodEvent> {
         return convertView;
     }
 
+    private String getMoodWithEmoji(String mood) {
+        if (mood == null) return "Unknown";
+        switch (mood.toLowerCase()) {
+            case "sadness":
+                return "Sadness 😢";
+            case "anger":
+                return "Anger 😡";
+            case "happiness":
+                return "Happiness 😊";
+            case "shame":
+                return "Shame 😳";
+            case "confusion":
+                return "Confusion 😕";
+            case "disgust":
+                return "Disgust 🤢";
+            case "fear":
+                return "Fear 😱";
+            case "surprise":
+                return "Surprise 😲";
+            default:
+                return mood;
+        }
+    }
 }

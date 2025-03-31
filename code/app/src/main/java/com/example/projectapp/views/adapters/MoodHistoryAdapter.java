@@ -134,7 +134,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             });
 
             // Mood with emoji
-            String moodWithEmoji = (event.getEmotionalState());
+            String moodWithEmoji = getMoodWithEmoji(event.getEmotionalState());
             moodText.setText("Mood: " + moodWithEmoji);
 
             // Reason
@@ -165,6 +165,29 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             }
         }
 
+        private String getMoodWithEmoji(String mood) {
+            if (mood == null) return "Unknown";
+            switch (mood.toLowerCase()) {
+                case "sadness":
+                    return "Sadness 😢";
+                case "anger":
+                    return "Anger 😡";
+                case "happiness":
+                    return "Happiness 😊";
+                case "shame":
+                    return "Shame 😳";
+                case "confusion":
+                    return "Confusion 😕";
+                case "disgust":
+                    return "Disgust 🤢";
+                case "fear":
+                    return "Fear 😱";
+                case "surprise":
+                    return "Surprise 😲";
+                default:
+                    return mood;
+            }
+        }
     }
 
     // ViewHolder for items without an image
@@ -203,7 +226,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             });
 
             // Mood with emoji
-            String moodWithEmoji = (event.getEmotionalState());
+            String moodWithEmoji = getMoodWithEmoji(event.getEmotionalState());
             moodText.setText("Mood: " + moodWithEmoji);
 
             // Reason
@@ -223,6 +246,30 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 locationText.setText("Location: N/A");
             } else {
                 locationText.setText("Location: " + lat + ", " + lng);
+            }
+        }
+
+        private String getMoodWithEmoji(String mood) {
+            if (mood == null) return "Unknown";
+            switch (mood.toLowerCase()) {
+                case "sadness":
+                    return "Sadness 😢";
+                case "anger":
+                    return "Anger 😡";
+                case "happiness":
+                    return "Happiness 😊";
+                case "shame":
+                    return "Shame 😳";
+                case "confusion":
+                    return "Confusion 😕";
+                case "disgust":
+                    return "Disgust 🤢";
+                case "fear":
+                    return "Fear 😱";
+                case "surprise":
+                    return "Surprise 😲";
+                default:
+                    return mood;
             }
         }
     }
